@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 14:08:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/08 09:36:03 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/08 11:00:42 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,10 @@ class Socket {
 	public:
 		Socket();
 		Socket(int domain, int type, int protocol, int port, int backlog);
-		~Socket();
+		virtual ~Socket();
 
-		int getSocketfd() const ;
+		int &getSocketfd();
 		struct sockaddr_in *getAddr();
-		// void setSocketfd();
 		
 		class SOCKERROR: public std::exception {
 			private:

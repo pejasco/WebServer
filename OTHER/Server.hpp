@@ -1,24 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/07 15:48:24 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/09 10:59:40 by cofische         ###   ########.fr       */
+/*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
+/*   Updated: 2025/04/08 12:09:13 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../INC/Webserv.hpp"
-#include "Parsing.cpp"
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
-int main(int ac, char **av) {
-	if (ac > 2) {
-		std::cerr << "ERROR\n";
-		return (-1);
-	}
-	std::string filename = av[1];
-	readFile(filename);
-	return 0;
-}
+#include "WebServer.hpp"
+#include "Socket.hpp"
+
+
+class Server : public Socket{
+	public:
+		Server();
+		Server(int configurationFile);
+		~Server();
+	
+		int getNewSocket() const;
+		void launch();
+		int closeServer();
+		
+	private:
+		int new_socket;
+		socklen_t addlen;
+		Socket mainSocket;
+};
+
+#endif

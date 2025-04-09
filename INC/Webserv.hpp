@@ -1,32 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/08 09:32:31 by cofische         ###   ########.fr       */
+/*   Created: 2025/04/09 10:19:29 by cofische          #+#    #+#             */
+/*   Updated: 2025/04/09 11:21:56 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#ifndef WEBSER_HPP
+#define WEBSER_HPP
 
-#include "WebServer.hpp"
-#include "Socket.hpp"
+#include <iostream>
+#include <cstring>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <iterator>
+#include <algorithm>
+#include <map>
 
-
-class Server {
-	public:
-		Server(int domain, int type, int protocol, int port, int backlog);
-		~Server();
-	
-		int getNewSocket() const;
-		
-	private:
-		int new_socket;
-		Socket mainSocket;
-};
+#include "Colors.hpp"
 
 #endif
