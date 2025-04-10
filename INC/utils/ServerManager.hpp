@@ -1,36 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/10 11:41:57 by cofische         ###   ########.fr       */
+/*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
+/*   Updated: 2025/04/10 12:27:49 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#ifndef SERVERMANAGER_HPP
+#define SERVERMANAGER_HPP
 
 #include "Webserv.hpp"
-#include "Socket.hpp"
-#include "Location.hpp"
+#include "Server.hpp"
 
-
-class Server : public Socket{
+class ServerManager {
 	public:
-		Server();
-		~Server();
-	
-		int getNewSocket() const;
-		void launch();
-		int closeServer();
+		ServerManager(const std::string &inputFilename);
+		~ServerManager();
+		
+		int	readFile(std::fstream &configFile);
+		void parseLine(std::string &line, Server *currentServer);
 		
 	private:
-		int new_socket;
-		socklen_t addlen;
-		Socket mainSocket;
+		std::vector<Server*> servers;
+		// adding a vector that will keep track of the socket fd of each server ? 
+		// Servermanager will be in charge of the epoll management
+		
+		
+
 };
+
 
 #endif

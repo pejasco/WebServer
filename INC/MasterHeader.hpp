@@ -1,19 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Location.hpp                                       :+:      :+:    :+:   */
+/*   MasterHeader.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/10 11:36:56 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/10 11:42:14 by cofische         ###   ########.fr       */
+/*   Created: 2025/04/10 12:29:38 by cofische          #+#    #+#             */
+/*   Updated: 2025/04/10 12:30:41 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef LOCATION_HPP
-#define LOCATION_HPP
+#ifndef MASTERHEADER_HPP
+#define MASTERHEADER_HPP
 
-#include "Webserv.hpp"
-
+#include "utils/ServerManager.hpp"
 
 #endif
