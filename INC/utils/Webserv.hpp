@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 10:19:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/10 11:29:09 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/10 13:49:11 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define WEBSER_HPP
 
 #include <iostream>
+#include <sstream>
 #include <cstring>
 #include <string>
 #include <vector>

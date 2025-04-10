@@ -6,13 +6,14 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/10 11:30:03 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/10 13:28:29 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../INC/Server.hpp"
+#include "../INC/utils/Server.hpp"
 
-Server::Server(): Socket() {
+/*CONSTRUCTORS/DESTRUCTORS*/
+Server::Server(int inputID): ID(inputID), Socket() {
 	std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
 	
 	addlen = sizeof(this->getAddr());
@@ -27,7 +28,33 @@ Server::~Server() {
 	std::cout << BOLD RED "Server is closing\nGOODBYE!\n" RESET;
 }
 
+/*SETTER FUNCTIONS*/
 
+void Server::setHost(const std::string &inputHost) {
+	host = inputHost;
+};
+
+void Server::setPort(int inputPort) {
+	port = inputPort;
+};
+
+void Server::setErrorDir(const std::string &inputErrorDir) {
+	errorDir = inputErrorDir;
+};
+
+void Server::addServerName(const std::string &inputName) {
+	serverNames.push_back(inputName);
+};
+
+void Server::setMaxSize(int inputMaxSize) {
+	maxSize = inputMaxSize;
+};
+
+/*GETTER FUNCTIONS*/
+
+
+
+/*METHOD*/
 void Server::launch() {
 	// while(true) {
 		std::cout << "+++++++++ WAITING FOR CONNECTTION ++++++++++++++++++" << std::endl;
