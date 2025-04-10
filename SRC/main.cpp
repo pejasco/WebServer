@@ -6,11 +6,11 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:48:24 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/09 10:59:40 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/10 11:42:46 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../INC/Webserv.hpp"
+#include "../INC/ServerManager.hpp"
 #include "Parsing.cpp"
 
 int main(int ac, char **av) {
@@ -18,7 +18,5 @@ int main(int ac, char **av) {
 		std::cerr << "ERROR\n";
 		return (-1);
 	}
-	std::string filename = av[1];
-	readFile(filename);
 	return 0;
 }

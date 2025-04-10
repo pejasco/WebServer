@@ -6,14 +6,14 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 14:08:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/08 11:00:42 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/10 11:41:36 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
-#include "WebServer.hpp"
+#include "Webserv.hpp"
 
 /*
 struct sockaddr_in 

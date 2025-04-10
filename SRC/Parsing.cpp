@@ -6,11 +6,11 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 10:31:14 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/09 12:22:47 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/10 11:39:05 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../INC/Webserv.hpp"
+#include "../INC/ServerManager.hpp"
 
 //Going to be a member function of the ServerManager class 
 int	readFile(std::fstream &configFile, std::vector<Server*> &servers) {
