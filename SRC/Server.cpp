@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/08 15:13:35 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/10 11:30:03 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,17 +15,6 @@
 Server::Server(): Socket() {
 	std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
 	
-	addlen = sizeof(this->getAddr());
-	
-	// std::cout << "Socketfd in the server class:" << &this->getSocketfd() << ", Socket add:" << this->getAddr() << "\n";
-	
-	launch();
-	closeServer();
-}
-
-
-Server::Server(int configurationFile): Socket(-1, -1, -1, -1, -1) {
-	std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
 	addlen = sizeof(this->getAddr());
 	
 	// std::cout << "Socketfd in the server class:" << &this->getSocketfd() << ", Socket add:" << this->getAddr() << "\n";
