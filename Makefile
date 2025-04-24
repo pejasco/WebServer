@@ -1,17 +1,21 @@
 NAME = webserv
 CXX = c++
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98
-INC_DIR = INC
+INC_DIR = INC/utils
 SRC_DIR = SRC
 OBJ_DIR = OBJ
 SRC = $(SRC_DIR)/Server.cpp \
       $(SRC_DIR)/Socket.cpp \
+	  $(SRC_DIR)/Location.cpp \
+	  $(SRC_DIR)/ServerManager.cpp \
       $(SRC_DIR)/main.cpp 
 OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 INC = $(INC_DIR)/Colors.hpp \
 	  $(INC_DIR)/Socket.hpp \
 	  $(INC_DIR)/Server.hpp \
-	  $(INC_DIR)/WebServer.hpp
+	  $(INC_DIR)/Webserver.hpp \
+	  $(INC_DIR)/Location.hpp \
+	  $(INC_DIR)/ServerManager.hpp \
 
 all : $(NAME)
 

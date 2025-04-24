@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/10 12:27:49 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/24 11:03:43 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 
 #include "Webserv.hpp"
 #include "Server.hpp"
+
+// typedef typename std::vector<Server*>::iterator Iterator;
 
 class ServerManager {
 	public:
