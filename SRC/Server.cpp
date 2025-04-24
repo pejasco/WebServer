@@ -6,22 +6,22 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/10 13:28:29 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/24 12:38:53 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/Server.hpp"
 
 /*CONSTRUCTORS/DESTRUCTORS*/
-Server::Server(int inputID): ID(inputID), Socket() {
+Server::Server(int inputID): Socket(), ID(inputID) {
 	std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
 	
 	addlen = sizeof(this->getAddr());
-	
+	std::cout << ID << std::endl;
 	// std::cout << "Socketfd in the server class:" << &this->getSocketfd() << ", Socket add:" << this->getAddr() << "\n";
 	
-	launch();
-	closeServer();
+	// launch();
+	// closeServer();
 }
 
 Server::~Server() {
@@ -52,6 +52,25 @@ void Server::setMaxSize(int inputMaxSize) {
 
 /*GETTER FUNCTIONS*/
 
+std::string Server::getHost() {
+	return host;
+};
+
+int Server::getPort() {
+	return port;
+};
+
+std::string Server::getErrorDir() {
+	return errorDir;
+};
+
+std::string Server::getServerName() {
+	return serverNames.front();
+};
+
+int Server::getMaxSize() {
+	return maxSize;
+};
 
 
 /*METHOD*/
@@ -78,3 +97,20 @@ int Server::closeServer() {
 int Server::getNewSocket() const {
 	return new_socket;
 }
+
+void printServer(Server &server) {
+	std::cout << BOLD BLUE << "server name: " << RESET << server.getServerName() << std::endl
+	<< BOLD BLUE "server port: " << RESET << server.getPort() << std::endl
+	<< BOLD BLUE "server host: " << RESET << server.getHost() << std::endl
+	<< BOLD BLUE "server error dir: " << RESET << server.getErrorDir() << std::endl
+	<< BOLD BLUE "server maxsize: " << RESET << server.getMaxSize() << std::endl;
+}
+
+std::ostream &operator<<(std::ostream &os, Server &server) {
+	os << BOLD BLUE << "server name: " << RESET << server.getServerName() << std::endl
+	<< BOLD BLUE "server port: " << RESET << server.getPort() << std::endl
+	<< BOLD BLUE "server host: " << RESET << server.getHost() << std::endl
+	<< BOLD BLUE "server error dir: " << RESET << server.getErrorDir() << std::endl
+	<< BOLD BLUE "server maxsize: " << RESET << server.getMaxSize() << std::endl;
+	return os;
+};

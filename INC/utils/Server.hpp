@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/10 13:28:35 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/24 12:39:22 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,16 @@ class Server : public Socket{
 		void addServerName(const std::string &inputName);
 		void setMaxSize(int inputMaxSize);
 		/*Add something for the Location object as locatino will be parsed in several lines*/
-
+		std::string getHost();
+		int getPort();
+		std::string getErrorDir();
+		std::string getServerName();
+		int getMaxSize();
 		
 		int getNewSocket() const;
 		void launch();
 		int closeServer();
+		
 		
 	private:
 		//For configuration purpose
@@ -53,5 +58,8 @@ class Server : public Socket{
 		socklen_t addlen;
 		Socket mainSocket;
 };
+
+std::ostream &operator<<(std::ostream &os, Server &server);
+void printServer(Server &server); 
 
 #endif
