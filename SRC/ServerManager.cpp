@@ -6,23 +6,14 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/24 12:45:42 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/24 16:33:28 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/ServerManager.hpp"
 
-int convertInt(const std::string &str) {
-	int nb;
-	std::istringstream (str) >> nb;
-	//if no error
-	return nb;
-}
-
-
 ServerManager::ServerManager(const std::string &inputFilename) {
-	std::fstream configFile;
-	configFile.open(inputFilename.c_str(), std::fstream::in);
+	std::fstream configFile(inputFilename.c_str());
 	readFile(configFile);
 	
 	//Printing the server object to ensure they are well connected	
@@ -88,9 +79,10 @@ void ServerManager::parseLine(std::string &line, Server *currentServer) {
 			currentServer->setPort(convertInt(line.substr(pos + 2))); // BUILD HELPING FUNCTION == CONVERT TO INT
 	} else if (line.find("server_names") != std::string::npos) {
 		//specific as the names will be on the same line
-		if ((pos = line.rfind(":")) != std::string::npos) //need to tokenize to split the line between the name (separated by a single space) 
+		if ((pos = line.rfind(":")) != std::string::npos) { //need to tokenize to split the line between the name (separated by a single space) 	
 			currentServer->addServerName(line.substr(pos + 2));
-	} else if (line.find("error_pages") != std::string::npos) {
+		}
+	} else if (line.find("error_page") != std::string::npos) {
 		//specific as the page error can be on several lines. Maybe Create a separate class for Error page management
 		if ((pos = line.rfind(":")) != std::string::npos)
 			currentServer->setErrorDir(line.substr(pos + 2));
@@ -102,6 +94,8 @@ void ServerManager::parseLine(std::string &line, Server *currentServer) {
 	} else 
 		return ;
 }
+
+// remove_if(str.begin(), str.end(), isspace);
 
 
 

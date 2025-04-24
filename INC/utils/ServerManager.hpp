@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/24 13:26:37 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/24 14:38:03 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class ServerManager {
 		
 	private:
 		std::vector<Server*> servers;
-		std::vector<std::map<std::string, int>> 
+		std::vector<std::map<std::string, int> > host_port;
 		// adding a vector that will keep track of the socket fd of each server ? 
 		// Servermanager will be in charge of the epoll management
 		

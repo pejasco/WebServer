@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/24 12:39:22 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/24 16:20:57 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "Webserv.hpp"
 #include "Socket.hpp"
 #include "Location.hpp"
+#include "Errors.hpp"
 
 
 class Server : public Socket{
@@ -32,8 +33,8 @@ class Server : public Socket{
 		/*Add something for the Location object as locatino will be parsed in several lines*/
 		std::string getHost();
 		int getPort();
-		std::string getErrorDir();
-		std::string getServerName();
+		std::vector<Errors*> &getErrorDir();
+		std::vector<std::string> &getServerName();
 		int getMaxSize();
 		
 		int getNewSocket() const;
@@ -46,7 +47,7 @@ class Server : public Socket{
 		int ID;
 		std::string host;
 		int port;
-		std::string errorDir; //check if final version as it may be a separate class 
+		std::vector<Errors*> errors_list;
 		std::vector<std::string> serverNames;
 		int maxSize;
 		
