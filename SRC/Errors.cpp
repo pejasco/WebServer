@@ -1,29 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Errors.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/07 15:48:24 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/24 14:41:12 by cofische         ###   ########.fr       */
+/*   Created: 2025/04/24 15:27:27 by cofische          #+#    #+#             */
+/*   Updated: 2025/04/24 16:28:00 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../INC/MasterHeader.hpp"
+#include "../INC/utils/Errors.hpp"
 
-int main(int ac, char **av) {
-	if (ac > 2) {
-		std::cerr << "ERROR\n";
-		return (-1);
-	}
-	std::string filename;
-	if (ac > 1) {
-		filename = av[1];
-	} else
-		filename = "configuration/default.conf";
-	//Start the ServerManager Object that will handle all the HTTP connections
-	ServerManager masterServer(filename);
+Errors::Errors(int inputErrCode, const std::string &inputDir) : directory(inputDir), error_code(inputErrCode) {}
+Errors::~Errors() {};
 
-	return 0;
-}
+std::string &Errors::getDirectory() {
+	return directory;
+};
+
+int Errors::getErrorCode() {
+	return error_code;
+};
+
+std::ostream &operator<<(std::ostream &os, Errors &error_page) {
+	os << error_page.getErrorCode();
+	return os;
+};

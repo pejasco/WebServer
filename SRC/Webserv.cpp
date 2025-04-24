@@ -1,29 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/07 15:48:24 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/24 14:41:12 by cofische         ###   ########.fr       */
+/*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
+/*   Updated: 2025/04/24 16:25:13 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../INC/MasterHeader.hpp"
+#include "../INC/utils/Webserv.hpp"
 
-int main(int ac, char **av) {
-	if (ac > 2) {
-		std::cerr << "ERROR\n";
-		return (-1);
-	}
-	std::string filename;
-	if (ac > 1) {
-		filename = av[1];
-	} else
-		filename = "configuration/default.conf";
-	//Start the ServerManager Object that will handle all the HTTP connections
-	ServerManager masterServer(filename);
-
-	return 0;
+int convertInt(const std::string &str) {
+	int nb;
+	std::istringstream (str) >> nb;
+	//if no error
+	return nb;
 }
