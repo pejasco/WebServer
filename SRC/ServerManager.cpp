@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/24 16:33:28 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/25 11:35:02 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,42 +60,59 @@ int	ServerManager::readFile(std::fstream &configFile) {
 	return 0;
 }
 
-void ServerManager::parseLine(std::string &line, Server *currentServer) {
-	// ignoring char
-	/*
-	std::string str = "Hello World";
+void ServerManager::parseLocation(std::string &line, Server *currentServer, std::fstream &configFile) {
 	size_t pos;
-	if ((pos = str.find("W")) != std::string::npos) {
-		std::string sub_str = str.substr(++pos);
-		std::cout  <<  "Substring after 'W': "  <<  sub_str  <<  std::endl;
+	std::string name;
+	Location *currentLocation = NULL;
+	while (std::getline(configFile, line) && line.find("}") != std::string::npos) {
+		if (line.find("location") != std::string::npos) {
+			if (pos = line.rfind(":") != std::string::npos)
+				name = line.substr(pos + 1);
+			currentServer->addLocation(name);
+			currentLocation = currentServer->getLocation().back();
+		} else if (line.find("method") != std::string::npos) {
+			if (pos = line.rfind(":") != std::string::npos)
+			currentLocation->setMethod(line.substr(pos + 1));
+		} else if (line.find("root") != std::string::npos) {
+			if (pos = line.rfind(":") != std::string::npos)
+				currentLocation->setRoot(line.substr(pos + 1));
+		} else if (line.find("index") != std::string::npos) {
+			if (pos = line.rfind(":") != std::string::npos)
+				currentLocation->setIndex(line.substr(pos + 1));
+		} else if (line.find("autoindex") != std::string::npos) {
+			if (line.find("on") != std::string::npos)
+				currentLocation->setAutoIndex(true);
+		} else
+			return;
 	}
-	*/
+	
+}
+
+void ServerManager::parseLine(std::string &line, Server *currentServer, std::fstream &configFile) {
 	size_t pos;
 	if (line.find("host") != std::string::npos) {
 		if ((pos = line.rfind(":")) != std::string::npos)
 			currentServer->setHost(line.substr(pos + 2));
 	} else if (line.find("port") != std::string::npos) {
 		if ((pos = line.rfind(":")) != std::string::npos)
-			currentServer->setPort(convertInt(line.substr(pos + 2))); // BUILD HELPING FUNCTION == CONVERT TO INT
+			currentServer->setPort(convertInt(line.substr(pos + 2)));
 	} else if (line.find("server_names") != std::string::npos) {
-		//specific as the names will be on the same line
-		if ((pos = line.rfind(":")) != std::string::npos) { //need to tokenize to split the line between the name (separated by a single space) 	
+		if ((pos = line.rfind(":")) != std::string::npos)
 			currentServer->addServerName(line.substr(pos + 2));
-		}
 	} else if (line.find("error_page") != std::string::npos) {
-		//specific as the page error can be on several lines. Maybe Create a separate class for Error page management
 		if ((pos = line.rfind(":")) != std::string::npos)
 			currentServer->setErrorDir(line.substr(pos + 2));
 	} else if (line.find("client_max_body_size") != std::string::npos) {
 		if ((pos = line.rfind(":")) != std::string::npos)
 			currentServer->setMaxSize(convertInt(line.substr(pos + 2)));
-	} else if (line.find("location") != std::string::npos) {
-		//function to create a location class and subclass 
-	} else 
+	} else if (line.find("\n") != std::string::npos) {
+		parseLocation(line, currentServer, configFile);
+		// check validity of the info (ex: port in a correct range, forbidden char, etc...)  
+	//continue parsing the coming lines in the same server object	
+	} else
 		return ;
 }
 
-// remove_if(str.begin(), str.end(), isspace);
 
 
 

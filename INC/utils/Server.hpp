@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/24 16:20:57 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/25 11:33:52 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,14 @@ class Server : public Socket{
 		void setErrorDir(const std::string &inputErrorDir);
 		void addServerName(const std::string &inputName);
 		void setMaxSize(int inputMaxSize);
+		void addLocation(const std::string &inputLocation);
 		/*Add something for the Location object as locatino will be parsed in several lines*/
 		std::string getHost();
 		int getPort();
 		std::vector<Errors*> &getErrorDir();
 		std::vector<std::string> &getServerName();
 		int getMaxSize();
+		std::vector<Location*> &getLocation();
 		
 		int getNewSocket() const;
 		void launch();
@@ -47,7 +49,7 @@ class Server : public Socket{
 		int ID;
 		std::string host;
 		int port;
-		std::vector<Errors*> errors_list;
+		std::vector<Errors*> errors_list; // if none are provided by the config file, we have to add manually defaults. 
 		std::vector<std::string> serverNames;
 		int maxSize;
 		
@@ -60,7 +62,7 @@ class Server : public Socket{
 		Socket mainSocket;
 };
 
-std::ostream &operator<<(std::ostream &os, Server &server);
+// std::ostream &operator<<(std::ostream &os, Server &server);
 void printServer(Server &server); 
 
 #endif
