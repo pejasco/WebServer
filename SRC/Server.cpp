@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/24 16:36:35 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/25 11:55:52 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@
 /*CONSTRUCTORS/DESTRUCTORS*/
 Server::Server(int inputID): Socket(), ID(inputID) {
 	std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
+	
+	//As error page must be default if none are given in config file --> add a default error-page setup when creating server and erase if error are id
+
 	
 	// addlen = sizeof(this->getAddr());
 	// std::cout << "Socketfd in the server class:" << &this->getSocketfd() << ", Socket add:" << this->getAddr() << "\n";
@@ -60,6 +63,10 @@ void Server::setMaxSize(int inputMaxSize) {
 	maxSize = inputMaxSize;
 };
 
+void Server::addLocation(const std::string &inputLocation) {
+	
+};
+
 /*GETTER FUNCTIONS*/
 
 std::string Server::getHost() {
@@ -80,6 +87,10 @@ std::vector<std::string> &Server::getServerName() {
 
 int Server::getMaxSize() {
 	return maxSize;
+};
+
+std::vector<Location*> &Server::getLocation() {
+	return locations;
 };
 
 
