@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/28 11:43:32 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/28 16:01:20 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ ServerManager::ServerManager(const std::string &inputFilename) {
 	for (; beg != end; ++beg)
 		printServer(**beg);
 
+	
 	// std::cout << line << std::endl;
 	/********DEBUGGING*********/
 	
@@ -86,9 +87,12 @@ void ServerManager::parseServer(std::string &line, Server *currentServer, std::f
 		if ((pos = line.rfind(":")) != std::string::npos)
 			currentServer->setErrorDir(line.substr(pos + 2));
 	} else if (line.find("client_max_body_size") != std::string::npos) { // limit for the HTTP request body info
-		if ((pos = line.rfind(":")) != std::string::npos)
-			currentServer->setMaxSize(convertInt(line.substr(pos + 2)));
-	} else if (line.find("\n") != std::string::npos) {
+		if ((pos = line.rfind(":")) != std::string::npos) {
+			std::string newLine = line.substr(pos + 2);
+			newLine.erase(newLine.end() - 1);
+			currentServer->setMaxSize(convertInt(newLine));
+		}
+	} else if (line.find("location") != std::string::npos) {
 		parseLocation(line, currentServer, configFile);
 	} else
 		return; // PRINTING ERROR AS UNKNOW CONFIG ELEMENT FOUND
@@ -102,21 +106,26 @@ void ServerManager::parseLocation(std::string &line, Server *currentServer, std:
 	size_t pos;
 	std::string name;
 	Location *currentLocation = NULL;
-	while (std::getline(configFile, line) && line.find("}") != std::string::npos) {
+	if ((pos = line.rfind("/")) != std::string::npos)
+		name = line.substr(pos);
+	name.erase(name.end() - 1);
+	currentServer->addLocation(name);
+	currentLocation = currentServer->getLocation().back();
+			//////////////////////////////////
+	while (std::getline(configFile, line) && line.find("}") == std::string::npos) {
 		if (line.find("location") != std::string::npos) {
-			if (pos = line.rfind(":") != std::string::npos)
-				name = line.substr(pos + 1);
+			if ((pos = line.rfind(":")) != std::string::npos)
+				name = line.substr(pos);
 			currentServer->addLocation(name);
 			currentLocation = currentServer->getLocation().back();
-				//////////////////////////////////
 		} else if (line.find("method") != std::string::npos) {
-			if (pos = line.rfind(":") != std::string::npos)
-			currentLocation->setMethod(line.substr(pos + 2));
+			if ((pos = line.rfind(":")) != std::string::npos)
+				currentLocation->setMethod(line.substr(pos + 2));
 		} else if (line.find("root") != std::string::npos) {
-			if (pos = line.rfind(":") != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos)
 				currentLocation->setRoot(line.substr(pos + 2));
 		} else if (line.find("index") != std::string::npos) {
-			if (pos = line.rfind(":") != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos)
 				currentLocation->setIndex(line.substr(pos + 2));
 		} else if (line.find("autoindex") != std::string::npos) {
 			if (line.find("on") != std::string::npos)
@@ -126,32 +135,35 @@ void ServerManager::parseLocation(std::string &line, Server *currentServer, std:
 			if (line.find("on") != std::string::npos)
 				currentLocation->setUpload(true);
 		} else if (line.find("upload_dir") != std::string::npos) {
-			if (pos = line.rfind(":") != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos)
 				currentLocation->setUploadDir(line.substr(pos + 2));
 		} else if (line.find("max_body_size") != std::string::npos) {
-			if (pos = line.rfind(":") != std::string::npos)
-				currentLocation->setMaxBodySize(static_cast<size_t>(convertInt(line.substr(pos + 2))));
+			if ((pos = line.rfind(":")) != std::string::npos) {
+				std::string newLine = line.substr(pos + 2);
+				newLine.erase(newLine.end() - 1);
+				currentLocation->setMaxBodySize(static_cast<size_t>(convertInt(newLine)));
+			}
 				/////////////////////////////////
 		} else if (line.find("cgi_enable") != std::string::npos) {
 			if (line.find("on") != std::string::npos)
 				currentLocation->setCGI(true);
 		} else if (line.find("cgi_path") != std::string::npos) {
-			if (pos = line.rfind(":") != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos)
 				currentLocation->setCGIPath(line.substr(pos + 2));
 		} else if (line.find("cgi_extensions") != std::string::npos) {
-			if (pos = line.rfind(":") != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos)
 				currentLocation->setCGIExt(line.substr(pos + 2));
 				/////////////////////////////////
 		} else if (line.find("redirect_enable") != std::string::npos) {
 			if (line.find("on") != std::string::npos)
 				currentLocation->setRedirect(true);
 		} else if (line.find("redirect_code") != std::string::npos) { // do I need a redirect code or can I simply redirect to a default webpage?
-			if (pos = line.rfind(":") != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos)
 				currentLocation->setRedirectCode(convertInt(line.substr(pos + 2)));
 		} else if (line.find("redirect_url") != std::string::npos) {
-			if (pos = line.rfind(":") != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos)
 				currentLocation->setRedirectURL(line.substr(pos + 2));
 		} else
 			return; // PRINTING ERROR AS UNKNOW CONFIG ELEMENT FOUND
-	}
-}
+	}	
+}		

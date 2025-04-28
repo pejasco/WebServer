@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/28 11:33:14 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/28 15:58:46 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,10 @@
 #include "Location.hpp"
 #include "Errors.hpp"
 
+class Location;
+class Errors;
 
-class Server : public Socket{
+class Server {
 	public:
 		Server(int inputID);
 		~Server();
@@ -61,9 +63,9 @@ class Server : public Socket{
 		std::vector<Location*> locations;
 		
 		// socket settings
-		int new_socket;
-		socklen_t addlen;
-		Socket mainSocket;
+		// int new_socket;
+		// socklen_t addlen;
+		// Socket mainSocket;
 };
 
 void printServer(Server &server); 
