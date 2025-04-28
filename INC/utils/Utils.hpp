@@ -1,20 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Webserv.cpp                                        :+:      :+:    :+:   */
+/*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/24 16:25:13 by cofische         ###   ########.fr       */
+/*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
+/*   Updated: 2025/04/28 15:23:14 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../INC/utils/Webserv.hpp"
+#ifndef UTILS_HPP
+#define UTILS_HPP
 
-int convertInt(const std::string &str) {
-	int nb;
-	std::istringstream (str) >> nb;
-	//if no error
-	return nb;
-}
+#include "Server.hpp"
+
+class Server;
+class Location;
+
+int convertInt(const std::string &str);
+void printServer(Server &server);
+void printLocation(Location &location);
+
+#endif

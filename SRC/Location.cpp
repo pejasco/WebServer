@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:37:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/28 11:31:24 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/28 15:55:27 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ void Location::setUploadDir(const std::string &inputDir) {
 	upload_dir = inputDir;
 };
 void Location::setMaxBodySize(size_t inputSize) {
+	std::cout << "inputSize for setting max body size in Location: " << inputSize << std::endl;
 	max_body_size = inputSize;
 };
 

@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/28 11:31:16 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/28 15:57:32 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-Server::Server(int inputID): Socket(), ID(inputID) {
+Server::Server(int inputID): ID(inputID) {
 	std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
 	
 	//As error page must be default if none are given in config file --> add a default error-page setup when creating server and erase if error are id
@@ -94,42 +94,27 @@ std::vector<Location*> &Server::getLocation() {
 /*METHOD*/
 /********/
 
-void Server::launch() {
-	// while(true) {
-		std::cout << "+++++++++ WAITING FOR CONNECTTION ++++++++++++++++++" << std::endl;
-		if ((new_socket = accept(this->getSocketfd(), reinterpret_cast<sockaddr*>(this->getAddr()), &addlen)) < 0)
-		{
-			std::cout << "Error on accepting connection\n";
-			return ;			
-		}
-		char buffer[30000] = {0};
-		long valread = read(new_socket, buffer, 30000);
-		std::cout << valread << std::endl << buffer << std::endl;
-		close(new_socket);
-	// }
-}
+// void Server::launch() {
+// 	// while(true) {
+// 		// std::cout << "+++++++++ WAITING FOR CONNECTTION ++++++++++++++++++" << std::endl;
+// 		// if ((new_socket = accept(this->getSocketfd(), reinterpret_cast<sockaddr*>(this->getAddr()), &addlen)) < 0)
+// 		// {
+// 		// 	std::cout << "Error on accepting connection\n";
+// 		// 	return ;			
+// 		// }
+// 		// char buffer[30000] = {0};
+// 		// long valread = read(new_socket, buffer, 30000);
+// 		// std::cout << valread << std::endl << buffer << std::endl;
+// 		// close(new_socket);
+// 	// }
+// }
 
-int Server::closeServer() {
-	close(this->getSocketfd());
-	return 0;
-}
+// int Server::closeServer() {
+// 	close(this->getSocketfd());
+// 	return 0;
+// }
 
-int Server::getNewSocket() const {
-	return new_socket;
-}
+// int Server::getNewSocket() const {
+// 	return new_socket;
+// }
 
-void printServer(Server &server) {
-	std::vector<std::string>::iterator it = server.getServerName().begin();
-	std::vector<std::string>::iterator ite = server.getServerName().end();
-	std::cout << BOLD BLUE << "server name: " RESET;
-	for (; it != ite; ++it)
-		std::cout << *it << " ";
-	std::cout << BOLD BLUE "\nserver port: " << RESET << server.getPort() << std::endl
-	<< BOLD BLUE "server host: " << RESET << server.getHost() << std::endl;
-	std::vector<Errors*>::iterator itt = server.getErrorDir().begin();
-	std::vector<Errors*>::iterator itte = server.getErrorDir().end();
-	std::cout << BOLD BLUE << "error page: " RESET;
-	for (; itt != itte; ++itt)
-		std::cout << **itt << " ";
-	std::cout << BOLD BLUE "\nserver maxsize: " << RESET << server.getMaxSize() << std::endl;
-}
