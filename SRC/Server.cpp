@@ -6,13 +6,16 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/25 11:55:52 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/28 11:31:16 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/Server.hpp"
 
-/*CONSTRUCTORS/DESTRUCTORS*/
+/************************/
+/*CONSTRUCTOR/DESTRUCTOR*/
+/************************/
+
 Server::Server(int inputID): Socket(), ID(inputID) {
 	std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
 	
@@ -24,22 +27,21 @@ Server::Server(int inputID): Socket(), ID(inputID) {
 	
 	// launch();
 	// closeServer();
-}
-
+};
 Server::~Server() {
 	std::cout << BOLD RED "Server is closing\nGOODBYE!\n" RESET;
-}
+};
 
-/*SETTER FUNCTIONS*/
+/********/
+/*SETTER*/
+/********/
 
 void Server::setHost(const std::string &inputHost) {
 	host = inputHost;
 };
-
 void Server::setPort(int inputPort) {
 	port = inputPort;
 };
-
 void Server::setErrorDir(const std::string &inputErrorDir) {
 	size_t pos;
 	if (inputErrorDir.find("default") != std::string::npos) {
@@ -49,7 +51,6 @@ void Server::setErrorDir(const std::string &inputErrorDir) {
 		errors_list.push_back(new Errors(convertInt(inputErrorDir.substr(0,3)), inputErrorDir.substr(0 + 3)));	
 	}
 };
-
 void Server::addServerName(const std::string &inputName) {
 	std::stringstream ss(inputName);
 	std::string token;
@@ -58,43 +59,41 @@ void Server::addServerName(const std::string &inputName) {
     	serverNames.push_back(token);
 	}
 };
-
 void Server::setMaxSize(int inputMaxSize) {
 	maxSize = inputMaxSize;
 };
-
 void Server::addLocation(const std::string &inputLocation) {
-	
+	locations.push_back(new Location(inputLocation));
 };
 
-/*GETTER FUNCTIONS*/
+/********/
+/*GETTER*/
+/********/
 
-std::string Server::getHost() {
+std::string &Server::getHost() {
 	return host;
 };
-
 int Server::getPort() {
 	return port;
 };
-
 std::vector<Errors*> &Server::getErrorDir() {
 	return errors_list;
 };
-
 std::vector<std::string> &Server::getServerName() {
 	return serverNames;
 };
-
 int Server::getMaxSize() {
 	return maxSize;
 };
-
 std::vector<Location*> &Server::getLocation() {
 	return locations;
 };
 
 
+/********/
 /*METHOD*/
+/********/
+
 void Server::launch() {
 	// while(true) {
 		std::cout << "+++++++++ WAITING FOR CONNECTTION ++++++++++++++++++" << std::endl;
