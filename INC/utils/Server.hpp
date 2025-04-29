@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/28 15:58:46 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/29 10:37:47 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ class Server {
 		//GETTER//
 		std::string &getHost();
 		int getPort();
-		std::vector<Errors*> &getErrorDir();
+		std::map<int, std::string> &getErrorDir();
 		std::vector<std::string> &getServerName();
 		int getMaxSize();
 		std::vector<Location*> &getLocation();
@@ -57,7 +57,7 @@ class Server {
 		int maxSize;
 
 		// error_pages settings
-		std::vector<Errors*> errors_list;
+		std::map<int, std::string> errors_list;
 		
 		// location settings
 		std::vector<Location*> locations;

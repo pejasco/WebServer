@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/28 15:57:32 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/29 11:10:42 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,13 +43,17 @@ void Server::setPort(int inputPort) {
 	port = inputPort;
 };
 void Server::setErrorDir(const std::string &inputErrorDir) {
-	size_t pos;
+	std::stringstream ss(inputErrorDir);
+	std::string directory;
+	int code;
+	char space;
 	if (inputErrorDir.find("default") != std::string::npos) {
-		if ((pos = inputErrorDir.rfind("t")) != std::string::npos)
-			errors_list.push_back(new Errors(0, (inputErrorDir.substr(pos + 2))));
-	} else {
-		errors_list.push_back(new Errors(convertInt(inputErrorDir.substr(0,3)), inputErrorDir.substr(0 + 3)));	
-	}
+		code = 0;
+		std::string garbage;
+		ss >> garbage >> space >> directory;
+	} else
+		ss >> code >> space >> directory;
+	errors_list.insert(std::pair<int, std::string>(code, directory));	
 };
 void Server::addServerName(const std::string &inputName) {
 	std::stringstream ss(inputName);
@@ -76,7 +80,7 @@ std::string &Server::getHost() {
 int Server::getPort() {
 	return port;
 };
-std::vector<Errors*> &Server::getErrorDir() {
+std::map<int,std::string> &Server::getErrorDir() {
 	return errors_list;
 };
 std::vector<std::string> &Server::getServerName() {
