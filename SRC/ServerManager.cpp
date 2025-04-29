@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/29 11:22:26 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/29 13:30:01 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,15 @@ bool server_flag = false;
 
 #include "../INC/utils/ServerManager.hpp"
 
+/************************/
+/*CONSTRUCTOR/DESTRUCTOR*/
+/************************/
+
 ServerManager::ServerManager(const std::string &inputFilename) {
+	std::cout << BOLD RED "Starting MasterServer\n" RESET;
 	std::fstream configFile(inputFilename.c_str());
 	readFile(configFile);
+	setHostPort();
 
 	//check on error of the config file (ex: incorrect format, missing essential elements) 
 	// --> can be place before the call of the object in main ??
@@ -28,7 +34,16 @@ ServerManager::ServerManager(const std::string &inputFilename) {
 	// std::vector<Server*>::iterator end = servers.end();
 	// for (; beg != end; ++beg)
 	// 	printServer(**beg);
-
+	// std::cout << "\n\n";
+	std::cout << host_port.size() << std::endl;
+	std::map<int, std::string>::iterator start = host_port.begin();
+	std::map<int, std::string>::iterator finish = host_port.end();
+	int count = 0;
+	for (; start != finish; ++start) {
+		count++;	
+		std::cout << start->first << " " << start->second << std::endl; 
+	}
+	std::cout << count << std::endl;
 	
 	// std::cout << line << std::endl;
 	/********DEBUGGING*********/
@@ -42,8 +57,41 @@ ServerManager::ServerManager(const std::string &inputFilename) {
 }
 
 ServerManager::~ServerManager() {
-	std::cout << BOLD RED "closing MasterServer\n" RESET;
+	std::cout << BOLD RED "Closing MasterServer\n" RESET;
 }
+
+/********/
+/*SETTER*/
+/********/
+
+void ServerManager::setHostPort() {
+	std::vector<Server*>::iterator start = servers.begin();
+	std::vector<Server*>::iterator end = servers.end();
+	for (; start != end; ++start) {
+		if (*start != NULL) {
+			host_port.insert(std::pair<int, std::string>((*start)->getPort(), (*start)->getHost()));
+			std::cout << (*start)->getHost() << " " << (*start)->getPort() << std::endl;
+		} else
+			return ;
+	}
+	std::cout << "host port size after servers reading: " << host_port.size() << std::endl;
+}
+
+/********/
+/*GETTER*/
+/********/
+
+std::vector<Server*> &ServerManager::getServers() {
+	return servers;
+};
+std::map<int, std::string> &ServerManager::getHostPort() {
+	return host_port;
+};
+
+
+/********/
+/*METHOD*/
+/********/
 
 /****************/
 /* READFILE purpose is to read each line of the configFile and initiate a new Server Object when needed */
@@ -55,7 +103,7 @@ int	ServerManager::readFile(std::fstream &configFile) {
 	if (configFile.is_open()) {
 		while (std::getline(configFile, line)) {
 			// std::cout << line << std::endl;
-			if (line.find("server {") != std::string::npos || server_flag == true) {
+			if (line.find("server {") != std::string::npos || server_flag == true) {				
 				servers.push_back(new Server(serverCount++)); // newServerObj will return a pointer to a new Server object that is created
 				currentServer = servers.back();
 				server_flag = false;
@@ -71,6 +119,7 @@ int	ServerManager::readFile(std::fstream &configFile) {
 	return 0;
 }
 
+
 /****************/
 /* PARSESERVER purpose is to parse information in the current server structure (like host, port, etc...)*/
 /* if a location word is found, it call parseLocation to create an fill in Location object*/
@@ -83,7 +132,7 @@ void ServerManager::parseServer(std::string &line, Server *currentServer, std::f
 	} else if (line.find("port") != std::string::npos) {
 		if ((pos = line.rfind(":")) != std::string::npos)
 			currentServer->setPort(convertInt(line.substr(pos + 2)));
-	} else if (line.find("server_names") != std::string::npos) {
+	} else if (line.find("server_name") != std::string::npos) {
 		if ((pos = line.rfind(":")) != std::string::npos)
 			currentServer->addServerName(line.substr(pos + 2));
 	} else if (line.find("error_pages") != std::string::npos) {
@@ -171,4 +220,4 @@ void ServerManager::parseLocation(std::string &line, Server *currentServer, std:
 		else
 			return; // PRINTING ERROR AS UNKNOW CONFIG ELEMENT FOUND
 	}	
-}		
+}
