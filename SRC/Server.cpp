@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/29 11:10:42 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/29 12:16:06 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 /************************/
 
 Server::Server(int inputID): ID(inputID) {
-	std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
+	// std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
 	
 	//As error page must be default if none are given in config file --> add a default error-page setup when creating server and erase if error are id
 
@@ -29,7 +29,7 @@ Server::Server(int inputID): ID(inputID) {
 	// closeServer();
 };
 Server::~Server() {
-	std::cout << BOLD RED "Server is closing\nGOODBYE!\n" RESET;
+	// std::cout << BOLD RED "Server is closing\nGOODBYE!\n" RESET;
 };
 
 /********/
