@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:36:56 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/28 11:28:10 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/29 10:22:07 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ class Location {
 		void setRoot(const std::string &inputRoot);
 		void setMethod(const std::string &inputMethod);
 		void setIndex(const std::string &inputIndex);
-		void setAutoIndex(bool inputAIndex);
+		void setDirectories(bool inputAIndex);
 		
 		/***UPLOAD INFO***/
 		void setUpload(bool inputUpload);
@@ -40,7 +40,6 @@ class Location {
 
 		/***CGI INFO***/
 		void setCGI(bool inputCGI);
-		void setCGIPath(const std::string &inputPath);
 		void setCGIExt(const std::string &inputExt);
 
 		/***REDIRECTION INFO***/		
@@ -63,7 +62,6 @@ class Location {
 
 		/***CGI INFO***/
 		bool getCGI();
-		std::string &getCGIPath();
 		std::vector<std::string> &getCGIExt();
 
 		/***REDIRECTION INFO***/		
@@ -79,16 +77,15 @@ class Location {
 		std::string root; 			// location of the folder
 		std::vector<MET> method; 	// methods allow for this location
 		std::string index; 			// set a default file to server when the request is for the directory
-		bool autoindex; 			// set if directory is listed or not 
+		bool directories; 			// set if directory is listed or not 
 
 		// Upload settings
 		bool upload_enable;			// Whether uploads are permitted
-		std::string upload_dir; 	// Directory for uploaded files
+		std::string upload_store; 	// Directory where uploaded files are stored
 		size_t max_body_size;		// Maximum upload size in bytes
 
 		// CGI handling
 		bool cgi_enabled; 			// Whether CGI is enabled for this location
-		std::string cgi_path;		// Path to CGI executable/interpreter
 		std::vector<std::string> cgi_extensions; // Map file extensions to handlers (.php -> php-cgi)
 
 		// Redirection

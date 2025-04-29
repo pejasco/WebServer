@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 15:27:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/24 16:28:00 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/29 10:31:33 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,6 @@ int Errors::getErrorCode() {
 };
 
 std::ostream &operator<<(std::ostream &os, Errors &error_page) {
-	os << error_page.getErrorCode();
+	os << error_page.getErrorCode() << " " << error_page.getDirectory() << std::endl;
 	return os;
 };

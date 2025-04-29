@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:37:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/28 15:55:27 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/29 10:22:26 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,10 @@
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-Location::Location(const std::string &inputPath) : pathPattern(inputPath), autoindex(false), upload_enable(false),
+Location::Location(const std::string &inputPath) : pathPattern(inputPath), directories(false), upload_enable(false),
 cgi_enabled(false), redirect_enable(false) {
-	upload_dir = "";
+	upload_store = "";
 	max_body_size = 0;
-	cgi_path = "";
 	redirect_code = -1;
 	redirect_url = "";
 };
@@ -49,8 +48,8 @@ void Location::setMethod(const std::string &inputMethod) {
 void Location::setIndex(const std::string &inputIndex) {
 	index = inputIndex;
 };
-void Location::setAutoIndex(bool inputAIndex) {
-	autoindex = inputAIndex;
+void Location::setDirectories(bool inputAIndex) {
+	directories = inputAIndex;
 };
 
 /*******UPLOAD INFO********/
@@ -58,19 +57,15 @@ void Location::setUpload(bool inputUpload) {
 	upload_enable = inputUpload;
 };
 void Location::setUploadDir(const std::string &inputDir) {
-	upload_dir = inputDir;
+	upload_store = inputDir;
 };
 void Location::setMaxBodySize(size_t inputSize) {
-	std::cout << "inputSize for setting max body size in Location: " << inputSize << std::endl;
 	max_body_size = inputSize;
 };
 
 /*******CGI INFO********/
 void Location::setCGI(bool inputCGI) {
 	cgi_enabled = inputCGI;
-};
-void Location::setCGIPath(const std::string &inputPath) {
-	cgi_path = inputPath;
 };
 void Location::setCGIExt(const std::string &inputExt) {
 	std::stringstream ss(inputExt);
@@ -107,7 +102,7 @@ std::string &Location::getIndex() {
 	return index;
 };
 bool Location::getAutoIndex() {
-	return autoindex;
+	return directories;
 };
 std::string &Location::getPath() {
 	return pathPattern;
@@ -118,7 +113,7 @@ bool Location::getUpload() {
 	return upload_enable;
 };
 std::string &Location::getUploadDir() {
-	return upload_dir;
+	return upload_store;
 };
 size_t Location::getMaxSize() {
 	return max_body_size;
@@ -127,9 +122,6 @@ size_t Location::getMaxSize() {
 /*******CGI INFO********/
 bool Location::getCGI() {
 	return cgi_enabled;
-};
-std::string &Location::getCGIPath() {
-	return cgi_path;
 };
 std::vector<std::string> &Location::getCGIExt() {
 	return cgi_extensions;

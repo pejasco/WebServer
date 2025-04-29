@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/28 15:47:09 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/29 10:55:21 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,16 +40,15 @@ void printLocation(Location &location) {
 	std::cout << std::endl;
 	
 	std::cout << BOLD MAGENTA "location index: " RESET << location.getIndex() << std::endl;
-	std::cout << BOLD MAGENTA "location autoindex: " RESET << location.getAutoIndex() << std::endl;
+	std::cout << BOLD MAGENTA "location directories listing: " RESET << location.getAutoIndex() << std::endl;
 	
 	/*UPLAOD INFO*/
 	std::cout << BOLD MAGENTA "location - is upload enable: " RESET << location.getUpload() << std::endl;
-	std::cout << BOLD MAGENTA "location upload dir: " RESET << location.getUploadDir() << std::endl;
+	std::cout << BOLD MAGENTA "location upload storage folder: " RESET << location.getUploadDir() << std::endl;
 	std::cout << BOLD MAGENTA "location upload Max body size: " RESET << location.getMaxSize() << std::endl;
 
 	/*CGI INFO*/
 	std::cout << BOLD MAGENTA "location - is CGI enable: " RESET << location.getCGI() << std::endl;
-	std::cout << BOLD MAGENTA "location CGI path: " RESET << location.getCGIPath() << std::endl;
 	//cgi extension list
 	std::cout << BOLD MAGENTA "location CGI extensions: " RESET;
 	std::vector<std::string>::iterator itExt = location.getCGIExt().begin();
@@ -60,8 +59,8 @@ void printLocation(Location &location) {
 
 	/*REDIRECTION INFO*/
 	std::cout << BOLD MAGENTA "location - is redirection enable: " RESET << location.getRedirect() << std::endl;
-	std::cout << BOLD MAGENTA "location redirection code:" RESET << location.getRedirectCode() << std::endl;
-	std::cout << BOLD MAGENTA "location redirection URL:" RESET << location.getRedirectURL() << std::endl;
+	std::cout << BOLD MAGENTA "location redirection code: " RESET << location.getRedirectCode() << std::endl;
+	std::cout << BOLD MAGENTA "location redirection URL: " RESET << location.getRedirectURL() << std::endl;
 	
 }
 
@@ -79,12 +78,11 @@ void printServer(Server &server) {
 	std::cout << BOLD BLUE "server host: " << RESET << server.getHost() << std::endl;
 
 	/*ERROR PAGES CODE LIST*/
-	std::vector<Errors*>::iterator itt = server.getErrorDir().begin();
-	std::vector<Errors*>::iterator itte = server.getErrorDir().end();
+	std::map<int, std::string>::iterator itr = server.getErrorDir().begin();
+	std::map<int, std::string>::iterator iter = server.getErrorDir().end();
 	std::cout << BOLD BLUE << "error page: " RESET;
-	for (; itt != itte; ++itt)
-		std::cout << **itt << " ";
-	std::cout << std::endl;
+	for (; itr != iter; ++itr)
+		std::cout << itr->first << " " << itr->second << std::endl;
 	
 	/*MAX BODY SIZE*/
 	std::cout << BOLD BLUE "server maxsize: " << RESET << server.getMaxSize() << std::endl;
