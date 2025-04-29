@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/29 10:37:47 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/29 11:25:53 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include "Webserv.hpp"
 #include "Socket.hpp"
 #include "Location.hpp"
-#include "Errors.hpp"
 
 class Location;
 class Errors;
