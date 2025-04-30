@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/29 11:25:53 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/30 14:46:41 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,19 +27,21 @@ class Server {
 	
 		//SETTER//
 		void setHost(const std::string &inputHost);
-		void setPort(int inputPort);
+		void setPort(const std::string &inputPort);
 		void setErrorDir(const std::string &inputErrorDir);
 		void addServerName(const std::string &inputName);
 		void setMaxSize(int inputMaxSize);
 		void addLocation(const std::string &inputLocation);
+		void setKeepAlive(bool inputAlive);
 
 		//GETTER//
 		std::string &getHost();
-		int getPort();
+		std::vector<int> &getPort();
 		std::map<int, std::string> &getErrorDir();
 		std::vector<std::string> &getServerName();
 		int getMaxSize();
 		std::vector<Location*> &getLocation();
+		bool getKeepAlive();
 		
 		//METHOD//
 		int getNewSocket() const;
@@ -51,9 +53,10 @@ class Server {
 		// Config settings
 		int ID;
 		std::string host;
-		int port;
+		std::vector<int> port;
 		std::vector<std::string> serverNames;
 		int maxSize;
+		bool keep_alive;
 
 		// error_pages settings
 		std::map<int, std::string> errors_list;

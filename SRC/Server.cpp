@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/29 12:16:06 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/30 14:47:37 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,13 @@ Server::~Server() {
 void Server::setHost(const std::string &inputHost) {
 	host = inputHost;
 };
-void Server::setPort(int inputPort) {
-	port = inputPort;
+void Server::setPort(const std::string &inputPort) {
+	std::stringstream ss(inputPort);
+	std::string token;
+
+	while (std::getline(ss, token, ' ')) {
+    	port.push_back(convertInt(token));
+	}
 };
 void Server::setErrorDir(const std::string &inputErrorDir) {
 	std::stringstream ss(inputErrorDir);
@@ -69,6 +74,9 @@ void Server::setMaxSize(int inputMaxSize) {
 void Server::addLocation(const std::string &inputLocation) {
 	locations.push_back(new Location(inputLocation));
 };
+void Server::setKeepAlive(bool inputAlive) {
+	keep_alive = inputAlive;	
+};
 
 /********/
 /*GETTER*/
@@ -77,7 +85,7 @@ void Server::addLocation(const std::string &inputLocation) {
 std::string &Server::getHost() {
 	return host;
 };
-int Server::getPort() {
+std::vector<int> &Server::getPort() {
 	return port;
 };
 std::map<int,std::string> &Server::getErrorDir() {
@@ -91,6 +99,9 @@ int Server::getMaxSize() {
 };
 std::vector<Location*> &Server::getLocation() {
 	return locations;
+};
+bool Server::getKeepAlive() {
+	return keep_alive;	
 };
 
 
