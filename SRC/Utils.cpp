@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/30 14:49:48 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/30 15:07:50 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,8 +75,8 @@ void printServer(Server &server) {
 	
 	/*PORT AND HOST*/
 	std::cout << BOLD BLUE "server host: " << RESET << server.getHost() << std::endl;
-	std::vector<int>::iterator itp = server.getPort().begin();
-	std::vector<int>::iterator itep = server.getPort().end();
+	std::vector<std::string>::iterator itp = server.getPort().begin();
+	std::vector<std::string>::iterator itep = server.getPort().end();
 	std::cout << BOLD BLUE << "server ports: " RESET;
 	for (; itp != itep; ++itp)
 		std::cout << *itp << " ";

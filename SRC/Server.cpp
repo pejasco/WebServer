@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/30 14:47:37 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/30 15:07:10 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-Server::Server(int inputID): ID(inputID) {
+Server::Server(int inputID): ID(inputID), keep_alive(false) {
 	// std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
 	
 	//As error page must be default if none are given in config file --> add a default error-page setup when creating server and erase if error are id
@@ -44,7 +44,7 @@ void Server::setPort(const std::string &inputPort) {
 	std::string token;
 
 	while (std::getline(ss, token, ' ')) {
-    	port.push_back(convertInt(token));
+    	port.push_back(token);
 	}
 };
 void Server::setErrorDir(const std::string &inputErrorDir) {
@@ -85,7 +85,7 @@ void Server::setKeepAlive(bool inputAlive) {
 std::string &Server::getHost() {
 	return host;
 };
-std::vector<int> &Server::getPort() {
+std::vector<std::string> &Server::getPort() {
 	return port;
 };
 std::map<int,std::string> &Server::getErrorDir() {
