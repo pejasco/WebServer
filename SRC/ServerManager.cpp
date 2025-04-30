@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/30 14:49:02 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/30 15:44:57 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,28 +22,24 @@ ServerManager::ServerManager(const std::string &inputFilename) {
 	std::cout << BOLD RED "Starting MasterServer\n" RESET;
 	std::fstream configFile(inputFilename.c_str());
 	readFile(configFile);
-	// setHostPort();
-	// startSockets();
+	setHostPort();
+	startSockets();
 	//check on error of the config file (ex: incorrect format, missing essential elements) 
 	// --> can be place before the call of the object in main ??
 	// --> Write an information on how to write a config file for our server (README.md?)
 
 	/********DEBUGGING*********/
 	//Printing the server object to ensure they are well connected	
-	std::vector<Server*>::iterator beg = servers.begin();
-	std::vector<Server*>::iterator end = servers.end();
-	for (; beg != end; ++beg)
-		printServer(**beg);
-	std::cout << "\n\n";
-	// std::cout << host_port.size() << std::endl;
-	// std::map<int, std::string>::iterator start = host_port.begin();
-	// std::map<int, std::string>::iterator finish = host_port.end();
-	// int count = 0;
-	// for (; start != finish; ++start) {
-	// 	count++;	
-	// 	std::cout << start->first << " " << start->second << std::endl; 
-	// }
-	// std::cout << count << std::endl;
+	// std::vector<Server*>::iterator beg = servers.begin();
+	// std::vector<Server*>::iterator end = servers.end();
+	// for (; beg != end; ++beg)
+	// 	printServer(**beg);
+	// std::cout << "\n\n";
+	std::map<std::string, std::string>::iterator start = host_port.begin();
+	std::map<std::string, std::string>::iterator finish = host_port.end();
+	for (; start != finish; ++start) {	
+		std::cout << start->first << " " << start->second << std::endl; 
+	}
 	
 	// std::cout << line << std::endl;
 	/********DEBUGGING*********/
@@ -64,18 +60,21 @@ ServerManager::~ServerManager() {
 /*SETTER*/
 /********/
 
-// void ServerManager::setHostPort() {
-// 	std::vector<Server*>::iterator start = servers.begin();
-// 	std::vector<Server*>::iterator end = servers.end();
-// 	for (; start != end; ++start) {
-// 		if (*start != NULL) {
-// 			host_port.insert(std::pair<int, std::string>((*start)->getPort(), (*start)->getHost()));
-// 			std::cout << (*start)->getHost() << " " << (*start)->getPort() << std::endl;
-// 		} else
-// 			return ;
-// 	}
-// 	std::cout << "host port size after servers reading: " << host_port.size() << std::endl;
-// }
+
+void ServerManager::setHostPort() {
+	std::vector<Server*>::iterator start = servers.begin();
+	std::vector<Server*>::iterator end = servers.end();
+	for (; start != end; ++start) {
+		if (*start != NULL) {
+			std::vector<std::string>::iterator port_beg = (*start)->getPort().begin();
+			std::vector<std::string>::iterator port_end = (*start)->getPort().end();
+			for (; port_beg != port_end; ++port_beg) {
+				host_port.insert(std::pair<std::string, std::string>(*port_beg, (*start)->getHost()));
+			}
+		} else
+			return ;
+	}
+}
 
 /********/
 /*GETTER*/
@@ -228,6 +227,16 @@ void ServerManager::parseLocation(std::string &line, Server *currentServer, std:
 	}	
 }
 
-// void ServerManager::startSockets() {
-	
-// }
+/****************/
+/* StartSockets purpose is to initiate the socket_fd per unique host:port combination that are saved in the attribute host_port*/
+/* Each of the socket_fd will start a Socket object that will test the IP address, bind it and start listening*/
+/****************/
+void ServerManager::startSockets() {
+	std::map<std::string, std::string>::iterator beg = host_port.begin();
+	std::map<std::string, std::string>::iterator end = host_port.end();
+	for (; beg != end; ++beg) {
+		sockets.push_back(new Socket(beg->second, beg->first));	
+	}
+
+	// Now we got a vector that has all the socket_fd active and ready to listen. We are able to start the epoll after this function
+}

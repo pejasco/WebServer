@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/30 14:46:41 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/30 15:19:35 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #define SERVER_HPP
 
 #include "Webserv.hpp"
-#include "Socket.hpp"
 #include "Location.hpp"
 
 class Location;
@@ -36,7 +35,7 @@ class Server {
 
 		//GETTER//
 		std::string &getHost();
-		std::vector<int> &getPort();
+		std::vector<std::string> &getPort();
 		std::map<int, std::string> &getErrorDir();
 		std::vector<std::string> &getServerName();
 		int getMaxSize();
@@ -53,7 +52,7 @@ class Server {
 		// Config settings
 		int ID;
 		std::string host;
-		std::vector<int> port;
+		std::vector<std::string> port;
 		std::vector<std::string> serverNames;
 		int maxSize;
 		bool keep_alive;
