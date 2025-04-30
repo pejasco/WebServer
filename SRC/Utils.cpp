@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/29 10:55:21 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/30 14:49:48 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,13 @@ void printServer(Server &server) {
 	std::cout << std::endl;
 	
 	/*PORT AND HOST*/
-	std::cout << BOLD BLUE "server port: " << RESET << server.getPort() << std::endl;
 	std::cout << BOLD BLUE "server host: " << RESET << server.getHost() << std::endl;
+	std::vector<int>::iterator itp = server.getPort().begin();
+	std::vector<int>::iterator itep = server.getPort().end();
+	std::cout << BOLD BLUE << "server ports: " RESET;
+	for (; itp != itep; ++itp)
+		std::cout << *itp << " ";
+	std::cout << std::endl;
 
 	/*ERROR PAGES CODE LIST*/
 	std::map<int, std::string>::iterator itr = server.getErrorDir().begin();
@@ -85,7 +90,8 @@ void printServer(Server &server) {
 		std::cout << itr->first << " " << itr->second << std::endl;
 	
 	/*MAX BODY SIZE*/
-	std::cout << BOLD BLUE "server maxsize: " << RESET << server.getMaxSize() << std::endl;
+	std::cout << BOLD BLUE "server maxsize: " RESET << server.getMaxSize() << std::endl;
+	std::cout << BOLD BLUE "server keep alive: " RESET << server.getKeepAlive() << std::endl;
 	
 	/*LOCATIONS BLOCKS*/
 	std::vector<Location*>::iterator itL = server.getLocation().begin();

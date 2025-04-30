@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/29 13:30:01 by cofische         ###   ########.fr       */
+/*   Updated: 2025/04/30 14:49:02 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,28 +22,28 @@ ServerManager::ServerManager(const std::string &inputFilename) {
 	std::cout << BOLD RED "Starting MasterServer\n" RESET;
 	std::fstream configFile(inputFilename.c_str());
 	readFile(configFile);
-	setHostPort();
-
+	// setHostPort();
+	// startSockets();
 	//check on error of the config file (ex: incorrect format, missing essential elements) 
 	// --> can be place before the call of the object in main ??
 	// --> Write an information on how to write a config file for our server (README.md?)
 
 	/********DEBUGGING*********/
 	//Printing the server object to ensure they are well connected	
-	// std::vector<Server*>::iterator beg = servers.begin();
-	// std::vector<Server*>::iterator end = servers.end();
-	// for (; beg != end; ++beg)
-	// 	printServer(**beg);
-	// std::cout << "\n\n";
-	std::cout << host_port.size() << std::endl;
-	std::map<int, std::string>::iterator start = host_port.begin();
-	std::map<int, std::string>::iterator finish = host_port.end();
-	int count = 0;
-	for (; start != finish; ++start) {
-		count++;	
-		std::cout << start->first << " " << start->second << std::endl; 
-	}
-	std::cout << count << std::endl;
+	std::vector<Server*>::iterator beg = servers.begin();
+	std::vector<Server*>::iterator end = servers.end();
+	for (; beg != end; ++beg)
+		printServer(**beg);
+	std::cout << "\n\n";
+	// std::cout << host_port.size() << std::endl;
+	// std::map<int, std::string>::iterator start = host_port.begin();
+	// std::map<int, std::string>::iterator finish = host_port.end();
+	// int count = 0;
+	// for (; start != finish; ++start) {
+	// 	count++;	
+	// 	std::cout << start->first << " " << start->second << std::endl; 
+	// }
+	// std::cout << count << std::endl;
 	
 	// std::cout << line << std::endl;
 	/********DEBUGGING*********/
@@ -64,18 +64,18 @@ ServerManager::~ServerManager() {
 /*SETTER*/
 /********/
 
-void ServerManager::setHostPort() {
-	std::vector<Server*>::iterator start = servers.begin();
-	std::vector<Server*>::iterator end = servers.end();
-	for (; start != end; ++start) {
-		if (*start != NULL) {
-			host_port.insert(std::pair<int, std::string>((*start)->getPort(), (*start)->getHost()));
-			std::cout << (*start)->getHost() << " " << (*start)->getPort() << std::endl;
-		} else
-			return ;
-	}
-	std::cout << "host port size after servers reading: " << host_port.size() << std::endl;
-}
+// void ServerManager::setHostPort() {
+// 	std::vector<Server*>::iterator start = servers.begin();
+// 	std::vector<Server*>::iterator end = servers.end();
+// 	for (; start != end; ++start) {
+// 		if (*start != NULL) {
+// 			host_port.insert(std::pair<int, std::string>((*start)->getPort(), (*start)->getHost()));
+// 			std::cout << (*start)->getHost() << " " << (*start)->getPort() << std::endl;
+// 		} else
+// 			return ;
+// 	}
+// 	std::cout << "host port size after servers reading: " << host_port.size() << std::endl;
+// }
 
 /********/
 /*GETTER*/
@@ -84,8 +84,11 @@ void ServerManager::setHostPort() {
 std::vector<Server*> &ServerManager::getServers() {
 	return servers;
 };
-std::map<int, std::string> &ServerManager::getHostPort() {
-	return host_port;
+// std::map<int, std::string> &ServerManager::getHostPort() {
+// 	return host_port;
+// };
+std::vector<Socket*> &ServerManager::getSocket() {
+	return sockets;
 };
 
 
@@ -131,7 +134,7 @@ void ServerManager::parseServer(std::string &line, Server *currentServer, std::f
 			currentServer->setHost(line.substr(pos + 2));
 	} else if (line.find("port") != std::string::npos) {
 		if ((pos = line.rfind(":")) != std::string::npos)
-			currentServer->setPort(convertInt(line.substr(pos + 2)));
+			currentServer->setPort(line.substr(pos + 2));
 	} else if (line.find("server_name") != std::string::npos) {
 		if ((pos = line.rfind(":")) != std::string::npos)
 			currentServer->addServerName(line.substr(pos + 2));
@@ -139,6 +142,9 @@ void ServerManager::parseServer(std::string &line, Server *currentServer, std::f
 		while (std::getline(configFile, line) && line.find("}") == std::string::npos) {
 			currentServer->setErrorDir(line);	
 		}
+	} else if (line.find("keep_alive") != std::string::npos) {
+		if (line.find("on") != std::string::npos)
+			currentServer->setKeepAlive(true);
 	} else if (line.find("client_max_body_size") != std::string::npos) { // limit for the HTTP request body info
 		if ((pos = line.rfind(":")) != std::string::npos) {
 			std::string newLine = line.substr(pos + 2);
@@ -221,3 +227,7 @@ void ServerManager::parseLocation(std::string &line, Server *currentServer, std:
 			return; // PRINTING ERROR AS UNKNOW CONFIG ELEMENT FOUND
 	}	
 }
+
+// void ServerManager::startSockets() {
+	
+// }
