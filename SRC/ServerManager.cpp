@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/02 12:55:01 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/02 14:10:15 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -346,6 +346,7 @@ void ServerManager::createNewClientConnection() {
 	
 	/*STEP8 -- Log client information to register the IP and Port with flag to ensure they are saved as numerical value*/
 	/**TO REWRITE AS GETNAMEINFO IS NOT AN AUTHORIZE EXTERNAL FUNCTION**/
+	/*INET_NTOP() to replace GETNAMEINFO()*/
 	if (getnameinfo((struct sockaddr*)&client_addr, client_addr_len, clientIP, NI_MAXHOST, clientPort, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV) == 0) // flags to specify that we want a numeric version of IP and Port
 		std::cout << "New connection from " << clientIP << ":" << clientPort << std::endl;
 	/**TO REWRITE AS GETNAMEINFO IS NOT AN AUTHORIZE EXTERNAL FUNCTION**/
