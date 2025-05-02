@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/30 15:33:59 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/02 12:31:05 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include "Webserv.hpp"
 #include "Server.hpp"
 #include "Socket.hpp"
+
+#define MAX_EVENTS 42
 
 // typedef typename std::vector<Server*>::iterator Iterator;
 
@@ -29,6 +31,11 @@ class ServerManager {
 		void parseLocation(std::string &line, Server *currentServer, std::fstream &configFile);
 		void setHostPort();
 		void startSockets();
+		void startEpoll();
+		void serverMonitoring();
+		void createNewClientConnection();
+		void existingClientConnection();
+		
 
 		std::vector<Server*> &getServers();
 		std::map<int, std::string> &getHostPort();
@@ -38,6 +45,25 @@ class ServerManager {
 		std::vector<Server*> servers;
 		std::map<std::string, std::string> host_port; // MAY NOT BE USEFUL AS WE GOT SERVER ID 
 		std::vector<Socket*> sockets;
+		std::vector<int> socketsFdList;
+		bool running;
+
+		/*EPOLL INSTANCE ATTRIBUTES*/
+		int epoll_fd;
+		int num_events;
+		int currentFd;
+		struct epoll_event events[MAX_EVENTS];
+
+		/*CLIENT INFORMATION ATTRIBUTES*/
+		struct sockaddr_storage client_addr;
+		socklen_t client_addr_len;
+		int clientFd;
+		int flags;
+		char clientIP[NI_MAXHOST];
+		char clientPort[NI_MAXSERV];
+		char request[4096];
+
+		
 		// adding a vector that will keep track of the socket fd of each server ? 
 		// Servermanager will be in charge of the epoll management
 		

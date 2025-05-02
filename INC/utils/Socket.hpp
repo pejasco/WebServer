@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 14:08:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/30 15:17:27 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/02 09:05:00 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,7 @@ struct sockaddr_in
 	char              sin_zero[8];
 };
 
-struct addrinfo hints;
-struct addrinfo *result, *rp;
-int server_fd, status
+
 
 // Initialize hints structure
 memset(&hints, 0, sizeof(hints));
@@ -42,10 +40,12 @@ hints.ai_protocol = 0;
 class Socket {
 	public:
 		Socket();
-		Socket(int domain, int type, int protocol, int port, int backlog);
-		virtual ~Socket();
+		Socket(const std::string &serverIP, const std::string &serverPort);
+		~Socket();
 
-		int &getSocketfd();
+		int setSocketFd();
+
+		int &getSocketFd();
 		struct sockaddr_in *getAddr();
 		
 		class SOCKERROR: public std::exception {
@@ -57,9 +57,12 @@ class Socket {
 		};
 		
 	private:
-		int socketfd;
 		struct sockaddr_in add;
-		
+		struct addrinfo hints;
+		struct addrinfo *result;
+		struct addrinfo *rp;
+		int status;
+		int socketFd;
 		
 		
 };

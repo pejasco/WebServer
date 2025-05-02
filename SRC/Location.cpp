@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:37:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/29 10:22:26 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/02 09:29:33 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,9 @@ cgi_enabled(false), redirect_enable(false) {
 	redirect_code = -1;
 	redirect_url = "";
 };
-Location::~Location() {};
+Location::~Location() {
+	// std::cout << "deleting location\n";
+};
 
 /********/
 /*SETTER*/
