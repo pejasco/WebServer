@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/30 15:07:10 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/02 10:17:54 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,11 @@ Server::Server(int inputID): ID(inputID), keep_alive(false) {
 	// closeServer();
 };
 Server::~Server() {
-	// std::cout << BOLD RED "Server is closing\nGOODBYE!\n" RESET;
+	// std::vector<Location*>::iterator begLo = locations.begin();
+	// std::vector<Location*>::iterator endLo = locations.end();
+	// for (; begLo != endLo; ++begLo)
+	// 	delete *begLo;
+	// std::cout << BOLD RED "Server " << host << " is closing\n" RESET;
 };
 
 /********/
@@ -37,7 +41,14 @@ Server::~Server() {
 /********/
 
 void Server::setHost(const std::string &inputHost) {
-	host = inputHost;
+	size_t pos = 0;
+	if ((pos = inputHost.find("[")) != std::string::npos) {
+		std::string newLine = inputHost.substr(pos + 1);
+		newLine.erase(newLine.end() - 1);
+		host = newLine;
+	}
+	else
+		host = inputHost;
 };
 void Server::setPort(const std::string &inputPort) {
 	std::stringstream ss(inputPort);
