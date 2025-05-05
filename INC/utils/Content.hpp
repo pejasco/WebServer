@@ -13,6 +13,54 @@
 #pragma once
 
 #include "ServerManager.hpp"
+// POST /upload HTTP/1.1
+// Host: example.com
+// Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXYZ
+// Content-Length: 2050
+
+// ------WebKitFormBoundaryXYZ
+// Content-Disposition: form-data; name="file"; filename="example.txt"
+// Content-Type: text/plain
+
+// [Binary data of the file goes here]
+// ------WebKitFormBoundaryXYZ--
+
+
+
+// POST /upload HTTP/1.1
+// Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXYZ
+
+// ------WebKitFormBoundaryXYZ
+// Content-Disposition: form-data; name="username"
+
+// john_doe
+// ------WebKitFormBoundaryXYZ
+// Content-Disposition: form-data; name="file"; filename="example.txt"
+// Content-Type: text/plain
+
+// ...file contents...
+// ------WebKitFormBoundaryXYZ--
+
+
+class ContentDisposition_
+{
+        public:
+                ContentDisposition_();
+                ~ContentDisposition_();
+
+        private:
+                int index_;
+                std::string CD_type_;
+                std::string inner_content_type_; 
+                std::string name_;
+                std::string filename_;
+                std::string file_contents_;
+};
+
+
+
+
+
 
 class Content {
         public:
@@ -21,8 +69,10 @@ class Content {
 
 
         private:
-                std::string content_type_;
-                /*
+                int index_; //dun know if it is useful
+                std::string content_type_; //Content-Type: application/x-www-form-urlencoded (!!!this is outer content-type for the whole body)
+                std::string boundary; //Content-Type: multipart/form-dat; boundary=--WebKitFormBoundaryXYZ
+        /*
         *       **Text and WebContent
         *       text/plain
         *       text/html
@@ -43,8 +93,9 @@ class Content {
         *      video/mp4
         *      
         *       */
-                std::string boundary;
-
+                int content_content_length_; //Content-Length: 13
+                std::map<std::string, std::string> body_;
+                std::vector<ContentDisposition_> CD_chain_;
 
 
 };

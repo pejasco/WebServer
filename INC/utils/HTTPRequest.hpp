@@ -39,20 +39,22 @@ class HTTPRequest {
 		~HTTPRequest();
 	
 	private:
+                int index_; //dun know if it is useful
 		MET method_;
-        // Common (GET)
+        // Common (GET, DELETE)
 		std::string path_; // / //path/file.html
 		std::string version_; //HTTP1.1
-        std::string host_; //Host: example.com
-        std::string user_agent_; //User-Agent identifies the client software
-        std::string accept_; //Accept: media types the client can process
-        std::string accept_language_; //Accept-language:  en-US,en;q=0.5
-        std::string connection_; // Connection: keep-alive
-        std::string cookie_; //Cookie: session=abc123; user=john
-        std::string authorization_; //Authorization: Bearer p@sswoRd
+                std::string host_; //Host: example.com
+                std::string user_agent_; //User-Agent identifies the client software
+                std::string accept_; //Accept: media types the client can process
+                std::string accept_language_; //Accept-language:  en-US,en;q=0.5
+                std::string connection_; // Connection: keep-alive
+                std::string cookie_; //Cookie: session=abc123; user=john
+                std::string authorization_; //Authorization: Bearer p@sswoRd
 
         // POST
-        Content content_;
+                Content content_;
+                std::map <std::string, std::string> unknown_;
         //
 
 		
