@@ -1,6 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
+/*   Updated: 2025/05/05 12:19:17 by chuleung         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
+#include <iostream>
 #include <unistd.h>
 #include <netinet/in.h>
 
@@ -53,8 +69,8 @@ int main(){
         buffer_cstr[total] = '\0';
         if (ft_strstr(buffer_cstr,"\r\n\r\n")) break;
     }
-    std::string buffer = buffer_cstr;
-    
+    std::string buffer = buffer_cstr; 
+    i
 
 
 
