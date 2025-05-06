@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/30 15:07:50 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/06 11:15:18 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,4 +100,22 @@ void printServer(Server &server) {
 		printLocation(**itL);
 		std::cout << std::endl;
 	}
+}
+
+bool isMessageCompleted(const std::string &request) {
+	size_t pos = 0;
+	std::string temp_body_message;
+	int body_size = 0; 
+	if ((pos = request.find("Content-Length: ")) != std::string::npos) {
+		body_size = convertInt(request.substr(pos + 16));
+		std::cout << "body_size: " << body_size << std::endl;
+		if ((pos = request.find("\r\n\r\n")) != std::string::npos) {
+			temp_body_message = request.substr(pos + 4);
+			if (temp_body_message.size() < static_cast<unsigned long>(body_size))
+				return false;
+			else
+				return true;
+		}
+	}
+	return true;
 }

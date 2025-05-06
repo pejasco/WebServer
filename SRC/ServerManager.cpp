@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/06 09:56:04 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/06 11:19:01 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -363,18 +363,27 @@ void ServerManager::createNewClientConnection() {
 /* the function can receive the message request and start analysing it */
 /****************/
 void ServerManager::existingClientConnection() {
-	ssize_t byte_received = recv(currentFd, request, sizeof(request), MSG_WAITALL); // or MSG_DONTWAIT depending on which flag we want for receiving data
-	if (byte_received == -1) {
-		std::cerr << "Error reading client\n";
-		close(currentFd);
-		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, currentFd, NULL);
-	} else if (byte_received == 0) {
-		std::cout << "Client disconnect for server\n";
-		close(currentFd);
-		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, currentFd, NULL);
-	} else
-		request[byte_received] = '\0';
+	bool message_completed = false;
+	std::string request(received);
 	
+	while (!message_completed) {
+		ssize_t byte_received = recv(currentFd, received, sizeof(received), MSG_WAITALL); // or MSG_DONTWAIT depending on which flag we want for receiving data
+		if (byte_received == -1) {
+			std::cerr << "Error reading client\n";
+			close(currentFd);
+			epoll_ctl(epoll_fd, EPOLL_CTL_DEL, currentFd, NULL);
+			message_completed = true;
+		} else if (byte_received == 0) {
+			std::cout << "Client disconnect for server\n";
+			close(currentFd);
+			epoll_ctl(epoll_fd, EPOLL_CTL_DEL, currentFd, NULL);
+			message_completed = true;
+		} else {
+			received[byte_received] = '\0';
+			request.append(received);
+			message_completed = isMessageCompleted(request);
+		}	
+	}
 	/**START THE HTTP READING NOW**/
 
 	/********DEBUGGING*********/

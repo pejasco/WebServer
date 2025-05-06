@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:48:24 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/28 14:32:36 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/06 11:09:41 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,16 +34,33 @@ int main(int ac, char **av) {
 
 // #include <string>
 // #include <iostream>
+// #include <sstream>
+
+// int convertInt(const std::string &str) {
+// 	int nb;
+// 	std::istringstream (str) >> nb;
+// 	//if no error
+// 	return nb;
+// }
 
 // int main() {
-// 	size_t pos;
-// 	std::string name;
-// 	std::string line = "location /api-back:";
-// 	if (line.find("location") != std::string::npos) {
-// 		if ((pos = line.rfind('/')) != std::string::npos)
-// 			name = line.substr(pos);
-// 		std::cout << "name before change: " << name << "\n";
-// 		name.erase(name.end() - 1);
-// 		std::cout << "name after change: " << name << "\n";
+// 	size_t pos = 0;
+// 	std::string request = "POST /api/users HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\nContent-Length: 44\r\n\r\n{\"name\":\"John Doe\",\"email\":\"john@example.com\"}";
+// 	std::string temp_body_message;
+// 	int body_size; 
+// 	if ((pos = request.find("Content-Length: ")) != std::string::npos) {
+// 		body_size = convertInt(request.substr(pos + 16));
+// 		std::cout << "body_size: " << body_size << std::endl;
 // 	}
+// 	if ((pos = request.find("\r\n\r\n")) != std::string::npos) {
+// 		temp_body_message = request.substr(pos + 4);
+// 		std::cout << "temp: " << temp_body_message << std::endl;
+// 	}
+// 	else 
+// 		std::cout << "not found\n" << request << std::endl;
+	
+// 	if (temp_body_message.size() < body_size)
+// 		std::cout << "not completed\n" << temp_body_message.size() << std::endl << "45: " << temp_body_message[45];
+// 	else
+// 		std::cout << "completed\n";
 // }
