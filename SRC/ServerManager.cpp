@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/02 14:10:15 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/06 09:56:04 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ ServerManager::ServerManager(const std::string &inputFilename) : running(true), 
 	startSockets();
 	startEpoll();
 	serverMonitoring();
+	
 	//check on error of the config file (ex: incorrect format, missing essential elements) 
 	// --> can be place before the call of the object in main ??
 	// --> Write an information on how to write a config file for our server (README.md?)
@@ -51,10 +52,6 @@ ServerManager::ServerManager(const std::string &inputFilename) : running(true), 
 	
 	// std::cout << line << std::endl;
 	/********DEBUGGING*********/
-	
-	//start epoll for listening
-	
-	//stop epoll
 	
 	//clear all the resources
 
@@ -343,13 +340,22 @@ void ServerManager::createNewClientConnection() {
 		close(clientFd);
 		return ;
 	}
-	
-	/*STEP8 -- Log client information to register the IP and Port with flag to ensure they are saved as numerical value*/
-	/**TO REWRITE AS GETNAMEINFO IS NOT AN AUTHORIZE EXTERNAL FUNCTION**/
-	/*INET_NTOP() to replace GETNAMEINFO()*/
-	if (getnameinfo((struct sockaddr*)&client_addr, client_addr_len, clientIP, NI_MAXHOST, clientPort, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV) == 0) // flags to specify that we want a numeric version of IP and Port
-		std::cout << "New connection from " << clientIP << ":" << clientPort << std::endl;
-	/**TO REWRITE AS GETNAMEINFO IS NOT AN AUTHORIZE EXTERNAL FUNCTION**/
+
+	/*STEP8 -- Log client information to register the IP and Port with a if statement to get either IPv4 or IPv6 format depending on the client info received*/
+	if (client_addr.ss_family == AF_INET) {
+		struct sockaddr_in *ipv4 = (struct sockaddr_in *)&client_addr; // fill in information from the client addr structure to the ipv4 with sockaddr_in 
+		addr = &(ipv4->sin_addr);
+		port = ntohs(ipv4->sin_port); //network to host small function to convert the port info from the ipv4 structure 
+	} else {
+		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)&client_addr; // client info to ipv6 structure with sockaddr_in6 for formating. 
+		addr = &(ipv6->sin6_addr);
+		port = ntohs(ipv6->sin6_port);
+	}
+
+	/********DEBUGGING*********/
+	// inet_ntop(client_addr.ss_family, addr, ip_str, sizeof(ip_str));
+	// std::cout << "New connection from " << ip_str << ":" << port << std::endl;
+	/********DEBUGGING*********/
 }
 
 /****************/
@@ -370,6 +376,17 @@ void ServerManager::existingClientConnection() {
 		request[byte_received] = '\0';
 	
 	/**START THE HTTP READING NOW**/
+
+	/********DEBUGGING*********/
+	std::cout << request << std::endl;
+	/********DEBUGGING*********/
 	
 	/**SEND THE RESPOND TO THE CLIENT**/
+	
+	/********DEBUGGING*********/
+	const char* response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nYooooooooooooooooo!";
+	ssize_t bytes_sent = send(clientFd, response, strlen(response), 0);
+	if (bytes_sent == 0)
+		std::cerr << "Error when sending response to client" << std::endl;
+	/********DEBUGGING*********/
 }
