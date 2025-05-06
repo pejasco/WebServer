@@ -384,7 +384,7 @@ void ServerManager::existingClientConnection() {
 	/**SEND THE RESPOND TO THE CLIENT**/
 	
 	/********DEBUGGING*********/
-	const char* response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nYooooooooooooooooo!";
+	const char* response = "HTTP/1.1 200 OK\r\n\r\nYooooooooooooooooo!";
 	ssize_t bytes_sent = send(clientFd, response, strlen(response), 0);
 	if (bytes_sent == 0)
 		std::cerr << "Error when sending response to client" << std::endl;
