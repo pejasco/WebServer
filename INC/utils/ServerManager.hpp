@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/06 09:41:40 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/06 11:07:59 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ class ServerManager {
 		const void *addr;
 		uint16_t port;
 
-		char request[4096];
+		char received[4096];
 
 		
 		// adding a vector that will keep track of the socket fd of each server ? 

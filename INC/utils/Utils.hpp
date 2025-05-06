@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/28 15:23:14 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/06 11:07:54 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,5 +21,6 @@ class Location;
 int convertInt(const std::string &str);
 void printServer(Server &server);
 void printLocation(Location &location);
+bool isMessageCompleted(const std::string &request);
 
 #endif
