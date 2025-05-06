@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/02 12:31:05 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/06 09:41:40 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,10 @@ class ServerManager {
 		int flags;
 		char clientIP[NI_MAXHOST];
 		char clientPort[NI_MAXSERV];
+		char ip_str[INET6_ADDRSTRLEN];
+		const void *addr;
+		uint16_t port;
+
 		char request[4096];
 
 		
