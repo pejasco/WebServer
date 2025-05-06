@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/06 11:19:01 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/06 16:39:58 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,14 @@ ServerManager::~ServerManager() {
 	std::vector<Socket*>::iterator endSo = sockets.end();
 	for (; begSo != endSo; ++begSo) {
 		delete *begSo;
+	}
+
+	//closing and deleting client info
+	std::map<int,Client*>::iterator begCl = clients.begin();
+	std::map<int,Client*>::iterator endCl = clients.end();
+	for (; begCl != endCl; ++begCl) {
+		close(begCl->first);
+		delete begCl->second;
 	}
 
 	//freeing the struct server
@@ -196,7 +204,7 @@ void ServerManager::parseLocation(std::string &line, Server *currentServer, std:
 			//////////////////////////////////
 	while (std::getline(configFile, line) && line.find("server") == std::string::npos) {
 		if (line.find("location") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos)
+			if ((pos = line.rfind("/")) != std::string::npos)
 				name = line.substr(pos);
 			currentServer->addLocation(name);
 			currentLocation = currentServer->getLocation().back();
@@ -295,23 +303,27 @@ void ServerManager::serverMonitoring() {
 		/*STEP3 -- wait for an event to occur in any socket in epoll instance*/
 		num_events = epoll_wait(epoll_fd, events, MAX_EVENTS, -1); // -1 is timeout setup with -1 for infinite
 		if (num_events == -1) {
-			std::cerr << "Error epol_wait: " << strerror(errno) << std::endl;
+			std::cerr << "Error epoll_wait: " << strerror(errno) << std::endl;
 			return ;
 		}
 		
 		/*STEP4 -- Process each event happening*/
 		for (int i = 0; i < num_events; i++) {
 			currentFd = events[i].data.fd;
-			if (std::find(socketsFdList.begin(), socketsFdList.end(), currentFd) != socketsFdList.end()) {
+			if (std::find(socketsFdList.begin(), socketsFdList.end(), currentFd) != socketsFdList.end()) { //add the check to clients list ??
 				createNewClientConnection(); //is the currentFd in the epoll instance (meaning connections has been established so known client or need to be added as it is a new one)
 			} else {
-				existingClientConnection();
+				Client *currentClient = clients[currentFd];
+				if (currentClient == NULL)
+					std::cout << "unknown client\n";
+				existingClientConnection(currentClient);
 			}
 		}
-
+		//running stop either when there is a huge problem with the epoll instance or when receiving a signal from the server to shutdown
+		// running become false
 		
 	}
-	/*LAST STEP -- clean the epoll instance*/
+	/*LAST STEP -- clean the epoll instance and the structure (if needed but should be done in the destructor)*/
 }
 
 /****************/
@@ -320,64 +332,44 @@ void ServerManager::serverMonitoring() {
 /****************/
 void ServerManager::createNewClientConnection() {
 	/*STEP5 -- create a new socket FD for this client-server connection*/
-	client_addr_len = sizeof(client_addr);
-	clientFd = accept(currentFd, (struct sockaddr*)&client_addr, &client_addr_len);
-	if (clientFd == -1) {
-		std::cerr << "Error on accepting a new client connection: " << strerror(errno) << std::endl;
-		return ;
-	}
-	
 	/*STEP6 -- make the client socket non-blocking with flags and fcntl*/
-	flags = fcntl(clientFd, F_GETFL, 0);
-	fcntl(clientFd, F_SETFL, flags | O_NONBLOCK);
+	temp_client_addr_len = sizeof(temp_client_addr);
+	int temp_fd = accept(currentFd, (struct sockaddr*)&temp_client_addr, &temp_client_addr_len);
+	if (temp_fd == -1) {
+		std::cerr << "Error accepting connection: " << strerror(errno) << std::endl;
+		return;
+	}
+	Client *newClient = new Client(temp_fd, temp_client_addr, temp_client_addr_len);
+	int newClientFd = newClient->getClientFd();
+	clients.insert(std::pair<int,Client*>(newClientFd, newClient));
+
 	
 	/*STEP7 -- add the client fd to the epoll monitoring to continue on same communication channel until closing of one fd*/
 	struct epoll_event client_event;
 	client_event.events = EPOLLIN;
-	client_event.data.fd = clientFd;
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, clientFd, &client_event) == -1) {
+	client_event.data.fd = newClientFd;
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, newClientFd, &client_event) == -1) {
 		std::cerr << "error adding client_fd to epoll: " << strerror(errno) << std::endl;
-		close(clientFd);
+		//clean client from structure
+		close(newClientFd); 
 		return ;
 	}
-
-	/*STEP8 -- Log client information to register the IP and Port with a if statement to get either IPv4 or IPv6 format depending on the client info received*/
-	if (client_addr.ss_family == AF_INET) {
-		struct sockaddr_in *ipv4 = (struct sockaddr_in *)&client_addr; // fill in information from the client addr structure to the ipv4 with sockaddr_in 
-		addr = &(ipv4->sin_addr);
-		port = ntohs(ipv4->sin_port); //network to host small function to convert the port info from the ipv4 structure 
-	} else {
-		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)&client_addr; // client info to ipv6 structure with sockaddr_in6 for formating. 
-		addr = &(ipv6->sin6_addr);
-		port = ntohs(ipv6->sin6_port);
-	}
-
-	/********DEBUGGING*********/
-	// inet_ntop(client_addr.ss_family, addr, ip_str, sizeof(ip_str));
-	// std::cout << "New connection from " << ip_str << ":" << port << std::endl;
-	/********DEBUGGING*********/
 }
 
 /****************/
 /* exisingClientConnection --> as the server-client connection is already in the epoll instance, */
 /* the function can receive the message request and start analysing it */
 /****************/
-void ServerManager::existingClientConnection() {
+void ServerManager::existingClientConnection(Client *currentClient) {
 	bool message_completed = false;
-	std::string request(received);
+	std::string request;
 	
 	while (!message_completed) {
 		ssize_t byte_received = recv(currentFd, received, sizeof(received), MSG_WAITALL); // or MSG_DONTWAIT depending on which flag we want for receiving data
-		if (byte_received == -1) {
-			std::cerr << "Error reading client\n";
-			close(currentFd);
-			epoll_ctl(epoll_fd, EPOLL_CTL_DEL, currentFd, NULL);
-			message_completed = true;
-		} else if (byte_received == 0) {
-			std::cout << "Client disconnect for server\n";
-			close(currentFd);
-			epoll_ctl(epoll_fd, EPOLL_CTL_DEL, currentFd, NULL);
-			message_completed = true;
+		if (byte_received <= 0) {
+			message_completed = cleanClient(currentFd);
+			if (byte_received == 0)
+				std::cout << "Client disconnect for server\n";
 		} else {
 			received[byte_received] = '\0';
 			request.append(received);
@@ -387,15 +379,28 @@ void ServerManager::existingClientConnection() {
 	/**START THE HTTP READING NOW**/
 
 	/********DEBUGGING*********/
-	std::cout << request << std::endl;
+	std::cout << "\nrequest: \n" << request << std::endl;
 	/********DEBUGGING*********/
 	
 	/**SEND THE RESPOND TO THE CLIENT**/
 	
 	/********DEBUGGING*********/
 	const char* response = "HTTP/1.1 200 OK\r\n\r\nYooooooooooooooooo!";
-	ssize_t bytes_sent = send(clientFd, response, strlen(response), 0);
+	ssize_t bytes_sent = send(currentClient->getClientFd(), response, strlen(response), 0);
 	if (bytes_sent == 0)
 		std::cerr << "Error when sending response to client" << std::endl;
 	/********DEBUGGING*********/
+}
+
+bool ServerManager::cleanClient(int currentFd) {
+	std::map<int,Client*>::iterator itM;
+	itM = clients.find(currentFd);
+	if (itM != clients.end()) {
+		close(currentFd);
+		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, currentFd, NULL);
+		delete itM->second;
+		clients.erase(itM);
+		return true;
+	} else
+		return false;
 }

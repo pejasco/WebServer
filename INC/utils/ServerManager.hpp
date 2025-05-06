@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/06 11:07:59 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/06 16:38:08 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "Webserv.hpp"
 #include "Server.hpp"
 #include "Socket.hpp"
+#include "Client.hpp"
 
 #define MAX_EVENTS 42
 
@@ -34,7 +35,8 @@ class ServerManager {
 		void startEpoll();
 		void serverMonitoring();
 		void createNewClientConnection();
-		void existingClientConnection();
+		void existingClientConnection(Client *currentClient);
+		bool cleanClient(int currentFd);
 		
 
 		std::vector<Server*> &getServers();
@@ -55,15 +57,9 @@ class ServerManager {
 		struct epoll_event events[MAX_EVENTS];
 
 		/*CLIENT INFORMATION ATTRIBUTES*/
-		struct sockaddr_storage client_addr;
-		socklen_t client_addr_len;
-		int clientFd;
-		int flags;
-		char clientIP[NI_MAXHOST];
-		char clientPort[NI_MAXSERV];
-		char ip_str[INET6_ADDRSTRLEN];
-		const void *addr;
-		uint16_t port;
+		struct sockaddr_storage temp_client_addr;
+		socklen_t temp_client_addr_len;
+		std::map<int,Client*> clients;
 
 		char received[4096];
 
