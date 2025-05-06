@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/05 20:29:52 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/06 18:54:27 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,31 +33,60 @@
 
 class Content;
 
+class Accept
+{
+        public:
+                Accept();
+                ~Accept();
+
+        private:
+                std::string type_;
+                std::string subtype_;
+                float piority_;
+
+
+
+};
+
 class HTTPRequest {
 	public:
 		HTTPRequest();
 		~HTTPRequest();
 	
+                //Setters:
+                void setMet(const MET met_code);
+                void setPath(const std::string& path);
+                void setVersion(const std::string& version);
+                void setHost(const std::string& host);
+                void setUserAgent(const std::string& agent);
+                void setAccept(const std::string& media_type);
+                void setAcceptLanguage(const std::string& languages);
+                void setConnection(const std::string& connection);
+                // void setCookie(const std::string& version);
+                void setAuthorization(const std::string& version);
+                void setContent(const std::string& content);                
+
 	private:
-                int index_; //dun know if it is useful
-		MET method_;
+                static int global_index_; //dun know if it is useful
+                int instance_index_;
+                MET method_;
+        
         // Common (GET, DELETE)
-		std::string path_; // / //path/file.html
-		std::string version_; //HTTP1.1
+                std::string path_; // / //path/file.html
+                std::string version_; //HTTP1.1
                 std::string host_; //Host: example.com
                 std::string user_agent_; //User-Agent identifies the client software
                 std::string accept_; //Accept: media types the client can process
-                std::string accept_language_; //Accept-language:  en-US,en;q=0.5
+                std::map<std::string, int> accept_language_; //Accept-language:  en-US,en;q=0.5
                 std::string connection_; // Connection: keep-alive
-                std::string cookie_; //Cookie: session=abc123; user=john
-                std::string authorization_; //Authorization: Bearer p@sswoRd
+                // std::string cookie_; //Cookie: session=abc123; user=john
+                std::pair<std::string, std::string> authorization_; //Authorization: Bearer p@sswoRd
+
 
         // POST
                 Content content_;
                 std::map <std::string, std::string> unknown_;
         //
-
-		
 
 
 };

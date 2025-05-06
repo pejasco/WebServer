@@ -55,3 +55,24 @@ void ft_memcpy(void* dest, const void* src, size_t size)
         d[i] = s[i];
 }
 
+const char* ft_strstr(const char* haystack, const char* needle)
+{
+    if (!haystack)
+        return NULL;
+    if (!needle)
+        return haystack;
+ 
+    for (const char* p = haystack; *p; ++p)
+    {
+        const char* h = p;
+        const char* n = needle;
+        while (*h && *n && *h == *n)
+        {
+            h++;
+            n++;
+        }
+        if (!*n)
+            return p;        
+    }
+    return NULL;
+}

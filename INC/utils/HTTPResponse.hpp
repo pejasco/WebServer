@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/06 15:38:58 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/06 16:44:49 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,10 @@ class HTTPResponse {
                 ~HTTPResponse();
 
         private:
+                static int global_index_; //dun know if it is useful
+		int instance_index_;
+                setPath()
+                
                 
                 
 

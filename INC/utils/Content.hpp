@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/06 14:19:48 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/06 18:57:54 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,9 @@ class Content {
 
 
         private:
-                int index_; //dun know if it is useful
+
+                static int global_index_; //dun know if it is useful
+		int instance_index_;
                 std::string content_type_; //Content-Type: application/x-www-form-urlencoded (!!!this is outer content-type for the whole body)
                 std::string boundary; //Content-Type: multipart/form-dat; boundary=--WebKitFormBoundaryXYZ
         /*
