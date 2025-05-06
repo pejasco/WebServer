@@ -6,18 +6,17 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/05 12:19:26 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/06 15:38:58 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <netinet/in.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <unistd.h>
+// #include <netinet/in.h>
+#include "../INC/utils/HTTPRequest.hpp"
 
 #define PORT 8080
 #define BUFFER_SIZE 4096
