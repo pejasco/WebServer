@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/05 20:26:58 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/06 14:19:48 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 
 
 
-// POST /upload HTTP/1.1
+// P OST /upload HTTP/1.1
 // Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXYZ
 
 // ------WebKitFormBoundaryXYZ
