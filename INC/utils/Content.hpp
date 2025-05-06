@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/06 18:57:54 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/06 20:58:09 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,18 +47,15 @@ class ContentDisposition_
         public:
                 ContentDisposition_();
                 ~ContentDisposition_();
-
-        private:
-                int index_;
+                static int global_index_;
+                int instance_index_;
                 std::string CD_type_;
-                std::string inner_content_type_; 
                 std::string name_;
                 std::string filename_;
+                std::string inner_content_type_;
                 std::string file_contents_;
+        private:
 };
-
-
-
 
 
 
@@ -97,7 +94,7 @@ class Content {
         *       */
                 int content_content_length_; //Content-Length: 13
                 std::map<std::string, std::string> body_;
-                std::vector<ContentDisposition_> CD_chain_;
+                std::vector<ContentDisposition_> CD_list_;
 
 
 };

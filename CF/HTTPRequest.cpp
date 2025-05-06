@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/06 18:50:21 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/06 21:03:49 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void HTTPRequest::setUserAgent(const std::string& agent)
 
 void HTTPRequest::setAccept(const std::string& media_type)
 {
-    accept_ = med
+    
 }
 
 
@@ -68,11 +68,13 @@ void HTTPRequest::setAcceptLanguage(const std::string& languages)
 
 
 }
+
 void HTTPRequest::setConnection(const std::string& connection)
 {
 
 
 }
+
 // void setCookie(const std::string& version)
 
 

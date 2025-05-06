@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/06 18:54:27 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/06 21:01:07 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,15 +36,14 @@ class Content;
 class Accept
 {
         public:
-                Accept();
+                Accept(std::string type, std::string subtype, float piority);
                 ~Accept();
+
 
         private:
                 std::string type_;
                 std::string subtype_;
                 float piority_;
-
-
 
 };
 
@@ -64,7 +63,14 @@ class HTTPRequest {
                 void setConnection(const std::string& connection);
                 // void setCookie(const std::string& version);
                 void setAuthorization(const std::string& version);
-                void setContent(const std::string& content);                
+                void setContent(const std::string& content);
+
+                //Getters
+                const std::string&
+                const std::string&
+                const std::string&
+                const std::string&
+                const std::string user               
 
 	private:
                 static int global_index_; //dun know if it is useful
@@ -76,7 +82,7 @@ class HTTPRequest {
                 std::string version_; //HTTP1.1
                 std::string host_; //Host: example.com
                 std::string user_agent_; //User-Agent identifies the client software
-                std::string accept_; //Accept: media types the client can process
+                std::vector<Accept> accept_list_; //Accept: media types the client can process
                 std::map<std::string, int> accept_language_; //Accept-language:  en-US,en;q=0.5
                 std::string connection_; // Connection: keep-alive
                 // std::string cookie_; //Cookie: session=abc123; user=john
