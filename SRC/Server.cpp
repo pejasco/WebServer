@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/06 15:36:14 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/07 15:50:33 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 Server::Server(int inputID): ID(inputID), keep_alive(false) {
 	// std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
-	
+	(void)ID;
 	//As error page must be default if none are given in config file --> add a default error-page setup when creating server and erase if error are id
 
 	
