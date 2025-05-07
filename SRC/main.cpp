@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:48:24 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/07 13:48:17 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/07 16:02:40 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ int main(int ac, char **av) {
 		filename = "configuration/default.conf";
 	//Start catching signal for clean shutdown
 	signal(SIGINT, signal_handler);
+	signal(SIGQUIT, signal_handler);
 	//Start the ServerManager Object that will handle all the HTTP connections
 	// if (g_sigStatus != SIGINT || g_sigStatus != SIGTERM)
 	ServerManager masterServer(filename);
