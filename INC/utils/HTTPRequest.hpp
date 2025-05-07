@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/07 12:10:53 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/07 17:40:28 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,17 @@ struct Accept
 
 };
 
+struct Sec_Fetch
+{
+        std::string sec_fetch_dect_;
+        std::string sec_fetch_mode_;
+        std::string sec_fetch_site_;
+        std::string sec_fetch_user_;
+};
+
+
+
+
 class HTTPRequest {
 	public:
 		HTTPRequest();
@@ -81,7 +92,7 @@ class HTTPRequest {
                 static int global_index_; //dun know if it is useful
                 int instance_index_;
                 MET method_;
-        
+
         // Common (GET, DELETE)
                 std::string path_; // / //path/file.html
                 std::string version_; //HTTP1.1
@@ -89,10 +100,13 @@ class HTTPRequest {
                 std::string user_agent_; //User-Agent identifies the client software
                 std::vector<Accept> accept_list_; //Accept: media types the client can process
                 std::map<std::string, int> accept_language_; //Accept-language:  en-US,en;q=0.5
+                std::vector<std::string> accept_encoding_; //Accept-encoding: gzip, deflate, br, zstd
                 bool connection_; // Connection: keep-alive
                 // std::string cookie_; //Cookie: session=abc123; user=john
+                
+                Sec_Fetch fetch_data_;
+                std::vector<std::string> priority;
                 std::pair<std::string, std::string> authorisation_; //Authorization: Bearer p@sswoRd
-
 
         // POST
                 Content content_;
