@@ -6,10 +6,11 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/06 13:48:51 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/07 15:22:56 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "../INC/utils/ServerManager.hpp"
 #include "../INC/utils/Utils.hpp"
 
 int convertInt(const std::string &str) {
@@ -118,4 +119,36 @@ bool isMessageCompleted(const std::string &request) {
 		}
 	}
 	return true;
+}
+
+void cleanShutdown(ServerManager &masterServer) {
+
+	//closing socket_fd from the servers and freeing the struct
+	std::vector<Socket*>::iterator begSo = masterServer.getSocket().begin();
+	std::vector<Socket*>::iterator endSo = masterServer.getSocket().end();
+	for (; begSo != endSo; ++begSo) {
+		delete *begSo;
+	}
+
+	//closing and deleting client info
+	std::map<int,Client*>::iterator begCl = masterServer.getClients().begin();
+	std::map<int,Client*>::iterator endCl = masterServer.getClients().end();
+	for (; begCl != endCl; ++begCl) {
+		close(begCl->first);
+		delete begCl->second;
+	}
+
+	//freeing the struct server
+	std::vector<Server*>::iterator beg = masterServer.getServers().begin();
+	std::vector<Server*>::iterator end = masterServer.getServers().end();
+
+	for (; beg != end; ++beg) {
+		std::vector<Location*>::iterator begLo = (*beg)->getLocation().begin();
+		std::vector<Location*>::iterator endLo = (*beg)->getLocation().end();
+		for (; begLo != endLo; ++begLo)
+			delete *begLo;
+		delete *beg;
+	}
+
+	close(masterServer.getEpollFd());
 }

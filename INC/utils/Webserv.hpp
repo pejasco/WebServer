@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 10:19:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/02 11:24:23 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/07 13:21:26 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <csignal>
 #include <sys/epoll.h>
 #include <fcntl.h>
 #include <unistd.h>

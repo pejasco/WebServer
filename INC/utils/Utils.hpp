@@ -6,21 +6,23 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/06 11:07:54 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/07 14:04:27 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include "Server.hpp"
+#include "ServerManager.hpp"
 
 class Server;
 class Location;
+class ServerManager;
 
 int convertInt(const std::string &str);
 void printServer(Server &server);
 void printLocation(Location &location);
 bool isMessageCompleted(const std::string &request);
+void cleanShutdown(ServerManager &masterServer);
 
 #endif

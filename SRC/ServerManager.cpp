@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/06 16:39:58 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/07 15:43:45 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ ServerManager::ServerManager(const std::string &inputFilename) : running(true), 
 	setHostPort();
 	startSockets();
 	startEpoll();
-	serverMonitoring();
 	
 	//check on error of the config file (ex: incorrect format, missing essential elements) 
 	// --> can be place before the call of the object in main ??
@@ -58,29 +57,29 @@ ServerManager::ServerManager(const std::string &inputFilename) : running(true), 
 }
 
 ServerManager::~ServerManager() {
-	//closing epoll instance
-	close(epoll_fd);
+	// //closing epoll instance
+	// close(epoll_fd);
 
-	//closing socket_fd from the servers and freeing the struct
-	std::vector<Socket*>::iterator begSo = sockets.begin();
-	std::vector<Socket*>::iterator endSo = sockets.end();
-	for (; begSo != endSo; ++begSo) {
-		delete *begSo;
-	}
+	// //closing socket_fd from the servers and freeing the struct
+	// std::vector<Socket*>::iterator begSo = sockets.begin();
+	// std::vector<Socket*>::iterator endSo = sockets.end();
+	// for (; begSo != endSo; ++begSo) {
+	// 	delete *begSo;
+	// }
 
-	//closing and deleting client info
-	std::map<int,Client*>::iterator begCl = clients.begin();
-	std::map<int,Client*>::iterator endCl = clients.end();
-	for (; begCl != endCl; ++begCl) {
-		close(begCl->first);
-		delete begCl->second;
-	}
+	// //closing and deleting client info
+	// std::map<int,Client*>::iterator begCl = clients.begin();
+	// std::map<int,Client*>::iterator endCl = clients.end();
+	// for (; begCl != endCl; ++begCl) {
+	// 	close(begCl->first);
+	// 	delete begCl->second;
+	// }
 
-	//freeing the struct server
-	std::vector<Server*>::iterator beg = servers.begin();
-	std::vector<Server*>::iterator end = servers.end();
-	for (; beg != end; ++beg)
-		delete *beg;
+	// //freeing the struct server
+	// std::vector<Server*>::iterator beg = servers.begin();
+	// std::vector<Server*>::iterator end = servers.end();
+	// for (; beg != end; ++beg)
+	// 	delete *beg;
 
 
 	std::cout << BOLD RED "Closing MasterServer\n" RESET;
@@ -106,6 +105,11 @@ void ServerManager::setHostPort() {
 	}
 }
 
+void ServerManager::setRunning(int inputRunning) {
+	if (inputRunning)
+		running = false;
+}
+
 /********/
 /*GETTER*/
 /********/
@@ -113,11 +117,17 @@ void ServerManager::setHostPort() {
 std::vector<Server*> &ServerManager::getServers() {
 	return servers;
 };
-// std::map<int, std::string> &ServerManager::getHostPort() {
-// 	return host_port;
-// };
+std::map<std::string, std::string> &ServerManager::getHostPort() {
+	return host_port;
+};
 std::vector<Socket*> &ServerManager::getSocket() {
 	return sockets;
+};
+std::map<int,Client*> &ServerManager::getClients() {
+	return clients;
+};
+int ServerManager::getEpollFd() {
+	return epoll_fd;
 };
 
 
@@ -276,7 +286,7 @@ void ServerManager::startSockets() {
 /****************/
 void ServerManager::startEpoll() {
 	/*STEP1 -- creation of the epoll instance*/
-	epoll_fd = epoll_create(sockets.size()); // nb of socket_fd to monitor (BUT NOT IN USE NOWADAYS -- epoll_create1())
+	epoll_fd = epoll_create(4096); // nb of socket_fd to monitor (BUT NOT IN USE NOWADAYS -- epoll_create1())
 	if (epoll_fd == -1) {
 		std::cerr << "Error pn epoll creation\n";
 		return ;
@@ -361,6 +371,7 @@ void ServerManager::createNewClientConnection() {
 /* the function can receive the message request and start analysing it */
 /****************/
 void ServerManager::existingClientConnection(Client *currentClient) {
+	(void)currentClient;
 	bool message_completed = false;
 	std::string request;
 	
@@ -385,8 +396,8 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 	/**SEND THE RESPOND TO THE CLIENT**/
 	
 	/********DEBUGGING*********/
-	const char* response = "HTTP/1.1 200 OK\r\n\r\nYooooooooooooooooo!";
-	ssize_t bytes_sent = send(currentClient->getClientFd(), response, strlen(response), 0);
+	const char* response = "HTTP/1.1 200 OK\r\nContent-Length: 19\r\n\r\nYooooooooooooooooo!";
+	ssize_t bytes_sent = send(currentFd, response, strlen(response), 0);
 	if (bytes_sent == 0)
 		std::cerr << "Error when sending response to client" << std::endl;
 	/********DEBUGGING*********/
@@ -404,3 +415,7 @@ bool ServerManager::cleanClient(int currentFd) {
 	} else
 		return false;
 }
+
+void ServerManager::shutdown() {
+	cleanShutdown(*this);
+};
