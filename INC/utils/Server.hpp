@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/30 15:19:35 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/07 15:13:27 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,9 @@ class Server {
 		bool getKeepAlive();
 		
 		//METHOD//
-		int getNewSocket() const;
-		void launch();
-		int closeServer();
+		// int getNewSocket() const;
+		// void launch();
+		// int closeServer();
 		
 		
 	private:

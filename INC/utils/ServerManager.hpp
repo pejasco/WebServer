@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/06 16:38:08 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/07 14:00:52 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,30 +18,40 @@
 #include "Socket.hpp"
 #include "Client.hpp"
 
+
 #define MAX_EVENTS 42
 
 // typedef typename std::vector<Server*>::iterator Iterator;
+class Server;
+class Location;
+class Client;
+class Socket;
 
 class ServerManager {
 	public:
 		ServerManager(const std::string &inputFilename);
 		~ServerManager();
+
+		void setHostPort();
+		void setRunning(int inputRunning);
+		
+		std::vector<Server*> &getServers();
+		std::map<std::string, std::string> &getHostPort();
+		std::vector<Socket*> &getSocket();
+		std::map<int,Client*> &getClients();
+		int getEpollFd();
 		
 		int	readFile(std::fstream &configFile);
 		void parseServer(std::string &line, Server *currentServer, std::fstream &configFile);
 		void parseLocation(std::string &line, Server *currentServer, std::fstream &configFile);
-		void setHostPort();
 		void startSockets();
 		void startEpoll();
 		void serverMonitoring();
 		void createNewClientConnection();
 		void existingClientConnection(Client *currentClient);
 		bool cleanClient(int currentFd);
-		
+		void shutdown();
 
-		std::vector<Server*> &getServers();
-		std::map<int, std::string> &getHostPort();
-		std::vector<Socket*> &getSocket();
 		
 	private:
 		std::vector<Server*> servers;
