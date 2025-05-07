@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/07 17:40:28 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/07 22:32:16 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,11 @@ class HTTPRequest {
 		HTTPRequest();
 		~HTTPRequest();
 	
+                
+                void parseRequest(const std::string& request);
+
                 //Setters:
-                void setMet(const MET met_code);
+                void setMet(const std::string method);
                 void setPath(const std::string& path);
                 void setVersion(const std::string& version);
                 void setHost(const std::string& host);
@@ -115,3 +118,4 @@ class HTTPRequest {
 
 
 };
+

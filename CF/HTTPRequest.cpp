@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/07 10:34:43 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/07 22:32:14 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,37 @@ int Accept::global_index_ = 0;
 int HTTPRequest::global_index_ = 0;
 
 
+
+
+//Parse
+void HTTPRequest::parseRequest(const std::string& request){
+    std::string name;
+
+    size_t pos = request.find(" ");
+    if (pos != std::string::npos)
+    {
+        std::string method = request.substr(0, pos);
+        try
+        {
+            setMet("INVALID_METHOD");}
+        catch (const std::invalid_argument& e)
+        {
+            std::cerr << "Error: " << e.what() << std::endl;}
+    }
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
 //<<Accept>>
 Accept::Accept(std::string type, std::string subtype, float piority) : type_(type), subtype_(type), piority_(piority){}
 Accept::~Accept(){}
@@ -40,9 +71,16 @@ HTTPRequest::~HTTPRequest(){}
 
 
 //Setters
-void HTTPRequest::setMet(const MET met_code)
+void HTTPRequest::setMet(const std::string  method)
 {
-    method_ = met_code;
+    if (method == "GET")
+        method_ = GET;
+    else if (method == "POST")
+        method_ = POST;
+    else if (method == "DELETE")
+        method_ = DELETE;
+    else
+        throw std::invalid_argument("Invalid HTTP method: " + method);
 }
 
 void HTTPRequest::setPath(const std::string& path)
@@ -193,31 +231,31 @@ const std::map <std::string, std::string>& HTTPRequest::getUnknown()
 // }
 
 
-int main(){
-    int server_fd, client_fd;
-    struct sockaddr_in address;
-    char buffer_cstr[BUFFER_SIZE];
-    socklen_t addlen = sizeof(address);
+// int main(){
+//     int server_fd, client_fd;
+//     struct sockaddr_in address;
+//     char buffer_cstr[BUFFER_SIZE];
+//     socklen_t addlen = sizeof(address);
 
-    //Create socket
-    // server_fd = socket(AF_INET, SOCK_STREAM, 0);
+//     //Create socket
+//     // server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-    int total = 0;
+//     int total = 0;
 
-    while (1) {
-        //it returns the number of bytes received, or -1 if an error occurred. In the 
-        // event of an error, errno is set to indicate the error.
-        // when a stream socker peer has per
+//     while (1) {
+//         //it returns the number of bytes received, or -1 if an error occurred. In the 
+//         // event of an error, errno is set to indicate the error.
+//         // when a stream socker peer has per
 
-        int bytes = recv(client_fd, buffer_cstr + total, BUFFER_SIZE - 1 - total, 0);
-        if (bytes <= 0) break;
-        total += bytes;
-        buffer_cstr[total] = '\0';
-        if (ft_strstr(buffer_cstr,"\r\n\r\n")) break;
-    }
-    std::string buffer = buffer_cstr; 
-    i
+//         int bytes = recv(client_fd, buffer_cstr + total, BUFFER_SIZE - 1 - total, 0);
+//         if (bytes <= 0) break;
+//         total += bytes;
+//         buffer_cstr[total] = '\0';
+//         if (ft_strstr(buffer_cstr,"\r\n\r\n")) break;
+//     }
+//     std::string buffer = buffer_cstr; 
+//     i
 
 
 
-}
+// }
