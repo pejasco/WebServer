@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/06 21:03:49 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/07 10:34:43 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,19 @@
 // #define PORT 8080
 #define BUFFER_SIZE 4096
 
+
+//<<static variables>>
+int Accept::global_index_ = 0;
 int HTTPRequest::global_index_ = 0;
 
+
+//<<Accept>>
+Accept::Accept(std::string type, std::string subtype, float piority) : type_(type), subtype_(type), piority_(piority){}
+Accept::~Accept(){}
+
+
+
+//<<HTTPRequest>>
 HTTPRequest::HTTPRequest() : instance_index_(global_index_++){}
 
 HTTPRequest::~HTTPRequest(){}
@@ -92,8 +103,62 @@ void HTTPRequest::setContent(const std::string& content)
 
 }
 
+void HTTPRequest::setUnknown(const std::string& buffer)
+{
 
 
+    
+}
+
+const std::string& HTTPRequest::getPath()
+{
+    return path_;
+}
+
+const std::string& HTTPRequest::getVersion()
+{
+    return version_;
+}
+
+const std::string& HTTPRequest::getHost()
+{
+    return host_;
+}
+
+const std::string& HTTPRequest::getUserAgent()
+{
+    return user_agent_;
+}
+
+const std::vector<Accept>& HTTPRequest::getAccept()
+{
+    return accept_list_;
+}
+
+const std::map<std::string, int>& HTTPRequest::getAcceptLanguage()
+{
+    return accept_language_;
+}
+
+const bool HTTPRequest::getConnection()
+{
+    return connection_;
+}
+
+const std::pair<std::string, std::string>& HTTPRequest::getAuthorisation()
+{
+    return authorisation_;
+}
+
+const Content& HTTPRequest::getContent()
+{
+    return content_;
+}
+
+const std::map <std::string, std::string>& HTTPRequest::getUnknown()
+{
+    return unknown_;
+}
 
 
 

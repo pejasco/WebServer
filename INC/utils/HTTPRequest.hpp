@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/06 21:01:07 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/07 12:10:53 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,17 +33,16 @@
 
 class Content;
 
-class Accept
+struct Accept
 {
-        public:
-                Accept(std::string type, std::string subtype, float piority);
-                ~Accept();
+        Accept(std::string type, std::string subtype, float piority);
+        ~Accept();
 
-
-        private:
-                std::string type_;
-                std::string subtype_;
-                float piority_;
+        static int global_index_; //dun know if it is useful
+        int instance_index_;
+        std::string type_;
+        std::string subtype_;
+        float piority_;
 
 };
 
@@ -64,13 +63,19 @@ class HTTPRequest {
                 // void setCookie(const std::string& version);
                 void setAuthorization(const std::string& version);
                 void setContent(const std::string& content);
+                void setUnknown(const std::string& buffer);
 
                 //Getters
-                const std::string&
-                const std::string&
-                const std::string&
-                const std::string&
-                const std::string user               
+                const std::string& getPath();
+                const std::string& getVersion();
+                const std::string& getHost();
+                const std::string& getUserAgent();
+                const std::vector<Accept>& getAccept();
+                const std::map<std::string, int>& getAcceptLanguage();
+                const bool getConnection();
+                const std::pair<std::string, std::string>& getAuthorisation();
+                const Content& getContent();
+                const std::map <std::string, std::string>& getUnknown();
 
 	private:
                 static int global_index_; //dun know if it is useful
@@ -84,9 +89,9 @@ class HTTPRequest {
                 std::string user_agent_; //User-Agent identifies the client software
                 std::vector<Accept> accept_list_; //Accept: media types the client can process
                 std::map<std::string, int> accept_language_; //Accept-language:  en-US,en;q=0.5
-                std::string connection_; // Connection: keep-alive
+                bool connection_; // Connection: keep-alive
                 // std::string cookie_; //Cookie: session=abc123; user=john
-                std::pair<std::string, std::string> authorization_; //Authorization: Bearer p@sswoRd
+                std::pair<std::string, std::string> authorisation_; //Authorization: Bearer p@sswoRd
 
 
         // POST
