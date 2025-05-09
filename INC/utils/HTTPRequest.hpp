@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/07 22:32:16 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/08 18:01:53 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,13 +46,13 @@ struct Accept
 
 };
 
-struct Sec_Fetch
-{
-        std::string sec_fetch_dect_;
-        std::string sec_fetch_mode_;
-        std::string sec_fetch_site_;
-        std::string sec_fetch_user_;
-};
+// struct Sec_Fetch
+// {
+//         std::string sec_fetch_dect_;
+//         std::string sec_fetch_mode_;
+//         std::string sec_fetch_site_;
+//         std::string sec_fetch_user_;
+// };
 
 
 
@@ -61,9 +61,6 @@ class HTTPRequest {
 	public:
 		HTTPRequest();
 		~HTTPRequest();
-	
-                
-                void parseRequest(const std::string& request);
 
                 //Setters:
                 void setMet(const std::string method);
@@ -83,13 +80,19 @@ class HTTPRequest {
                 const std::string& getPath();
                 const std::string& getVersion();
                 const std::string& getHost();
-                const std::string& getUserAgent();
+                const std::map<std::string, std::string>& getUserAgent();
                 const std::vector<Accept>& getAccept();
                 const std::map<std::string, int>& getAcceptLanguage();
                 const bool getConnection();
                 const std::pair<std::string, std::string>& getAuthorisation();
                 const Content& getContent();
                 const std::map <std::string, std::string>& getUnknown();
+
+                //Parser
+                void parseRequestHeader(std::istringstream& stream);
+                void parseRequestLine(const std::string& request_line);
+                void parseRequest(const std::string& request);
+
 
 	private:
                 static int global_index_; //dun know if it is useful
@@ -100,14 +103,14 @@ class HTTPRequest {
                 std::string path_; // / //path/file.html
                 std::string version_; //HTTP1.1
                 std::string host_; //Host: example.com
-                std::string user_agent_; //User-Agent identifies the client software
+                std::map<std::string, std::string> user_agent_; //User-Agent identifies the client software
                 std::vector<Accept> accept_list_; //Accept: media types the client can process
                 std::map<std::string, int> accept_language_; //Accept-language:  en-US,en;q=0.5
                 std::vector<std::string> accept_encoding_; //Accept-encoding: gzip, deflate, br, zstd
                 bool connection_; // Connection: keep-alive
                 // std::string cookie_; //Cookie: session=abc123; user=john
                 
-                Sec_Fetch fetch_data_;
+                // Sec_Fetch fetch_data_;
                 std::vector<std::string> priority;
                 std::pair<std::string, std::string> authorisation_; //Authorization: Bearer p@sswoRd
 

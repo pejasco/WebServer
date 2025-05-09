@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/07 22:32:14 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/08 18:21:31 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,38 +26,6 @@
 int Accept::global_index_ = 0;
 int HTTPRequest::global_index_ = 0;
 
-
-
-
-//Parse
-void HTTPRequest::parseRequest(const std::string& request){
-    std::string name;
-
-    size_t pos = request.find(" ");
-    if (pos != std::string::npos)
-    {
-        std::string method = request.substr(0, pos);
-        try
-        {
-            setMet("INVALID_METHOD");}
-        catch (const std::invalid_argument& e)
-        {
-            std::cerr << "Error: " << e.what() << std::endl;}
-    }
-
-
-
-
-
-}
-
-
-
-
-
-
-
-
 //<<Accept>>
 Accept::Accept(std::string type, std::string subtype, float piority) : type_(type), subtype_(type), piority_(piority){}
 Accept::~Accept(){}
@@ -71,8 +39,7 @@ HTTPRequest::~HTTPRequest(){}
 
 
 //Setters
-void HTTPRequest::setMet(const std::string  method)
-{
+void HTTPRequest::setMet(const std::string  method){
     if (method == "GET")
         method_ = GET;
     else if (method == "POST")
@@ -83,43 +50,38 @@ void HTTPRequest::setMet(const std::string  method)
         throw std::invalid_argument("Invalid HTTP method: " + method);
 }
 
-void HTTPRequest::setPath(const std::string& path)
-{
+void HTTPRequest::setPath(const std::string& path){
     path_ = path;
 }
 
-void HTTPRequest::setVersion(const std::string& version)
-{
+void HTTPRequest::setVersion(const std::string& version){
     version_ = version;
 }
 
-void HTTPRequest::setHost(const std::string& host)
-{
+void HTTPRequest::setHost(const std::string& host){
     host_ = host;
 
 }
 
-void HTTPRequest::setUserAgent(const std::string& agent)
-{
-    user_agent_ = agent;
+void HTTPRequest::setUserAgent(const std::string& agents){
+    
 
+
+    
 }
 
-void HTTPRequest::setAccept(const std::string& media_type)
-{
+void HTTPRequest::setAccept(const std::string& media_type){
     
 }
 
 
-void HTTPRequest::setAcceptLanguage(const std::string& languages)
-{
+void HTTPRequest::setAcceptLanguage(const std::string& languages){
 
 
 
 }
 
-void HTTPRequest::setConnection(const std::string& connection)
-{
+void HTTPRequest::setConnection(const std::string& connection){
 
 
 }
@@ -127,77 +89,163 @@ void HTTPRequest::setConnection(const std::string& connection)
 // void setCookie(const std::string& version)
 
 
-void HTTPRequest::setAuthorization(const std::string& version)
-{
+void HTTPRequest::setAuthorization(const std::string& version){
 
 
 }
 
 
-void HTTPRequest::setContent(const std::string& content)
-{
+void HTTPRequest::setContent(const std::string& content){
 
 
 
 }
 
-void HTTPRequest::setUnknown(const std::string& buffer)
-{
+void HTTPRequest::setUnknown(const std::string& buffer){
 
 
     
 }
 
-const std::string& HTTPRequest::getPath()
-{
+const std::string& HTTPRequest::getPath(){
     return path_;
 }
 
-const std::string& HTTPRequest::getVersion()
-{
+const std::string& HTTPRequest::getVersion(){
     return version_;
 }
 
-const std::string& HTTPRequest::getHost()
-{
+const std::string& HTTPRequest::getHost(){
     return host_;
 }
 
-const std::string& HTTPRequest::getUserAgent()
-{
+const std::map<std::string, std::string>& HTTPRequest::getUserAgent(){
     return user_agent_;
 }
 
-const std::vector<Accept>& HTTPRequest::getAccept()
-{
+const std::vector<Accept>& HTTPRequest::getAccept(){
     return accept_list_;
 }
 
-const std::map<std::string, int>& HTTPRequest::getAcceptLanguage()
-{
+const std::map<std::string, int>& HTTPRequest::getAcceptLanguage(){
     return accept_language_;
 }
 
-const bool HTTPRequest::getConnection()
-{
+const bool HTTPRequest::getConnection(){
     return connection_;
 }
 
-const std::pair<std::string, std::string>& HTTPRequest::getAuthorisation()
-{
+const std::pair<std::string, std::string>& HTTPRequest::getAuthorisation(){
     return authorisation_;
 }
 
-const Content& HTTPRequest::getContent()
-{
+const Content& HTTPRequest::getContent(){
     return content_;
 }
 
-const std::map <std::string, std::string>& HTTPRequest::getUnknown()
-{
+const std::map <std::string, std::string>& HTTPRequest::getUnknown(){
     return unknown_;
 }
 
+//Parser
+
+void HTTPRequest::parseRequestLine(const std::string& request_line){
+    std::string method, path, version;
+    
+    std::istringstream stream(request_line);
+    stream >> method >> path >> version;
+
+    setMet(method);
+    setPath(path);
+    setVersion(version);
+}
+
+void HTTPRequest::parseRequestHeader(std::istringstream& stream){
+    std::string line;
+    size_t pos_begin;
+    size_t pos_end;
+
+    while (std::getline(stream, line))
+    {
+        //GET
+        if (line.find("Host") != std::string::npos){
+            if ((pos_begin = line.rfind(":")) != std::string::npos){
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string host = line.substr(pos_begin, std::string::npos);
+                setHost(host);}
+        } else if (line.find("Connection") != std::string::npos){
+            if ((pos_begin = line.rfind(":")) != std::string::npos){
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string host = line.substr(pos_begin, std::string::npos);
+                setConnection(host);}
+
+        } else if (line.find("User-Agent") != std::string::npos){   
+            if ((pos_begin = line.rfind(":")) != std::string::npos){
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string host = line.substr(pos_begin, std::string::npos);
+                setHost(host);}
+
+
+        } else if (line.find("Accept") != std::string::npos){
+            if ((pos_begin = line.rfind(":")) != std::string::npos){
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string host = line.substr(pos_begin, std::string::npos);
+                setHost(host);}
+
+
+        } else if (line.find("Referer") != std::string::npos){
+            if ((pos_begin = line.rfind(":")) != std::string::npos){
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string host = line.substr(pos_begin, std::string::npos);
+                setHost(host);}
+
+
+        } else if (line.find("Accept-Encoding") != std::string::npos){
+            if ((pos_begin = line.rfind(":")) != std::string::npos){
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string host = line.substr(pos_begin, std::string::npos);
+                setHost(host);}
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+void HTTPRequest::parseRequest(const std::string& request){
+    std::istringstream stream(request);
+    std::string request_line;
+
+    std::getline(stream, request_line);
+    parseRequestLine(request_line);
+    parseRequestHeader(stream);
+
+
+
+    // size_t pos = request.find(" ");
+    // if (pos != std::string::npos)
+    // {
+    //     std::string method = request.substr(0, pos);
+    //     try
+    //     {
+    //         setMet("INVALID_METHOD");}
+    //     catch (const std::invalid_argument& e)
+    //     {
+    //         std::cerr << "Error: " << e.what() << std::endl;}
+    // }
+
+}
 
 
 
