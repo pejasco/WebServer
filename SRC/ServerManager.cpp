@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/07 15:48:05 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/09 12:22:40 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -346,6 +346,7 @@ void ServerManager::createNewClientConnection() {
 	temp_client_addr_len = sizeof(temp_client_addr);
 	int temp_fd = accept(currentFd, (struct sockaddr*)&temp_client_addr, &temp_client_addr_len);
 	if (temp_fd == -1) {
+		 //at this level, block so not accepting this client at all to avoid infinite loop or comment printing 
 		std::cerr << "Error accepting connection: " << strerror(errno) << std::endl;
 		return;
 	}
