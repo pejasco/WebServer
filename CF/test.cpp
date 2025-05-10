@@ -16,17 +16,34 @@
 // }
 
 
+// int main()
+// {
+//     std::string accept = "image/avif,image/webp,image/apng,image/svg+xml,image/,/*;q=0.8";
+//     HTTPRequest req;
+//     req.setAccept(accept); // Corrected method name
+    
+//     for (std::vector<Accept>::const_iterator it = req.getAccept().begin(); 
+//          it != req.getAccept().end(); it++) {
+//         std::cout << it->type_ << "\n";
+//         std::cout << it->subtype_ << "\n";
+//         std::cout << it->piority_ << "\n";
+//     }
+    
+//     return (0);
+// }
+
+
 int main()
 {
-    std::string accept = "image/avif,image/webp,image/apng,image/svg+xml,image/,/*;q=0.8";
+    std::string accept = "en-GB,en;q=0.9";
     HTTPRequest req;
-    req.setAccept(accept); // Corrected method name
+    req.setAcceptLanguage(accept); // Corrected method name
     
-    for (std::vector<Accept>::const_iterator it = req.getAccept().begin(); 
-         it != req.getAccept().end(); it++) {
-        std::cout << it->type_ << "\n";
-        std::cout << it->subtype_ << "\n";
-        std::cout << it->piority_ << "\n";
+    for (std::map<std::string, float>::const_iterator it = req.getAcceptLanguage().begin(); 
+         it != req.getAcceptLanguage().end(); it++) {
+        std::cout << it->first << "\n";
+        std::cout << it->second << "\n";
+        std::cout << "xxxxxxxxxxx" << "\n";
     }
     
     return (0);

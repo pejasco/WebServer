@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/09 19:42:24 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/10 01:38:52 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,8 +130,8 @@ void HTTPRequest::setAccept(const std::string& media_types){
             // Extract piority
             if (media_type.find("q=") != std::string::npos) {
                 pos_begin = media_type.find("q=") + 2;
-                std::string q_value = media_type.substr(pos_begin);
-                std::stringstream ss(q_value);
+                std::string q = media_type.substr(pos_begin);
+                std::stringstream ss(q);
                 ss >> priority;
             }
         }
@@ -146,9 +146,30 @@ void HTTPRequest::setAccept(const std::string& media_types){
 }
 
 void HTTPRequest::setAcceptLanguage(const std::string& languages){
+    std::stringstream iss(languages);
+    std::string language;
+    size_t pos_begin;
+    size_t pos_end;
+    std::string lang;
+    float priority;
 
+    while(getline(iss, language, ',')){
+        priority = 1.0;
 
-
+        if (language.find(';') == std::string::npos)
+            lang = language;
+        else {
+            pos_end = language.find(';');
+            lang = language.substr(0, pos_end);
+            if (language.find("q=") != std::string::npos){
+                pos_begin = language.find("q=") + 2;
+                std::string q = language.substr(pos_begin);
+                std::stringstream ss(q);
+                ss >> priority;
+            }
+        }
+        accept_language_[lang] = priority;
+    }
 }
 
 void HTTPRequest::setReferer(const std::string& referer){
@@ -156,8 +177,12 @@ void HTTPRequest::setReferer(const std::string& referer){
 }
 
 void HTTPRequest::setAcceptEncoding(const std::string& encoding){
+    std::istringstream iss(encoding);
+    std::string line;
 
-
+    while (std::getline(iss, line, ',')){
+        accept_encoding_.push_back(line);
+    }
 }
 
 void HTTPRequest::setConnection(const std::string& connection){
@@ -206,7 +231,7 @@ const std::vector<Accept>& HTTPRequest::getAccept(){
     return accept_list_;
 }
 
-const std::map<std::string, int>& HTTPRequest::getAcceptLanguage(){
+const std::map<std::string, float>& HTTPRequest::getAcceptLanguage(){
     return accept_language_;
 }
 
