@@ -120,8 +120,9 @@ class HTTPRequest {
                 std::pair<std::string, std::string> authorisation_; //Authorization: Bearer p@sswoRd
 
         // POST
+                bool content_flag_
                 Content content_;
-                std::map <std::string, std::string> unknown_;
+                std::map <std::string, std::string> unknown_; 
         //
 
 

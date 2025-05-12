@@ -81,7 +81,6 @@ class Content {
                 static int global_index_; //dun know if it is useful
 		int instance_index_;
                 std::pair<std::string, std::string> content_type_; //Content-Type: application/x-www-form-urlencoded (!!!this is outer content-type for the whole body)
-                std::string boundary_; //Content-Type: multipart/form-dat; boundary=--WebKitFormBoundaryXYZ
         /*
         *       **Text and WebContent
         *       text/plain
@@ -103,7 +102,10 @@ class Content {
         *      video/mp4
         *      
         *       */
+                bool body_flag_;
+                bool cd_flag_;
                 int content_length_; //Content-Length: 13
+                std::string boundary_; //Content-Type: multipart/form-dat; boundary=--WebKitFormBoundaryXYZ
                 std::map<std::string, std::string> body_;
                 std::vector<ContentDisposition_> CDs_list_;
 };
