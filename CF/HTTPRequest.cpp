@@ -308,13 +308,11 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
                 std::string referer = line.substr(pos_begin, std::string::npos);
                 setReferer(referer);}
 
-
         } else if (line.find("Accept-Encoding") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string encoding = line.substr(pos_begin, std::string::npos);
                 setAcceptEncoding(encoding);}
-
 
         } else if (line.find("Accept-Language") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
@@ -322,8 +320,24 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
                 std::string languages = line.substr(pos_begin, std::string::npos);
                 setAcceptLanguage(languages);}
 
+        } 
+        // content related (only applicable to POST and DEL)
+          else if (line.find("Content-Type") != std::string::npos){
+            if ((pos_begin = line.rfind(":")) != std::string::npos){
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string cttype = line.substr(pos_begin, std::string::npos);
+                content_.setContentType(cttype));}
 
-        }
+        } else if (line.find("Content-T") != std::string::npos){
+            if ((pos_begin = line.rfind(":")) != std::string::npos){
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string cttype = line.substr(pos_begin, std::string::npos);
+                content_.setContentType(cttype));}
+
+        } 
+
+
+
 
         else
             return;

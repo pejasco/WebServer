@@ -1,0 +1,76 @@
+
+1. POST /submit-form HTTP/1.1 (Form Submission)
+Content-Type: application/x-www-form-urlencoded
+
+POST /submit-form HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 49
+
+username=john&password=secret&email=john%40example.com
+
+2. POST /upload HTTP/1.1 (File Upload)
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+This uses Content-Disposition extensively:
+
+POST /upload HTTP/1.1
+Host: example.com
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Length: 419
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+A profile picture
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="profile_pic"; filename="profile.jpg"
+Content-Type: image/jpeg
+
+[Binary image data]
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+3. POST /api/users HTTP/1.1 (JSON API)
+Content-Type: application/json
+
+This typically doesn't use Content-Disposition. Data is sent as JSON:
+POST /api/users HTTP/1.1
+Host: example.com
+Content-Type: application/json
+Content-Length: 91
+
+{
+  "username": "john",
+  "email": "john@example.com",
+  "role": "administrator"
+}
+
+4. POST /cgi-bin/process.php HTTP/1.1 (PHP CGI Script)
+Depending on what's being sent to the PHP script:
+
+For form data:
+
+POST /cgi-bin/process.php HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 27
+
+param1=value1&param2=value2
+
+For file upload to PHP script:
+
+POST /cgi-bin/process.php HTTP/1.1
+Host: example.com
+Content-Type: multipart/form-data; boundary=---------------------------12345
+Content-Length: 321
+
+-----------------------------12345
+Content-Disposition: form-data; name="action"
+
+process
+-----------------------------12345
+Content-Disposition: form-data; name="document"; filename="report.pdf"
+Content-Type: application/pdf
+
+[Binary PDF data]
+-----------------------------12345--
