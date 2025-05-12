@@ -85,7 +85,7 @@ class HTTPRequest {
                 const std::map<std::string, std::string>& getUserAgent();
                 const std::vector<Accept>& getAccept();
                 const std::vector<std::string>& getAcceptEncoding();
-                const std::map<std::string, int>& getAcceptLanguage();
+                const std::map<std::string, float>& getAcceptLanguage();
                 const bool getConnection();
                 const std::string& getReferer();
                 const std::pair<std::string, std::string>& getAuthorisation();
@@ -110,7 +110,7 @@ class HTTPRequest {
                 std::map<std::string, std::string> user_agent_; //User-Agent identifies the client software
                 std::vector<Accept> accept_list_; //Accept: media types the client can process
                 std::string referer_;
-                std::map<std::string, int> accept_language_; //Accept-language:  en-US,en;q=0.5
+                std::map<std::string, float> accept_language_; //Accept-language:  en-US,en;q=0.5
                 std::vector<std::string> accept_encoding_; //Accept-encoding: gzip, deflate, br, zstd
                 bool connection_; // Connection: keep-alive
                 // std::string cookie_; //Cookie: session=abc123; user=john

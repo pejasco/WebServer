@@ -326,16 +326,16 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string cttype = line.substr(pos_begin, std::string::npos);
-                content_.setContentType(cttype));}
+                content_.setContentType(cttype);}
 
-        } else if (line.find("Content-T") != std::string::npos){
+        } else if (line.find("Content-Length") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string cttype = line.substr(pos_begin, std::string::npos);
-                content_.setContentType(cttype));}
+                std::string ctlength = line.substr(pos_begin, std::string::npos);
+                content_.setContentLength(ctlength);}
 
-        } 
-
+        } else if (line.find(""))
+        
 
 
 

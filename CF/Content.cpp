@@ -30,7 +30,16 @@ Content::~Content(){}
 
 //setters
 void Content::setContentType(const std::string& buffer){
+    size_t pos;
+    std::string type;
+    std::string subtype;
 
+    if ((pos = buffer.find('/')) != std::string::npos){
+        type = buffer.substr(0, pos);
+        subtype = buffer.substr(pos + 1);
+    }
+    content_type_.first = type;
+    content_type_.second = subtype;
 
 }
 
@@ -42,8 +51,8 @@ void Content::setBounday(const std::string& buffer){
 
 
 void Content::setContentLength(const std::string& buffer){
-
-
+    std::stringstream ss(buffer);
+    ss >> content_length_;
 
 }
 
