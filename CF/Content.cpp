@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/08 17:09:22 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/13 16:32:27 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,26 +29,41 @@ Content::Content() : instance_index_(global_index_++){}
 Content::~Content(){}
 
 //setters
+
+void Content::setBounday(const std::string& boundary){
+    size_t pos;
+    std::string tmp;
+
+    if ((pos = boundary.find("boundary=----")) != std::string::npos){
+        tmp = boundary.substr(pos + 10);
+    }
+    boundary_ = tmp;
+}
+
 void Content::setContentType(const std::string& buffer){
     size_t pos;
+    size_t pos_end;
     std::string type;
     std::string subtype;
+    std::string boundary;
 
-    if ((pos = buffer.find('/')) != std::string::npos){
+
+    if ((pos = buffer.find('/')) != std::string::npos) {
         type = buffer.substr(0, pos);
-        subtype = buffer.substr(pos + 1);
+        if ((pos_end = buffer.find(';', pos)) != std::string::npos) {
+            subtype = buffer.substr(pos + 1, pos_end - pos - 1); 
+            pos = pos_end + 1; // Move past ';'
+            if ((pos = buffer.find("boundary=", pos)) != std::string::npos) {
+                boundary = buffer.substr(pos);
+                setBounday(boundary);
+            }
+        } else
+            subtype = buffer.substr(pos + 1);
     }
     content_type_.first = type;
     content_type_.second = subtype;
 
 }
-
-void Content::setBounday(const std::string& buffer){
-
-
-
-}
-
 
 void Content::setContentLength(const std::string& buffer){
     std::stringstream ss(buffer);

@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/09 12:45:46 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/13 17:26:11 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ class HTTPRequest {
                 const std::map <std::string, std::string>& getUnknown();
 
                 //Parser
+                void parseContent(const std::string& body_line);
                 void parseRequestHeader(std::istringstream& stream);
                 void parseRequestLine(const std::string& request_line);
                 void parseRequest(const std::string& request);
@@ -120,7 +121,7 @@ class HTTPRequest {
                 std::pair<std::string, std::string> authorisation_; //Authorization: Bearer p@sswoRd
 
         // POST
-                bool content_flag_
+                bool content_flag_;
                 Content content_;
                 std::map <std::string, std::string> unknown_; 
         //

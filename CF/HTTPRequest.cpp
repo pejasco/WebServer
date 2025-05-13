@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/10 01:38:52 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/13 17:26:22 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ Accept::~Accept(){}
 
 
 //<<HTTPRequest>>
-HTTPRequest::HTTPRequest() : instance_index_(global_index_++){}
+HTTPRequest::HTTPRequest() : instance_index_(global_index_++), content_flag_(false){}
 
 HTTPRequest::~HTTPRequest(){}
 
@@ -43,7 +43,10 @@ void HTTPRequest::setMet(const std::string  method){
     if (method == "GET")
         method_ = GET;
     else if (method == "POST")
+    {
         method_ = POST;
+        content_flag_ = true; //indicating there is content
+    }
     else if (method == "DELETE")
         method_ = DELETE;
     else
@@ -269,6 +272,17 @@ void HTTPRequest::parseRequestLine(const std::string& request_line){
     setVersion(version);
 }
 
+
+void HTTPRequest::parseContent(const std::string& body_line)
+{
+
+
+    
+}
+
+
+
+
 void HTTPRequest::parseRequestHeader(std::istringstream& stream){
     std::string line;
     size_t pos_begin;
@@ -333,11 +347,10 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string ctlength = line.substr(pos_begin, std::string::npos);
                 content_.setContentLength(ctlength);}
+            
+        } else if (content_flag_ == true){
 
-        } else if (line.find(""))
-        
-
-
+        }
 
         else
             return;
