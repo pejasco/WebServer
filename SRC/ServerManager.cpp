@@ -346,6 +346,7 @@ void ServerManager::createNewClientConnection() {
 	temp_client_addr_len = sizeof(temp_client_addr);
 	int temp_fd = accept(currentFd, (struct sockaddr*)&temp_client_addr, &temp_client_addr_len);
 	if (temp_fd == -1) {
+		 //at this level, block so not accepting this client at all to avoid infinite loop or comment printing 
 		std::cerr << "Error accepting connection: " << strerror(errno) << std::endl;
 		return;
 	}
