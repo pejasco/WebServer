@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/13 17:26:11 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/14 14:15:30 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ class HTTPRequest {
                 void setUnknown(const std::string& buffer);
 
                 //Getters
+                const MET getMethod();
                 const std::string& getPath();
                 const std::string& getVersion();
                 const std::string& getHost();

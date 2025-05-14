@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/07 14:04:27 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/14 14:35:45 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,5 +24,6 @@ void printServer(Server &server);
 void printLocation(Location &location);
 bool isMessageCompleted(const std::string &request);
 void cleanShutdown(ServerManager &masterServer);
+int checkFile(const std::string &Path);
 
 #endif
