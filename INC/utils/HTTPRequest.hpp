@@ -122,6 +122,7 @@ class HTTPRequest {
 
         // POST
                 bool content_flag_;
+                bool cgi_flag_;
                 Content content_;
                 std::map <std::string, std::string> unknown_; 
         //

@@ -55,6 +55,8 @@ void HTTPRequest::setMet(const std::string  method){
 
 void HTTPRequest::setPath(const std::string& path){
     path_ = path;
+    if (path_.find("cgi")) ! \ 
+
 }
 
 void HTTPRequest::setVersion(const std::string& version){
@@ -275,7 +277,7 @@ void HTTPRequest::parseRequestLine(const std::string& request_line){
 
 void HTTPRequest::parseContent(const std::string& body_line)
 {
-
+    std::string
 
     
 }
@@ -284,7 +286,7 @@ void HTTPRequest::parseContent(const std::string& body_line)
 
 
 void HTTPRequest::parseRequestHeader(std::istringstream& stream){
-    std::string line;
+    std::string line;!
     size_t pos_begin;
     size_t pos_end;
 
@@ -348,10 +350,8 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
                 std::string ctlength = line.substr(pos_begin, std::string::npos);
                 content_.setContentLength(ctlength);}
             
-        } else if (content_flag_ == true){
-
-        }
-
+        } else if (content_flag_ == true)
+            HTTPRequest::parseContent(line);
         else
             return;
     }
