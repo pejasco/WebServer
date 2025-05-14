@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:36:56 by cofische          #+#    #+#             */
-/*   Updated: 2025/04/29 10:22:07 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/14 15:17:33 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,7 @@
 
 #include "Webserv.hpp"
 
-enum MET {
-	GET,
-	POST,
-	DELETE
-};
+
 
 class Location {
 	public:

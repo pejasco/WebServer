@@ -8,7 +8,10 @@ SRC = $(SRC_DIR)/Server.cpp \
       $(SRC_DIR)/Socket.cpp \
 	  $(SRC_DIR)/Location.cpp \
 	  $(SRC_DIR)/ServerManager.cpp \
+	  $(SRC_DIR)/HTTPRequest_test.cpp \
+	  $(SRC_DIR)/Content_test.cpp \
 	  $(SRC_DIR)/Client.cpp \
+	  $(SRC_DIR)/HTTPResponse.cpp \
 	  $(SRC_DIR)/Utils.cpp \
       $(SRC_DIR)/main.cpp 
 OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
@@ -18,6 +21,10 @@ INC = $(INC_DIR)/Colors.hpp \
 	  $(INC_DIR)/Server.hpp \
 	  $(INC_DIR)/Location.hpp \
 	  $(INC_DIR)/Client.hpp \
+	  $(INC_DIR)/MET.hpp \
+	  $(INC_DIR)/HTTPRequest_copy.hpp \
+	  $(INC_DIR)/HTTPResponse.hpp \
+	  $(INC_DIR)/Content_copy.hpp \
 	  $(INC_DIR)/Utils.hpp \
 	  $(INC_DIR)/ServerManager.hpp \
 

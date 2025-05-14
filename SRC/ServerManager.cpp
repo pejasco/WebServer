@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/14 12:35:57 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/14 18:00:56 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -389,18 +389,28 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 		}	
 	}
 	/**START THE HTTP READING NOW**/
-	
+	HTTPRequest currentRequest;
+	if (!request.empty()) {
+		currentRequest.parseRequest(request);
+		HTTPResponse currentResponse(currentRequest);
+		std::string response = currentResponse.getResponse();
+		ssize_t bytes_sent = send(currentFd, response.c_str(), strlen(response.c_str()), 0);
+		if (bytes_sent < 0) // to check as I got the error active when 0 with errno "ClientSuccess" so I change for -1
+			std::cerr << "Error when sending response to client" << strerror(errno) << std::endl;
+	}
 	/********DEBUGGING*********/
-	std::cout << "\nrequest: \n" << request << std::endl;
+	// std::cout << "\nrequest: \n" << request << std::endl;
 	/********DEBUGGING*********/
 	
 	/**SEND THE RESPOND TO THE CLIENT**/
 	
+
+	
 	/********DEBUGGING*********/
-	const char* response = "HTTP/1.1 200 OK\r\nContent-Length: 19\r\n\r\nYooooooooooooooooo!";
-	ssize_t bytes_sent = send(currentFd, response, strlen(response), 0);
-	if (bytes_sent == 0)
-		std::cerr << "Error when sending response to client" << std::endl;
+	// const char* response1 = "HTTP/1.1 200 OK\r\nContent-Length: 19\r\n\r\nYooooooooooooooooo!";
+	// ssize_t bytes_sent = send(currentFd, response1, strlen(response1), 0);
+	// if (bytes_sent == 0)
+	// 	std::cerr << "Error when sending response to client" << std::endl;
 	/********DEBUGGING*********/
 }
 

@@ -3,20 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/07 14:00:52 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/14 16:10:13 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVERMANAGER_HPP
 #define SERVERMANAGER_HPP
 
-#include "Webserv.hpp"
+// #include "Webserv.hpp"
 #include "Server.hpp"
 #include "Socket.hpp"
 #include "Client.hpp"
+// #include "HTTPRequest_copy.hpp"
+#include "HTTPResponse.hpp"
 
 
 #define MAX_EVENTS 42
