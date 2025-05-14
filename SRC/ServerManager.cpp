@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/07 15:48:05 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/14 12:35:57 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -388,7 +388,7 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 		}	
 	}
 	/**START THE HTTP READING NOW**/
-
+	
 	/********DEBUGGING*********/
 	std::cout << "\nrequest: \n" << request << std::endl;
 	/********DEBUGGING*********/

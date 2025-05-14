@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/07 15:22:56 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/14 14:36:58 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,4 +151,9 @@ void cleanShutdown(ServerManager &masterServer) {
 	}
 
 	close(masterServer.getEpollFd());
+}
+
+int checkFile(const std::string &Path) {
+	(void)Path;
+	return 200;	
 }
