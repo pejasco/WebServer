@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:03:14 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/02 10:28:16 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/14 17:44:45 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,8 @@ Socket::Socket(const std::string &serverIP, const std::string &serverPort) : sta
 	status = getaddrinfo(serverIP.c_str(), serverPort.c_str(), &hints, &result);
 	if (status == 0) {
 		if (setSocketFd())
-			std::cout << "Server listening on: " BOLD BLUE << serverIP << ":" << serverPort << RESET "\n";
+			;
+	// 		std::cout << "Server listening on: " BOLD BLUE << serverIP << ":" << serverPort << RESET "\n";		
 	}
 	freeaddrinfo(result);
 	
@@ -49,10 +50,10 @@ int Socket::setSocketFd() {
 		socketFd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 		/*DEBUGGING FOR IP VERSION*/
 		if (rp->ai_family == AF_INET) {
-			std::cout << "Creating IPv4 socket" << std::endl;
+			// std::cout << "Creating IPv4 socket" << std::endl;
 			// IPv4-specific code if needed
 		} else if (rp->ai_family == AF_INET6) {
-			std::cout << "Creating IPv6 socket" << std::endl;
+			// std::cout << "Creating IPv6 socket" << std::endl;
 			// IPv6-specific code if needed
 		}
 		/*DEBUGGING FOR IP VERSION*/

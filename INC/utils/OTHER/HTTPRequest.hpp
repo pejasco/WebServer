@@ -3,18 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/14 14:15:30 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/14 15:37:58 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "ServerManager.hpp"
+// #include "ServerManager.hpp"
 //#include "HTTPResponse.hpp"
-#include "Content.hpp"
+// #include "Content.hpp"
 
 //**define in Server
 // enum MET {

@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Content.cpp                                        :+:      :+:    :+:   */
+/*   Content_test.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/14 14:49:25 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/14 16:13:08 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../INC/utils/Content.hpp"
+#include "../INC/utils/HTTPResponse.hpp"
 
 //<<static variables>>
 int ContentDisposition_::global_index_ = 0;
@@ -73,15 +73,14 @@ void Content::setContentLength(const std::string& buffer){
 
 
 void Content::setBody(const std::string& buffer){
-
+    (void)buffer;
 
 
 }
 
 
 void Content::setCDs(const std::string& buffer){
-
-
+    (void)buffer;
 
 }
 
@@ -96,7 +95,7 @@ const std::string& Content::getBoundary(){
 }
 
 
-const int Content::getContentLength(){
+int Content::getContentLength(){
     return content_length_;
 }
 

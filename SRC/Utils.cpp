@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/14 14:36:58 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/14 17:40:28 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/ServerManager.hpp"
 #include "../INC/utils/Utils.hpp"
+#include <cstring>
 
 int convertInt(const std::string &str) {
 	int nb;
@@ -153,7 +154,32 @@ void cleanShutdown(ServerManager &masterServer) {
 	close(masterServer.getEpollFd());
 }
 
-int checkFile(const std::string &Path) {
-	(void)Path;
-	return 200;	
+std::string convertStr(int nb) {
+	std::stringstream str;
+	str << nb;
+	std::string newStr = str.str();
+	return newStr;
 }
+
+std::string getStatusStr(int status_code) {
+	//Harcode of the table for status code and status string
+	std::map<int, std::string> statusMessages;
+	statusMessages.insert(std::make_pair(200, "OK"));
+	statusMessages.insert(std::make_pair(204, "No Content"));
+	statusMessages.insert(std::make_pair(400, "Bad Request"));
+	statusMessages.insert(std::make_pair(401, "Unauthorized"));
+	statusMessages.insert(std::make_pair(404, "Not Found"));
+	statusMessages.insert(std::make_pair(405, "Method Not Allowed"));
+	statusMessages.insert(std::make_pair(415, "Unsupported Media Type"));
+	statusMessages.insert(std::make_pair(500, "Internal Server Error"));
+	statusMessages.insert(std::make_pair(502, "Bad Gateway"));
+	
+	std::map<int, std::string>::iterator beg = statusMessages.begin();
+	std::map<int, std::string>::iterator end = statusMessages.end();
+	for (; beg != end; ++beg) {
+		if (status_code == beg->first)
+			return beg->second;
+	}
+	return "error";
+}
+

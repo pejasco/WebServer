@@ -1,22 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
+/*   HTTPRequest_test.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/14 14:48:28 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/14 17:31:34 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string>
-// #include <iostream>
-// #include <unistd.h>
-// #include <netinet/in.h>
-#include "../INC/utils/HTTPRequest.hpp"
+#include "../INC/utils/HTTPResponse.hpp"
 
 // #define PORT 8080
 #define BUFFER_SIZE 4096
@@ -55,7 +49,7 @@ void HTTPRequest::setMet(const std::string  method){
 
 void HTTPRequest::setPath(const std::string& path){
     path_ = path;
-    if (path_.find("cgi")) ! \ 
+    // if (path_.find("cgi"))
 
 }
 
@@ -191,7 +185,7 @@ void HTTPRequest::setAcceptEncoding(const std::string& encoding){
 }
 
 void HTTPRequest::setConnection(const std::string& connection){
-
+    (void)connection;
 
 }
 
@@ -199,23 +193,24 @@ void HTTPRequest::setConnection(const std::string& connection){
 
 
 void HTTPRequest::setAuthorization(const std::string& version){
-
+    (void)version;
 
 }
 
 
 void HTTPRequest::setContent(const std::string& content){
-
+    (void)content;
 
 
 }
 
 void HTTPRequest::setUnknown(const std::string& buffer){
-
+    (void)buffer;
 
     
 }
-const MET getMethod() {
+
+MET HTTPRequest::getMethod() {
     return method_;
 };
 
@@ -243,7 +238,7 @@ const std::map<std::string, float>& HTTPRequest::getAcceptLanguage(){
     return accept_language_;
 }
 
-const bool HTTPRequest::getConnection(){
+bool HTTPRequest::getConnection(){
     return connection_;
 }
 
@@ -273,14 +268,17 @@ void HTTPRequest::parseRequestLine(const std::string& request_line){
     stream >> method >> path >> version;
 
     setMet(method);
+    std::cout << "This is the method: " << this->method_ << std::endl;
     setPath(path);
+    std::cout << "This is the path: " << this->path_ << std::endl;
     setVersion(version);
+    std::cout << "This is the version: " << this->version_ << std::endl;
 }
 
 
 void HTTPRequest::parseContent(const std::string& body_line)
 {
-    std::string
+    (void)body_line;
 
     
 }
@@ -289,9 +287,9 @@ void HTTPRequest::parseContent(const std::string& body_line)
 
 
 void HTTPRequest::parseRequestHeader(std::istringstream& stream){
-    std::string line;!
+    std::string line;
     size_t pos_begin;
-    size_t pos_end;
+    // size_t pos_end;
 
     while (std::getline(stream, line))
     {
@@ -368,7 +366,7 @@ void HTTPRequest::parseRequest(const std::string& request){
     std::getline(stream, request_line);
     parseRequestLine(request_line);
     parseRequestHeader(stream);
-
+    
 
 
     // size_t pos = request.find(" ");

@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Content.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/07 12:29:57 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/14 15:07:54 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "ServerManager.hpp"
+// #include "ServerManager.hpp"
 // POST /upload HTTP/1.1
 // Host: example.com
 // Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXYZ
