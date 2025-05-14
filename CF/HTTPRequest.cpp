@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/08 18:21:31 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/14 14:15:23 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,13 +27,13 @@ int Accept::global_index_ = 0;
 int HTTPRequest::global_index_ = 0;
 
 //<<Accept>>
-Accept::Accept(std::string type, std::string subtype, float piority) : type_(type), subtype_(type), piority_(piority){}
+Accept::Accept(std::string type, std::string subtype, float piority) : type_(type), subtype_(subtype), piority_(piority){}
 Accept::~Accept(){}
 
 
 
 //<<HTTPRequest>>
-HTTPRequest::HTTPRequest() : instance_index_(global_index_++){}
+HTTPRequest::HTTPRequest() : instance_index_(global_index_++), content_flag_(false){}
 
 HTTPRequest::~HTTPRequest(){}
 
@@ -43,7 +43,10 @@ void HTTPRequest::setMet(const std::string  method){
     if (method == "GET")
         method_ = GET;
     else if (method == "POST")
+    {
         method_ = POST;
+        content_flag_ = true; //indicating there is content
+    }
     else if (method == "DELETE")
         method_ = DELETE;
     else
@@ -52,6 +55,8 @@ void HTTPRequest::setMet(const std::string  method){
 
 void HTTPRequest::setPath(const std::string& path){
     path_ = path;
+    if (path_.find("cgi")) ! \ 
+
 }
 
 void HTTPRequest::setVersion(const std::string& version){
@@ -64,21 +69,125 @@ void HTTPRequest::setHost(const std::string& host){
 }
 
 void HTTPRequest::setUserAgent(const std::string& agents){
-    
+    std::stringstream iss(agents);
+    std::string token;
+    std::string last_key;
 
+    while(iss >> token)
+    {
+        if (token.find('/') != std::string::npos){
+            last_key = token;
+            user_agent_[last_key] = "";
+        } 
+        else if (token[0] == '('){
+            std::string group = token;
 
-    
+            bool group_complete = false;
+            // if (token.find(')') != std::string::npos) {
+            //     group_complete = true;
+
+            // }
+            while (!group_complete && iss >> token){
+
+                group += " " + token;
+                if (token.find(')') != std::string::npos) {
+                    group_complete = true;
+                }
+            }
+            user_agent_[last_key] = group;
+        }
+    }
 }
 
-void HTTPRequest::setAccept(const std::string& media_type){
-    
-}
+void HTTPRequest::setAccept(const std::string& media_types){
+    std::stringstream iss(media_types);
+    std::string media_type;
+    size_t pos_begin;
+    size_t pos_end;
+    std::string type;
+    std::string subtype;
+    float priority;
 
+    while(getline(iss, media_type, ','))
+    {
+        priority = 1.0;
+        
+        if (media_type.find(';') == std::string::npos) {
+            pos_end = media_type.find('/');
+            pos_begin = 0;
+            
+            if (pos_begin == pos_end)
+                type = "*";
+            else
+                type = media_type.substr(0, pos_end);
+                
+            pos_begin = pos_end + 1;
+            subtype = media_type.substr(pos_begin, std::string::npos);
+        } else {
+            // Handle piority
+            pos_end = media_type.find('/');
+            type = media_type.substr(0, pos_end);
+            
+            pos_begin = pos_end + 1;
+            pos_end = media_type.find(';');
+            subtype = media_type.substr(pos_begin, pos_end - pos_begin);
+            
+            // Extract piority
+            if (media_type.find("q=") != std::string::npos) {
+                pos_begin = media_type.find("q=") + 2;
+                std::string q = media_type.substr(pos_begin);
+                std::stringstream ss(q);
+                ss >> priority;
+            }
+        }
+        
+        //need to handle more type in the future
+        if (subtype.empty() && type == "image") {
+            subtype = "*";
+        }
+        
+        accept_list_.push_back(Accept(type, subtype, priority));
+    }
+}
 
 void HTTPRequest::setAcceptLanguage(const std::string& languages){
+    std::stringstream iss(languages);
+    std::string language;
+    size_t pos_begin;
+    size_t pos_end;
+    std::string lang;
+    float priority;
 
+    while(getline(iss, language, ',')){
+        priority = 1.0;
 
+        if (language.find(';') == std::string::npos)
+            lang = language;
+        else {
+            pos_end = language.find(';');
+            lang = language.substr(0, pos_end);
+            if (language.find("q=") != std::string::npos){
+                pos_begin = language.find("q=") + 2;
+                std::string q = language.substr(pos_begin);
+                std::stringstream ss(q);
+                ss >> priority;
+            }
+        }
+        accept_language_[lang] = priority;
+    }
+}
 
+void HTTPRequest::setReferer(const std::string& referer){
+    referer_ = referer;
+}
+
+void HTTPRequest::setAcceptEncoding(const std::string& encoding){
+    std::istringstream iss(encoding);
+    std::string line;
+
+    while (std::getline(iss, line, ',')){
+        accept_encoding_.push_back(line);
+    }
 }
 
 void HTTPRequest::setConnection(const std::string& connection){
@@ -106,6 +215,9 @@ void HTTPRequest::setUnknown(const std::string& buffer){
 
     
 }
+const MET HTTPRequest::getMethod() {
+    return method_;
+};
 
 const std::string& HTTPRequest::getPath(){
     return path_;
@@ -127,13 +239,18 @@ const std::vector<Accept>& HTTPRequest::getAccept(){
     return accept_list_;
 }
 
-const std::map<std::string, int>& HTTPRequest::getAcceptLanguage(){
+const std::map<std::string, float>& HTTPRequest::getAcceptLanguage(){
     return accept_language_;
 }
 
 const bool HTTPRequest::getConnection(){
     return connection_;
 }
+
+const std::string& HTTPRequest::getReferer(){
+    return referer_;
+}
+
 
 const std::pair<std::string, std::string>& HTTPRequest::getAuthorisation(){
     return authorisation_;
@@ -160,8 +277,19 @@ void HTTPRequest::parseRequestLine(const std::string& request_line){
     setVersion(version);
 }
 
+
+void HTTPRequest::parseContent(const std::string& body_line)
+{
+    std::string
+
+    
+}
+
+
+
+
 void HTTPRequest::parseRequestHeader(std::istringstream& stream){
-    std::string line;
+    std::string line;!
     size_t pos_begin;
     size_t pos_end;
 
@@ -176,54 +304,64 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
         } else if (line.find("Connection") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string host = line.substr(pos_begin, std::string::npos);
-                setConnection(host);}
+                std::string connection = line.substr(pos_begin, std::string::npos);
+                setConnection(connection);}
 
         } else if (line.find("User-Agent") != std::string::npos){   
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string host = line.substr(pos_begin, std::string::npos);
-                setHost(host);}
+                std::string agents = line.substr(pos_begin, std::string::npos);
+                setUserAgent(agents);}
 
 
         } else if (line.find("Accept") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string host = line.substr(pos_begin, std::string::npos);
-                setHost(host);}
+                std::string accept = line.substr(pos_begin, std::string::npos);
+                setAccept(accept);}
 
 
         } else if (line.find("Referer") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string host = line.substr(pos_begin, std::string::npos);
-                setHost(host);}
-
+                std::string referer = line.substr(pos_begin, std::string::npos);
+                setReferer(referer);}
 
         } else if (line.find("Accept-Encoding") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string host = line.substr(pos_begin, std::string::npos);
-                setHost(host);}
+                std::string encoding = line.substr(pos_begin, std::string::npos);
+                setAcceptEncoding(encoding);}
 
+        } else if (line.find("Accept-Language") != std::string::npos){
+            if ((pos_begin = line.rfind(":")) != std::string::npos){
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string languages = line.substr(pos_begin, std::string::npos);
+                setAcceptLanguage(languages);}
 
+        } 
+        // content related (only applicable to POST and DEL)
+          else if (line.find("Content-Type") != std::string::npos){
+            if ((pos_begin = line.rfind(":")) != std::string::npos){
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string cttype = line.substr(pos_begin, std::string::npos);
+                content_.setContentType(cttype);}
 
-        }
-
-
-
-
-
-
-
-
-
-
+        } else if (line.find("Content-Length") != std::string::npos){
+            if ((pos_begin = line.rfind(":")) != std::string::npos){
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string ctlength = line.substr(pos_begin, std::string::npos);
+                content_.setContentLength(ctlength);}
+            
+        } else if (content_flag_ == true)
+            HTTPRequest::parseContent(line);
+        else
+            return;
+    }
 }
 
-
-
 void HTTPRequest::parseRequest(const std::string& request){
+
     std::istringstream stream(request);
     std::string request_line;
 
@@ -244,66 +382,4 @@ void HTTPRequest::parseRequest(const std::string& request){
     //     {
     //         std::cerr << "Error: " << e.what() << std::endl;}
     // }
-
 }
-
-
-
-
-
-
-
-
-
-
-// const char* ft_strstr(const char* haystack, const char* needle)
-// {
-//     if (!haystack)
-//         return NULL;
-//     if (!needle)
-//         return haystack;
- 
-//     for (const char* p = haystack; *p; ++p)
-//     {
-//         const char* h = p;
-//         const char* n = needle;
-//         while (*h && *n && *h == *n)
-//         {
-//             h++;
-//             n++;
-//         }
-//         if (!*n)
-//             return p;        
-//     }
-//     return NULL;
-// }
-
-
-// int main(){
-//     int server_fd, client_fd;
-//     struct sockaddr_in address;
-//     char buffer_cstr[BUFFER_SIZE];
-//     socklen_t addlen = sizeof(address);
-
-//     //Create socket
-//     // server_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-//     int total = 0;
-
-//     while (1) {
-//         //it returns the number of bytes received, or -1 if an error occurred. In the 
-//         // event of an error, errno is set to indicate the error.
-//         // when a stream socker peer has per
-
-//         int bytes = recv(client_fd, buffer_cstr + total, BUFFER_SIZE - 1 - total, 0);
-//         if (bytes <= 0) break;
-//         total += bytes;
-//         buffer_cstr[total] = '\0';
-//         if (ft_strstr(buffer_cstr,"\r\n\r\n")) break;
-//     }
-//     std::string buffer = buffer_cstr; 
-//     i
-
-
-
-// }
