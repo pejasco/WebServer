@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/14 17:52:10 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:17:23 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,8 @@ class HTTPResponse {
 		//SETTER
 
 		//GETTER
-		const std::string &getResponse(); 
+		const std::string &getResponse();
+		std::string &getBodyFilename();
 			
 		//METHOD
 		void setGetResponse();
@@ -41,8 +42,8 @@ class HTTPResponse {
 		void setErrorResponse();
 		int checkFile();
 		void prepareStatusLine(int status_code);
-		void prepareHeader();
-		void completeResponse();
+		int prepareHeader();
+		void headerResponse();
 		void prepareBody();
 	
 	private:
@@ -60,6 +61,7 @@ class HTTPResponse {
 		//HEADER_FIELDS
 		std::string content_type;
 		int content_length;
+		std::string body_filename;
 		// bool keep_alive;
 		//Adding time ?
 		

@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/14 16:10:13 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:21:53 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ class ServerManager {
 		std::map<int,Client*> clients;
 
 		char received[4096];
+		char buffer[8192];
 
 		
 		// adding a vector that will keep track of the socket fd of each server ? 

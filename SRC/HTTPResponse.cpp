@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/14 17:53:14 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 15:00:15 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,12 +41,16 @@ HTTPResponse::~HTTPResponse() {
 
 // GETTER
 const std::string &HTTPResponse::getResponse() {
-	std::cout << "status_line: " << status_line << std::endl;
-	std::cout << "header: " << header << std::endl;
-	std::cout << "response: " << response << std::endl;
+	// std::cout << "status_line: " << status_line << std::endl;
+	// std::cout << "header: " << header << std::endl;
+	std::cout << "response header that is going to be sent:\n" << response;
 
 	return response;
 };
+
+std::string &HTTPResponse::getBodyFilename() {
+	return body_filename;
+}
 
 //METHOD
 void HTTPResponse::setGetResponse() {
@@ -59,7 +63,7 @@ void HTTPResponse::setGetResponse() {
 		prepareHeader();
 		if (flag)
 			prepareBody();
-		completeResponse();
+		headerResponse();
 	} else {
 		//3rda -- if file has error, prepare an error request (404, 400, 403, etc...)
 	}
@@ -80,21 +84,39 @@ void HTTPResponse::setErrorResponse() {
 		// - 400 ?
 }
 
+//Checking if the file requested exist and if it is possible to read it 
 int HTTPResponse::checkFile() {
 	if (currentRequest.getPath() == "/") {
-		std::fstream index;
-		index.open("documents/index.html", std::fstream::in);
-		if (index.is_open()) {
-			std::stringstream buffer;
-			buffer << index.rdbuf();
-			body = buffer.str(); 
+		body_filename = "documents/index.html";
+		std::ifstream body_file(body_filename.c_str(), std::ios::binary);
+		if (body_file.is_open()) {
+			body_file.close();
 			return 200;
 		}
-		else 
+		else {
+			body_file.close();
+			std::cout << "Error: " << strerror(errno) << std::endl;
 			return 500;
+		}
+	} else {
+		body_filename = "documents" + currentRequest.getPath();
+		if (fileExists(body_filename)){
+			std::ifstream body_file(body_filename.c_str(), std::ios::binary);
+			if (body_file.is_open()) {
+				body_file.close(); 
+				return 200;
+			} else {
+				body_file.close();
+				std::cout << "Error: " << strerror(errno) << std::endl;
+				return 500;	
+			}
+		} else
+			return 404;
 	}
 	return 500;	
 }
+
+
 /*
 HTTP/1.1 200 OK\r\n
 Content-Type: text/html; charset=UTF-8\r\n
@@ -116,26 +138,42 @@ Connection: keep-alive\r\n
 
 void HTTPResponse::prepareStatusLine(int status_code) {
 	status_line += currentRequest.getVersion();
-	status_line += " " + convertStr(status_code);
+	status_line += " " + convertToStr(status_code);
 	status_line += " " + getStatusStr(status_code);
 	status_line += "\r\n";
-	std::cout << "status_line: " << status_line << std::endl;
+	
+	/****DEBUGGING***/
+	// std::cout << "status_line: " << status_line << std::endl;
 }
 
 
-void HTTPResponse::prepareHeader() {
+int HTTPResponse::prepareHeader() {
 	//Probably to adapt so it can change for POST and DELETE as the content can be different
-	content_type = "Content-Type: text/html; charset=UTF-8\r\n";
-	content_length = body.size();
-	header = content_type + "Content-Length: " + convertStr(content_length) + "\r\n";
-	std::cout << "header: " << header << std::endl;
+	std::cout << "INSIDE PREPARE HEARDER\n";
+	if (currentRequest.getPath().find(".") != std::string::npos) {
+		size_t pos;
+		if ((pos = currentRequest.getPath().rfind(".")) != std::string::npos)
+			content_type = "Content-Type: " + getContentType(currentRequest.getPath().substr(pos)) + "\r\n";
+	}
+	content_length = calculateFileSize(body_filename);
+	if (content_length < 0) {
+		std::cout << "Error: Content-Length is -1\n";
+		return 500;
+	}
+	header = content_type + "Content-Length: " + convertToStr(content_length) + "\r\n";
+	/****DEBUGGING***/
+	// std::cout << "HEADER = \n" << header << std::endl;
+	return 200;
 }
 
-void HTTPResponse::completeResponse() {
-	response = status_line + header + empty_line + body;
-	std::cout << "response: " << response << std::endl;
+void HTTPResponse::headerResponse() {
+	response = status_line + header + empty_line;
+
+	/****DEBUGGING***/
+	// std::cout << "response: " << response << std::endl;
 }
 
 void HTTPResponse::prepareBody() {
+	
 	return;
 }

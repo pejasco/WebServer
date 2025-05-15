@@ -6,20 +6,13 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/14 17:40:28 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:58:35 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/ServerManager.hpp"
 #include "../INC/utils/Utils.hpp"
 #include <cstring>
-
-int convertInt(const std::string &str) {
-	int nb;
-	std::istringstream (str) >> nb;
-	//if no error
-	return nb;
-}
 
 void printLocation(Location &location) {
 	/*BASIC INFO*/
@@ -109,8 +102,8 @@ bool isMessageCompleted(const std::string &request) {
 	std::string temp_body_message;
 	int body_size = 0; 
 	if ((pos = request.find("Content-Length: ")) != std::string::npos) {
-		body_size = convertInt(request.substr(pos + 16));
-		std::cout << "body_size: " << body_size << std::endl;
+		body_size = convertToNb<int>(request.substr(pos + 16));
+		// std::cout << "body_size: " << body_size << std::endl;
 		if ((pos = request.find("\r\n\r\n")) != std::string::npos) {
 			temp_body_message = request.substr(pos + 4);
 			if (temp_body_message.size() < static_cast<unsigned long>(body_size))
@@ -154,13 +147,6 @@ void cleanShutdown(ServerManager &masterServer) {
 	close(masterServer.getEpollFd());
 }
 
-std::string convertStr(int nb) {
-	std::stringstream str;
-	str << nb;
-	std::string newStr = str.str();
-	return newStr;
-}
-
 std::string getStatusStr(int status_code) {
 	//Harcode of the table for status code and status string
 	std::map<int, std::string> statusMessages;
@@ -183,3 +169,121 @@ std::string getStatusStr(int status_code) {
 	return "error";
 }
 
+bool fileExists(const std::string& filename) {
+	std::ifstream file(filename.c_str());
+	return file.good();
+}
+
+std::string getContentType(const std::string &inputExtension) {
+	std::string extension = toLowerCase(inputExtension);
+	std::map<std::string, std::string> contentType;
+   // HTML/Text files
+	contentType.insert(std::make_pair(".html", "text/html; charset=UTF-8"));
+	contentType.insert(std::make_pair(".htm", "text/html; charset=UTF-8"));
+	contentType.insert(std::make_pair(".css", "text/css"));
+	contentType.insert(std::make_pair(".js", "application/javascript"));
+	contentType.insert(std::make_pair(".txt", "text/plain; charset=UTF-8"));
+	contentType.insert(std::make_pair(".csv", "text/csv"));
+	contentType.insert(std::make_pair(".xml", "application/xml"));
+	contentType.insert(std::make_pair(".json", "application/json"));
+	
+	// Image files
+	contentType.insert(std::make_pair(".jpg", "image/jpeg"));
+	contentType.insert(std::make_pair(".jpeg", "image/jpeg"));
+	contentType.insert(std::make_pair(".png", "image/png"));
+	contentType.insert(std::make_pair(".gif", "image/gif"));
+	contentType.insert(std::make_pair(".svg", "image/svg+xml"));
+	contentType.insert(std::make_pair(".ico", "image/x-icon"));
+	contentType.insert(std::make_pair(".webp", "image/webp"));
+	contentType.insert(std::make_pair(".bmp", "image/bmp"));
+	contentType.insert(std::make_pair(".tiff", "image/tiff"));
+	contentType.insert(std::make_pair(".tif", "image/tiff"));
+	
+	// Audio/Video files
+	contentType.insert(std::make_pair(".mp3", "audio/mpeg"));
+	contentType.insert(std::make_pair(".wav", "audio/wav"));
+	contentType.insert(std::make_pair(".ogg", "audio/ogg"));
+	contentType.insert(std::make_pair(".mp4", "video/mp4"));
+	contentType.insert(std::make_pair(".webm", "video/webm"));
+	contentType.insert(std::make_pair(".mpeg", "video/mpeg"));
+	contentType.insert(std::make_pair(".mpg", "video/mpeg"));
+	
+	// Document files
+	contentType.insert(std::make_pair(".pdf", "application/pdf"));
+	contentType.insert(std::make_pair(".doc", "application/msword"));
+	contentType.insert(std::make_pair(".docx", "application/msword"));
+	contentType.insert(std::make_pair(".xls", "application/vnd.ms-excel"));
+	contentType.insert(std::make_pair(".xlsx", "application/vnd.ms-excel"));
+	contentType.insert(std::make_pair(".ppt", "application/vnd.ms-powerpoint"));
+	contentType.insert(std::make_pair(".pptx", "application/vnd.ms-powerpoint"));
+	contentType.insert(std::make_pair(".odt", "application/vnd.oasis.opendocument.text"));
+	
+	// Archive files
+	contentType.insert(std::make_pair(".zip", "application/zip"));
+	contentType.insert(std::make_pair(".gz", "application/gzip"));
+	contentType.insert(std::make_pair(".tar", "application/x-tar"));
+	contentType.insert(std::make_pair(".rar", "application/vnd.rar"));
+	contentType.insert(std::make_pair(".7z", "application/x-7z-compressed"));
+	
+	// Font files
+	contentType.insert(std::make_pair(".ttf", "font/ttf"));
+	contentType.insert(std::make_pair(".otf", "font/otf"));
+	contentType.insert(std::make_pair(".woff", "font/woff"));
+	contentType.insert(std::make_pair(".woff2", "font/woff2"));
+	
+	std::map<std::string, std::string>::iterator beg = contentType.begin();
+	std::map<std::string, std::string>::iterator end = contentType.end();
+	for (; beg != end; ++beg) {
+		if (extension == beg->first) {
+			return beg->second;
+		}
+			
+	}
+	return "application/octet-stream";
+}
+
+std::string toLowerCase(const std::string& input) {
+	std::string result = input;
+	for (size_t i = 0; i < result.length(); ++i) {
+		result[i] = std::tolower(result[i]);
+	}
+	return result;
+}
+
+int calculateFileSize(std::string &filename) {
+	std::streampos pos = -1;
+	std::ifstream body_file(filename.c_str(), std::ios::binary);
+	if (body_file.is_open()) {
+		pos = body_file.tellg();
+		body_file.seekg(0, std::ios::end);
+		pos = body_file.tellg() - pos;
+		body_file.close();
+	} else
+		std::cout << "Error: " << strerror(errno) << std::endl;
+	int length = static_cast<int>(pos);
+	return length;
+}
+
+/*
+///
+/// Get me my file size in bytes (long long to support any file size supported by your OS.
+///
+long long Logger::getFileSize()
+{
+    std::streampos fsize = 0;
+
+    std::ifstream myfile ("myfile.txt", ios::in);  // File is of type const char*
+
+    fsize = myfile.tellg();         // The file pointer is currently at the beginning
+    myfile.seekg(0, ios::end);      // Place the file pointer at the end of file
+
+    fsize = myfile.tellg() - fsize;
+    myfile.close();
+
+    static_assert(sizeof(fsize) >= sizeof(long long), "Oops.");
+
+    cout << "size is: " << fsize << " bytes.\n";
+    return fsize;
+}
+
+*/
