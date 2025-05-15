@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 10:19:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/15 11:37:30 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 16:38:18 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstring>
+#include <cstdio>
 #include <string>
 #include <cctype>
 #include <vector>

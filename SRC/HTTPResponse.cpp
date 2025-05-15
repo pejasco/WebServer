@@ -6,27 +6,28 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/15 15:00:15 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 16:42:26 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/HTTPResponse.hpp"
 
-bool flag = false;
+bool cgi_flag = false;
 
 HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest) : currentRequest(inputRequest) {
 	empty_line = "\r\n";
 	switch (currentRequest.getMethod()) {
 	case GET:
 		setGetResponse();
+		cgi_flag = false;
 		break;
 	case POST:
-		flag = true;
 		setPostResponse();
-		flag = false;
+		cgi_flag = false;
 		break;
 	case DELETE:
 		setDeleteResponse();
+		cgi_flag = false; // is it useful ?
 		break;
 	default:
 		setErrorResponse();
@@ -56,13 +57,14 @@ std::string &HTTPResponse::getBodyFilename() {
 void HTTPResponse::setGetResponse() {
 	//1st -- check if the path request by the user exist
 	//2nd -- check if the file exist and readable (not already open, with correct permission (not sure if we need to set it up)) 
+	cgi_flag = currentRequest.getCGIFlag();
 	int status_code = checkFile();
 	if (status_code == 200) {
 		//3rdb -- if file is good, prepare response with 200 ok and content of file 
 		prepareStatusLine(status_code);
 		prepareHeader();
-		if (flag)
-			prepareBody();
+		if (cgi_flag)
+			CGI_Body();
 		headerResponse();
 	} else {
 		//3rda -- if file has error, prepare an error request (404, 400, 403, etc...)
@@ -75,7 +77,15 @@ void HTTPResponse::setPostResponse() {
 }
 
 void HTTPResponse::setDeleteResponse() {
-	
+	body_filename = "documents" + currentRequest.getPath();
+	if (fileExists(body_filename)) {
+		if (!std::remove(body_filename.c_str()))
+			response = currentRequest.getVersion() + " 204 No Content\r\n\r\n";
+		else
+			setErrorResponse(500); // file exist but not closable so internal error ?
+	} else {
+		setErrorResponse(404); // file not found as return false to fileExist()? 
+	}
 }
 
 void HTTPResponse::setErrorResponse() {
@@ -173,7 +183,11 @@ void HTTPResponse::headerResponse() {
 	// std::cout << "response: " << response << std::endl;
 }
 
-void HTTPResponse::prepareBody() {
+void HTTPResponse::CGI_Body() {
 	
 	return;
+}
+
+bool HTTPResponse::deleteFile() {
+	
 }
