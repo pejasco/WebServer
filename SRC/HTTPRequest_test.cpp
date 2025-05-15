@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest_test.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/15 16:00:29 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 17:15:16 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ Accept::~Accept(){}
 
 
 //<<HTTPRequest>>
-HTTPRequest::HTTPRequest() : instance_index_(global_index_++), content_flag_(false){}
+HTTPRequest::HTTPRequest() : instance_index_(global_index_++), content_flag_(false), cgi_flag_(false){}
 
 HTTPRequest::~HTTPRequest(){}
 
@@ -49,8 +49,8 @@ void HTTPRequest::setMet(const std::string  method){
 
 void HTTPRequest::setPath(const std::string& path){
     path_ = path;
-    // if (path_.find("cgi"))
-
+    if (path_.find("cgi") != std::string::npos)
+        cgi_flag_ = true;
 }
 
 void HTTPRequest::setVersion(const std::string& version){
