@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/14 16:02:49 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 15:59:32 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ class HTTPRequest {
                 const std::pair<std::string, std::string>& getAuthorisation();
                 const Content& getContent();
                 const std::map <std::string, std::string>& getUnknown();
+                bool getCGIFlag();
 
                 //Parser
                 void parseContent(const std::string& body_line);

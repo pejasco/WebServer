@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/15 14:58:18 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 16:00:29 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,6 +257,10 @@ const Content& HTTPRequest::getContent(){
 
 const std::map <std::string, std::string>& HTTPRequest::getUnknown(){
     return unknown_;
+}
+
+bool HTTPRequest::getCGIFlag() {
+    return cgi_flag_;
 }
 
 //Parser
