@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/14 18:00:56 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 15:12:54 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,7 +188,7 @@ void ServerManager::parseServer(std::string &line, Server *currentServer, std::f
 		if ((pos = line.rfind(":")) != std::string::npos) {
 			std::string newLine = line.substr(pos + 2);
 			newLine.erase(newLine.end() - 1);
-			currentServer->setMaxSize(convertInt(newLine));
+			currentServer->setMaxSize(convertToNb<int>(newLine));
 		}
 	} else if (line.find("location") != std::string::npos) {
 		parseLocation(line, currentServer, configFile);
@@ -241,7 +241,7 @@ void ServerManager::parseLocation(std::string &line, Server *currentServer, std:
 			if ((pos = line.rfind(":")) != std::string::npos) {
 				std::string newLine = line.substr(pos + 2);
 				newLine.erase(newLine.end() - 1);
-				currentLocation->setMaxBodySize(static_cast<size_t>(convertInt(newLine)));
+				currentLocation->setMaxBodySize(static_cast<size_t>(convertToNb<int>(newLine)));
 			}
 				/////////////////////////////////
 		} else if (line.find("cgi:") != std::string::npos) {
@@ -256,7 +256,7 @@ void ServerManager::parseLocation(std::string &line, Server *currentServer, std:
 				currentLocation->setRedirect(true);
 		} else if (line.find("redirect_code") != std::string::npos) { // do I need a redirect code or can I simply redirect to a default webpage?
 			if ((pos = line.rfind(":")) != std::string::npos)
-				currentLocation->setRedirectCode(convertInt(line.substr(pos + 2)));
+				currentLocation->setRedirectCode(convertToNb<int>(line.substr(pos + 2)));
 		} else if (line.find("redirect_url") != std::string::npos) {
 			if ((pos = line.find(":")) != std::string::npos)
 				currentLocation->setRedirectURL(line.substr(pos + 2));
@@ -389,6 +389,15 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 		}	
 	}
 	/**START THE HTTP READING NOW**/
+	// HTTPRequest currentRequest;
+	// if (!request.empty()) {
+	// 	currentRequest.parseRequest(request);
+	// 	HTTPResponse currentResponse(currentRequest);
+	// 	std::string response = currentResponse.getResponse();
+	// 	ssize_t bytes_sent = send(currentFd, response.c_str(), strlen(response.c_str()), 0);
+	// 	if (bytes_sent < 0) // to check as I got the error active when 0 with errno "ClientSuccess" so I change for -1
+	// 		std::cerr << "Error when sending response to client" << strerror(errno) << std::endl;
+	// }
 	HTTPRequest currentRequest;
 	if (!request.empty()) {
 		currentRequest.parseRequest(request);
@@ -397,6 +406,26 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 		ssize_t bytes_sent = send(currentFd, response.c_str(), strlen(response.c_str()), 0);
 		if (bytes_sent < 0) // to check as I got the error active when 0 with errno "ClientSuccess" so I change for -1
 			std::cerr << "Error when sending response to client" << strerror(errno) << std::endl;
+		std::string bodyFilename = currentResponse.getBodyFilename();
+		if (!bodyFilename.empty()) {
+			std::ifstream file(bodyFilename.c_str(), std::ios::binary);
+			if (file.is_open()) {				
+				while (!file.eof()) {
+					file.read(buffer, sizeof(buffer));
+					std::streamsize bytesRead = file.gcount();
+					if (bytesRead > 0) {
+						bytes_sent = send(currentFd, buffer, bytesRead, 0);
+						if (bytes_sent < 0) {
+							if (bytes_sent < 0)
+								std::cerr << "Error sending file data: " << strerror(errno) << std::endl;
+						}
+					}
+				}
+				file.close();
+			} else {
+				std::cerr << "Failed to open file: " << bodyFilename << std::endl;
+			}
+		}
 	}
 	/********DEBUGGING*********/
 	// std::cout << "\nrequest: \n" << request << std::endl;

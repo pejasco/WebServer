@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/14 17:31:34 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:58:18 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,11 +268,11 @@ void HTTPRequest::parseRequestLine(const std::string& request_line){
     stream >> method >> path >> version;
 
     setMet(method);
-    std::cout << "This is the method: " << this->method_ << std::endl;
+    // std::cout << "This is the method: " << this->method_ << std::endl;
     setPath(path);
-    std::cout << "This is the path: " << this->path_ << std::endl;
+    // std::cout << "This is the path: " << this->path_ << std::endl;
     setVersion(version);
-    std::cout << "This is the version: " << this->version_ << std::endl;
+    // std::cout << "This is the version: " << this->version_ << std::endl;
 }
 
 
