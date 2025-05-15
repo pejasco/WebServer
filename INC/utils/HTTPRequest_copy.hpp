@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest_copy.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/15 15:59:32 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 19:07:28 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,8 @@ class HTTPRequest {
 		virtual ~HTTPRequest();
 
                 //Setters:
-                void setMet(const std::string method);
+                void setMet(const std::string& method);
+                void setCGIFlag(const bool& flag);
                 void setPath(const std::string& path);
                 void setVersion(const std::string& version);
                 void setHost(const std::string& host);

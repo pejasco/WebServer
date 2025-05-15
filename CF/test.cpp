@@ -1,7 +1,9 @@
 #include <iostream>
 #include <string>
-#include "../INC/utils/HTTPRequest.hpp"
+// #include "../INC/utils/HTTPReponse.hpp"
 #include "../INC/utils/ServerManager.hpp"
+#include "../INC/utils/Content_copy.hpp"
+
 
 
 // int main()
@@ -32,19 +34,29 @@
 //     return (0);
 // }
 
+void setBounday(const std::string& boundary){
+    size_t pos;
+    std::string tmp;
+
+    if ((pos = boundary.find("boundary=----")) != std::string::npos){
+        tmp = boundary.substr(pos + 8);
+        std::cout << tmp << "\n";
+    }
+}
+
+
 
 int main()
 {
-    std::string accept = "en-GB,en;q=0.9";
-    HTTPRequest req;
-    req.setAcceptLanguage(accept); // Corrected method name
-    
-    for (std::map<std::string, float>::const_iterator it = req.getAcceptLanguage().begin(); 
-         it != req.getAcceptLanguage().end(); it++) {
-        std::cout << it->first << "\n";
-        std::cout << it->second << "\n";
-        std::cout << "xxxxxxxxxxx" << "\n";
-    }
+    std::string accept = "boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW";
+    setBounday(accept); // Corrected method name
+
+    // for (std::map<std::string, float>::const_iterator it = req.getAcceptLanguage().begin(); 
+    //      it != req.getAcceptLanguage().end(); it++) {
+    //     std::cout << it->first << "\n";
+    //     std::cout << it->second << "\n";
+    //     std::cout << "xxxxxxxxxxx" << "\n";
+    // }
     
     return (0);
 }

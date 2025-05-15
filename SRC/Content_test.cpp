@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content_test.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/14 16:13:08 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 19:18:15 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void Content::setBounday(const std::string& boundary){
     std::string tmp;
 
     if ((pos = boundary.find("boundary=----")) != std::string::npos){
-        tmp = boundary.substr(pos + 10);
+        tmp = boundary.substr(pos + 9);
     }
     boundary_ = tmp;
 }

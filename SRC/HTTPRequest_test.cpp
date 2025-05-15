@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/15 17:15:16 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/15 21:32:21 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,13 @@ HTTPRequest::~HTTPRequest(){}
 
 
 //Setters
-void HTTPRequest::setMet(const std::string  method){
+
+void HTTPRequest::setCGIFlag(const bool& flag){
+    cgi_flag_ = flag;
+}
+
+
+void HTTPRequest::setMet(const std::string&  method){
     if (method == "GET")
         method_ = GET;
     else if (method == "POST")
@@ -50,7 +56,7 @@ void HTTPRequest::setMet(const std::string  method){
 void HTTPRequest::setPath(const std::string& path){
     path_ = path;
     if (path_.find("cgi") != std::string::npos)
-        cgi_flag_ = true;
+        setCGIFlag(true);
 }
 
 void HTTPRequest::setVersion(const std::string& version){
@@ -282,7 +288,14 @@ void HTTPRequest::parseRequestLine(const std::string& request_line){
 
 void HTTPRequest::parseContent(const std::string& body_line)
 {
-    (void)body_line;
+    if (content_flag_)
+
+
+
+    else if (content_flag_ && )
+
+
+    else if (f)
 
     
 }
@@ -370,6 +383,7 @@ void HTTPRequest::parseRequest(const std::string& request){
     std::getline(stream, request_line);
     parseRequestLine(request_line);
     parseRequestHeader(stream);
+
     
 
 
