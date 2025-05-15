@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/15 16:30:48 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 17:21:11 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,12 @@ class HTTPResponse {
 		void setGetResponse();
 		void setPostResponse();
 		void setDeleteResponse();
-		void setErrorResponse();
+		void setErrorResponse(int errorCode);
 		int checkFile();
 		void prepareStatusLine(int status_code);
 		int prepareHeader();
 		void headerResponse();
 		void CGI_Body();
-		bool deleteFile();
 	
 	private:
 		//PREPARING RESPONSE

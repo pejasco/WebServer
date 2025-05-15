@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/15 16:42:26 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/15 17:33:28 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest) : currentRequest(inp
 		cgi_flag = false; // is it useful ?
 		break;
 	default:
-		setErrorResponse();
+		setErrorResponse(405);
 		break;
 	}	
 };
@@ -59,15 +59,14 @@ void HTTPResponse::setGetResponse() {
 	//2nd -- check if the file exist and readable (not already open, with correct permission (not sure if we need to set it up)) 
 	cgi_flag = currentRequest.getCGIFlag();
 	int status_code = checkFile();
-	if (status_code == 200) {
-		//3rdb -- if file is good, prepare response with 200 ok and content of file 
+	if (status_code == 200) { 
 		prepareStatusLine(status_code);
 		prepareHeader();
 		if (cgi_flag)
 			CGI_Body();
 		headerResponse();
 	} else {
-		//3rda -- if file has error, prepare an error request (404, 400, 403, etc...)
+		setErrorResponse(status_code);
 	}
 
 }
@@ -88,10 +87,20 @@ void HTTPResponse::setDeleteResponse() {
 	}
 }
 
-void HTTPResponse::setErrorResponse() {
-	//if no GET, POST or DELETE, then it is a not allow method or bad request and send the error 
-		// - 405
-		// - 400 ?
+void HTTPResponse::setErrorResponse(int errorCode) {
+	body_filename = "documents/errors/" + convertToStr(errorCode) + ".html";
+	if (fileExists(body_filename)) {
+		prepareStatusLine(errorCode);
+		content_length = calculateFileSize(body_filename);
+		header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(content_length) + "\r\n";
+		response = status_line + header + empty_line;
+	} else {
+		std::cerr << "error\n";
+		status_line = currentRequest.getVersion() + " 500 Internal server erro\r\n";
+		header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: 131\r\n";
+		body = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
+		response = status_line + header + empty_line + body;
+	}
 }
 
 //Checking if the file requested exist and if it is possible to read it 
@@ -186,8 +195,4 @@ void HTTPResponse::headerResponse() {
 void HTTPResponse::CGI_Body() {
 	
 	return;
-}
-
-bool HTTPResponse::deleteFile() {
-	
 }
