@@ -1,3 +1,4 @@
 #hide env file
 /.vscode
 index.html.*
+output
