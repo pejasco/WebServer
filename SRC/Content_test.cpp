@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/15 19:18:15 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/16 19:25:15 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,10 +72,8 @@ void Content::setContentLength(const std::string& buffer){
 }
 
 
-void Content::setBody(const std::string& buffer){
-    (void)buffer;
-
-
+void Content::setBodyWithNoCD(const std::string& line){
+    body_with_no_cd_ = line;
 }
 
 

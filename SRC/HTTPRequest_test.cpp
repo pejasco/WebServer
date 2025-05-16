@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/15 21:32:21 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/16 19:34:58 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,14 +27,20 @@ Accept::~Accept(){}
 
 
 //<<HTTPRequest>>
-HTTPRequest::HTTPRequest() : instance_index_(global_index_++), content_flag_(false), cgi_flag_(false){}
+HTTPRequest::HTTPRequest() : instance_index_(global_index_++), content_flag_(false),
+    cgi_flag_(false), is_in_the_body_flag_(false){}
 
 HTTPRequest::~HTTPRequest(){}
 
 
 //Setters
 
-void HTTPRequest::setCGIFlag(const bool& flag){
+void HTTPRequest::setIsInTheBodyFlag(const bool flag){
+    is_in_the_body_flag_ = flag;
+}
+
+
+void HTTPRequest::setCGIFlag(const bool flag){
     cgi_flag_ = flag;
 }
 
@@ -285,23 +291,22 @@ void HTTPRequest::parseRequestLine(const std::string& request_line){
     // std::cout << "This is the version: " << this->version_ << std::endl;
 }
 
+void HTTPRequest::parseContent(const std::string& body_line){
+    if (body_line == content_.getBoundary()){
+        setIsInTheBodyFlag(true);
+        return ;
+    } else if (cgi_flag_ && content_.getContentLength() >= 0 && !content_.getBoundary().empty()
+            && is_in_the_body_flag_){
+        if (body_line.rfind(""))
 
-void HTTPRequest::parseContent(const std::string& body_line)
-{
-    if (content_flag_)
-
-
-
-    else if (content_flag_ && )
-
-
-    else if (f)
-
-    
+        
+    } else if (cgi_flag_) {
+        // Handle CGI-specific content parsing here
+    } else {
+        content_.setBodyWithNoCD(body_line); 
+    }
 }
-
-
-
+//if (!(content_.getContentType()->first).empty() && content_.getContentLength() >= 0
 
 void HTTPRequest::parseRequestHeader(std::istringstream& stream){
     std::string line;
@@ -311,11 +316,17 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
     while (std::getline(stream, line))
     {
         //GET
-        if (line.find("Host") != std::string::npos){
+        if (line.empty()){
+            if (!(content_.getContentType().first).empty() && content_.getContentLength() >= 0 && is_in_the_body_flag_)
+                parseContent(line);
+            else
+                continue;
+        } else if (line.find("Host") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string host = line.substr(pos_begin, std::string::npos);
                 setHost(host);}
+
         } else if (line.find("Connection") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
@@ -327,7 +338,6 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string agents = line.substr(pos_begin, std::string::npos);
                 setUserAgent(agents);}
-
 
         } else if (line.find("Accept") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
@@ -356,7 +366,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
 
         } 
         // content related (only applicable to POST and DEL)
-          else if (line.find("Content-Type") != std::string::npos){
+        else if (line.find("Content-Type") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string cttype = line.substr(pos_begin, std::string::npos);
@@ -366,7 +376,8 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string ctlength = line.substr(pos_begin, std::string::npos);
-                content_.setContentLength(ctlength);}
+                content_.setContentLength(ctlength);
+                }
             
         } else if (content_flag_ == true)
             HTTPRequest::parseContent(line);
