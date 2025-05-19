@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/18 19:35:10 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/19 16:24:55 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,6 @@ class Content {
                 // bool cd_flag_;
                 int content_length_; //Content-Length: 13
                 std::string boundary_; //Content-Type: multipart/form-dat; boundary=--WebKitFormBoundaryXYZ
-                std::string boundary_end_;
                 //std::map<std::string, std::string> body_;
                 std::string body_with_no_cd_;
                 std::vector<ContentDisposition_> CDs_list_;

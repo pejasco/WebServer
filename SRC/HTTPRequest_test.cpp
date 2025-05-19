@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/19 01:14:07 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/19 17:39:05 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,16 @@ HTTPRequest::~HTTPRequest(){}
 
 //Setters
 
+void setContentFlag(const bool flag){
+    content_flag_ = flag;
+
+}
+
+void setBoundaryIndex(int index){
+    boundary_index_ = index;
+}
+
+
 void HTTPRequest::setIsInTheBodyFlag(const bool flag){
     is_in_the_body_flag_ = flag;
 }
@@ -44,6 +54,10 @@ void HTTPRequest::setCGIFlag(const bool flag){
     cgi_flag_ = flag;
 }
 
+void HTTPRequest::setCGIType(const std::string cgi_type){
+    cgi_type_ = cgi_type;
+}
+
 
 void HTTPRequest::setMet(const std::string&  method){
     if (method == "GET")
@@ -51,7 +65,7 @@ void HTTPRequest::setMet(const std::string&  method){
     else if (method == "POST")
     {
         method_ = POST;
-        content_flag_ = true; //indicating there is content
+        setContentFlag(true); //indicating there is content
     }
     else if (method == "DELETE")
         method_ = DELETE;
@@ -305,17 +319,28 @@ void HTTPRequest::parseContent(const std::string& body_line){
         else
             boundary_index_ += 1;
         // multipart/form-data
+    } else if (body_line == content_.getBoundary() + "--"){
+        setContentFlag(false);
+        setCGIFlag(false);
+        setIsInTheBodyFlag(false);
+        setBoundaryIndex(-1);
+
     } else if (cgi_flag_ == 0 && content_.getContentLength() >= 0 
         && !content_.getBoundary().empty() && is_in_the_body_flag_){
-            
-        if (body_line.rfind("Content-Disposition:") != std::string::npos){
+        
+        if (cgi_flag_ == true){
+            size_t pos_begin = path_.rfind(".");
+            cgi_type_ = path_.substr(pos_begin + 1);
+        }
+        
+        if (body_line.find("Content-Disposition:") != std::string::npos){
             content_.CDs_list_.push_back(ContentDisposition_());
             if((pos_begin = body_line.find(':')) != std::string::npos){
                 pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);
                 line = body_line.substr(pos_begin);
                 content_.setCDs(line, ContentDisposition, boundary_index_);}
 
-        } else if (body_line.rfind("Content-Type:" != std::string::npos)){
+        } else if (body_line.find("Content-Type:") != std::string::npos){
             if((pos_begin = body_line.find(':')) != std::string::npos){
                 pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);
                 line = body_line.substr(pos_begin);
@@ -323,25 +348,14 @@ void HTTPRequest::parseContent(const std::string& body_line){
         
         } else if (!body_line.empty()
             && (content_.CDs_list_[boundary_index_].filename_.empty())){
-                conent_.setCDs(line, Conetent, boundary_index_);
-        
+                content_.setCDs(body_line, Content, boundary_index_);
+                
         } else if (!body_line.empty()
-            && (content_.CDs_list_[boundary_index_].filename_.empty())){
-            conent_.setCDs(line, Conetent, boundary_index_);
+            && !(content_.CDs_list_[boundary_index_].filename_.empty())){
+            content_.setCDs(body_line, FileContent, boundary_index_);
     
-    }
-        
-        
-
-        
-
-
-
-
-
+        }
             
-    } else if (cgi_flag_ == 1) {
-        // Handle CGI-specific content parsing here
     } else {
         // Handle
         content_.setBodyWithNoCD(body_line); 

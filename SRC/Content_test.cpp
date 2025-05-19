@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/19 01:14:37 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/19 17:12:10 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,11 +34,10 @@ void Content::setBounday(const std::string& boundary){
     size_t pos;
     std::string tmp;
 
-    if ((pos = boundary.find("boundary=----")) != std::string::npos){
+    if ((pos = boundary.find("boundary=")) != std::string::npos){
         tmp = boundary.substr(pos + 9);
     }
-    boundary_ = tmp;
-    boundary_end_ = boundary_ + "--";
+    boundary_ = "--" + tmp;
 
 }
 
@@ -81,41 +80,53 @@ void Content::setBodyWithNoCD(const std::string& line){
 
 void Content::setCDs(const std::string& buffer, CD_header header, int index){
     std::stringstream iss(buffer);
-    size_t pos_begin;
-    size_t pos_end;
     
-    while(getline(iss, cd_element, '; ')){
-        switch (header){
-            case ContentDisposition
+    switch (header){
+        case ContentDisposition: {
+            size_t pos_begin;
+            size_t pos_end;
+            std::string cd_element;
+            
+            std::string type_part;
+            getline(iss, type_part, '; ');
+            pos_begin = type_part.find_first_not_of(" \t");
+            if (pos_begin != std::string::npos)
+                    CDs_list_[index].CD_type_ = type_part.substr(pos_begin);
+
+            while(getline(iss, cd_element, ';')){
+                size_t pos_begin = cd_element.find_first_not_of(" \t");
+                if (pos_begin != std::string::npos)
+                    cd_element = cd_element.substr(pos_begin);
                 if (cd_element.find("name=") != std::string::npos){
                     pos_begin = cd_element.find("\"") + 1;
-                    pos_end = cd_element.rfind("\"")
-                    std::string res = cd_element.substr(pos_begin, pos_end - pos_begin -1);
-                    content_.CDs_list_[index].name_ = res;
+                    pos_end = cd_element.rfind("\"");
+                    std::string res = cd_element.substr(pos_begin, pos_end - pos_begin);
+                    CDs_list_[index].name_ = res;
                 } else if (cd_element.find("filename=") != std::string::npos) {
                     pos_begin = cd_element.find("\"") + 1;
-                    pos_end = cd_element.rfind("\"")
-                    std::string res = cd_element.substr(pos_begin, pos_end - pos_begin -1);
-                    content_.CDs_list_[index].filename_ = res;
-                } else
-                    CDs_list_[index].CD_type_ = cd_element;
-
-            case InterContentType
-                CDs_list_[index].inner_content_type_
-                
-                
-            case Content
-                CDs_list_[index].content_
-                
-            case FileContent
-                CDs_list_[index].file_content_
-                
-
-
-
-
-
+                    pos_end = cd_element.rfind("\"");
+                    std::string res = cd_element.substr(pos_begin, pos_end - pos_begin);
+                    CDs_list_[index].filename_ = res;
+                }
+            }
+            break;
         }
+        case InterContentType: {
+            std::string dummy;
+            iss >> dummy >> CDs_list_[index].inner_content_type_;
+
+            break;
+        }
+        case Content: {
+            CDs_list_[index].content_ += buffer;
+            break;
+        }
+
+        case FileContent: {
+            CDs_list_[index].file_content_ += buffer;
+            break;
+        }
+
     }
 
 }

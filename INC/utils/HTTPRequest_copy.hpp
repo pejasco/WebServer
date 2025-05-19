@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/18 20:32:23 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/19 17:23:18 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,8 +55,11 @@ class HTTPRequest {
 
                 //Setters:
                 void setMet(const std::string& method);
+                void setContentFlag(const bool flag);
+                void setBoundaryIndex(int index);
                 void setIsInTheBodyFlag(const bool flag);
                 void setCGIFlag(const bool flag);
+                void setCGIType(const std::string cgi_type);
                 void setPath(const std::string& path);
                 void setVersion(const std::string& version);
                 void setHost(const std::string& host);
@@ -120,6 +123,7 @@ class HTTPRequest {
                 bool content_flag_;
                 bool is_in_the_body_flag_;
                 int boundary_index_;
+                std::string cgi_type_;
                 bool cgi_flag_;
                 Content content_;
                 std::map <std::string, std::string> unknown_; 
