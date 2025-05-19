@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/16 19:25:15 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/19 01:14:37 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ void Content::setBounday(const std::string& boundary){
         tmp = boundary.substr(pos + 9);
     }
     boundary_ = tmp;
+    boundary_end_ = boundary_ + "--";
+
 }
 
 void Content::setContentType(const std::string& buffer){
@@ -77,8 +79,44 @@ void Content::setBodyWithNoCD(const std::string& line){
 }
 
 
-void Content::setCDs(const std::string& buffer){
-    (void)buffer;
+void Content::setCDs(const std::string& buffer, CD_header header, int index){
+    std::stringstream iss(buffer);
+    size_t pos_begin;
+    size_t pos_end;
+    
+    while(getline(iss, cd_element, '; ')){
+        switch (header){
+            case ContentDisposition
+                if (cd_element.find("name=") != std::string::npos){
+                    pos_begin = cd_element.find("\"") + 1;
+                    pos_end = cd_element.rfind("\"")
+                    std::string res = cd_element.substr(pos_begin, pos_end - pos_begin -1);
+                    content_.CDs_list_[index].name_ = res;
+                } else if (cd_element.find("filename=") != std::string::npos) {
+                    pos_begin = cd_element.find("\"") + 1;
+                    pos_end = cd_element.rfind("\"")
+                    std::string res = cd_element.substr(pos_begin, pos_end - pos_begin -1);
+                    content_.CDs_list_[index].filename_ = res;
+                } else
+                    CDs_list_[index].CD_type_ = cd_element;
+
+            case InterContentType
+                CDs_list_[index].inner_content_type_
+                
+                
+            case Content
+                CDs_list_[index].content_
+                
+            case FileContent
+                CDs_list_[index].file_content_
+                
+
+
+
+
+
+        }
+    }
 
 }
 

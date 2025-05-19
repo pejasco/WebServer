@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/16 19:34:58 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/19 01:14:07 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ Accept::~Accept(){}
 
 //<<HTTPRequest>>
 HTTPRequest::HTTPRequest() : instance_index_(global_index_++), content_flag_(false),
-    cgi_flag_(false), is_in_the_body_flag_(false){}
+    cgi_flag_(false), is_in_the_body_flag_(false), boundary_index_(-1){}
 
 HTTPRequest::~HTTPRequest(){}
 
@@ -291,18 +291,59 @@ void HTTPRequest::parseRequestLine(const std::string& request_line){
     // std::cout << "This is the version: " << this->version_ << std::endl;
 }
 
+
+
 void HTTPRequest::parseContent(const std::string& body_line){
+    size_t pos_begin;
+    size_t pos_end;
+    std::string line;
+    
     if (body_line == content_.getBoundary()){
         setIsInTheBodyFlag(true);
-        return ;
-    } else if (cgi_flag_ && content_.getContentLength() >= 0 && !content_.getBoundary().empty()
-            && is_in_the_body_flag_){
-        if (body_line.rfind(""))
+        if (boundary_index_ == -1)
+            boundary_index_ = 0;
+        else
+            boundary_index_ += 1;
+        // multipart/form-data
+    } else if (cgi_flag_ == 0 && content_.getContentLength() >= 0 
+        && !content_.getBoundary().empty() && is_in_the_body_flag_){
+            
+        if (body_line.rfind("Content-Disposition:") != std::string::npos){
+            content_.CDs_list_.push_back(ContentDisposition_());
+            if((pos_begin = body_line.find(':')) != std::string::npos){
+                pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);
+                line = body_line.substr(pos_begin);
+                content_.setCDs(line, ContentDisposition, boundary_index_);}
+
+        } else if (body_line.rfind("Content-Type:" != std::string::npos)){
+            if((pos_begin = body_line.find(':')) != std::string::npos){
+                pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);
+                line = body_line.substr(pos_begin);
+                content_.setCDs(line, InterContentType, boundary_index_);}
+        
+        } else if (!body_line.empty()
+            && (content_.CDs_list_[boundary_index_].filename_.empty())){
+                conent_.setCDs(line, Conetent, boundary_index_);
+        
+        } else if (!body_line.empty()
+            && (content_.CDs_list_[boundary_index_].filename_.empty())){
+            conent_.setCDs(line, Conetent, boundary_index_);
+    
+    }
+        
+        
 
         
-    } else if (cgi_flag_) {
+
+
+
+
+
+            
+    } else if (cgi_flag_ == 1) {
         // Handle CGI-specific content parsing here
     } else {
+        // Handle
         content_.setBodyWithNoCD(body_line); 
     }
 }

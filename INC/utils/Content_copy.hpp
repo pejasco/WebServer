@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/16 19:21:31 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/18 19:35:10 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,10 @@
 // ------WebKitFormBoundaryXYZ--
 
 
+
+
+
+
 struct ContentDisposition_
 {
         ContentDisposition_();
@@ -55,7 +59,15 @@ struct ContentDisposition_
         std::string name_;
         std::string filename_;
         std::string inner_content_type_;
-        std::string file_contents_;
+        std::string content_;
+        std::string file_content_;
+};
+
+enum CD_header{
+        ContentDispositon,
+        InterContentType,
+        Content,
+        FileContent
 };
 
 class Content {
@@ -68,7 +80,7 @@ class Content {
                 void setBounday(const std::string& buffer);
                 void setContentLength(const std::string& buffer);
                 void setBodyWithNoCD(const std::string& buffer);
-                void setCDs(const std::string& buffer);
+                void setCDs(const std::string& buffer, CD_header header, int index);
 
                 //getters
                 const std::pair<std::string, std::string>& getContentType();
@@ -107,6 +119,7 @@ class Content {
                 // bool cd_flag_;
                 int content_length_; //Content-Length: 13
                 std::string boundary_; //Content-Type: multipart/form-dat; boundary=--WebKitFormBoundaryXYZ
+                std::string boundary_end_;
                 //std::map<std::string, std::string> body_;
                 std::string body_with_no_cd_;
                 std::vector<ContentDisposition_> CDs_list_;

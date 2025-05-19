@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/16 15:57:36 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/18 20:32:23 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,6 +119,7 @@ class HTTPRequest {
         // POST
                 bool content_flag_;
                 bool is_in_the_body_flag_;
+                int boundary_index_;
                 bool cgi_flag_;
                 Content content_;
                 std::map <std::string, std::string> unknown_; 
@@ -128,3 +129,10 @@ class HTTPRequest {
 };
 
 #endif
+
+//-1 0
+
+
+//0 +1 1
+
+//1 - 0
