@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content_test.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/19 17:12:10 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/21 12:34:18 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,35 +78,43 @@ void Content::setBodyWithNoCD(const std::string& line){
 }
 
 
-void Content::setCDs(const std::string& buffer, CD_header header, int index){
+void Content::setCDs(const std::string& buffer, CD_header header, int index) { // problem with this function -- unable to parse the content of file and get segfault
     std::stringstream iss(buffer);
-    
+    std::cout << BOLD GREEN "IS THIS THE PROBLEM\n" RESET;
+    std::cout << "buffer: " << buffer << std::endl;
+    std::cout << "header: " << header << std::endl;
     switch (header){
         case ContentDisposition: {
             size_t pos_begin;
             size_t pos_end;
             std::string cd_element;
-            
+            std::cout << "check1\n";
             std::string type_part;
-            getline(iss, type_part, '; ');
+            getline(iss, type_part, ';');
+            std::cout << "check2\n";
             pos_begin = type_part.find_first_not_of(" \t");
-            if (pos_begin != std::string::npos)
-                    CDs_list_[index].CD_type_ = type_part.substr(pos_begin);
-
+            if (pos_begin != std::string::npos) {
+                CDs_list_[index].CD_type_ = type_part.substr(pos_begin);
+                std::cout << "check2bis\n";    
+            }
             while(getline(iss, cd_element, ';')){
+                std::cout << "check3\n";
                 size_t pos_begin = cd_element.find_first_not_of(" \t");
-                if (pos_begin != std::string::npos)
+                if (pos_begin != std::string::npos) {
                     cd_element = cd_element.substr(pos_begin);
-                if (cd_element.find("name=") != std::string::npos){
+                    std::cout << "cd_element= " << cd_element << std::endl;
+                } if (cd_element.find("name=") != std::string::npos){
                     pos_begin = cd_element.find("\"") + 1;
                     pos_end = cd_element.rfind("\"");
                     std::string res = cd_element.substr(pos_begin, pos_end - pos_begin);
                     CDs_list_[index].name_ = res;
+                    std::cout << "cd_name= " << res << std::endl;
                 } else if (cd_element.find("filename=") != std::string::npos) {
                     pos_begin = cd_element.find("\"") + 1;
                     pos_end = cd_element.rfind("\"");
                     std::string res = cd_element.substr(pos_begin, pos_end - pos_begin);
                     CDs_list_[index].filename_ = res;
+                    std::cout << "filename= " << res << std::endl;
                 }
             }
             break;
@@ -117,7 +125,7 @@ void Content::setCDs(const std::string& buffer, CD_header header, int index){
 
             break;
         }
-        case Content: {
+        case Cont: {
             CDs_list_[index].content_ += buffer;
             break;
         }
@@ -151,6 +159,6 @@ const std::map<std::string, std::string> Content::getBody(){
 }
 
 
-const std::vector<ContentDisposition_> Content::getCDs(){
+std::vector<ContentDisposition_> Content::getCDs(){
     return CDs_list_;
 }

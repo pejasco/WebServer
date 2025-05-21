@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content_copy.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/19 16:24:55 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/21 10:41:59 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,9 @@ struct ContentDisposition_
 };
 
 enum CD_header{
-        ContentDispositon,
+        ContentDisposition,
         InterContentType,
-        Content,
+        Cont,
         FileContent
 };
 
@@ -87,7 +87,7 @@ class Content {
                 const std::string& getBoundary();
                 int getContentLength();
                 const std::map<std::string, std::string> getBody();
-                const std::vector<ContentDisposition_> getCDs();
+                std::vector<ContentDisposition_> getCDs();
 
         private:
 
@@ -119,7 +119,7 @@ class Content {
                 // bool cd_flag_;
                 int content_length_; //Content-Length: 13
                 std::string boundary_; //Content-Type: multipart/form-dat; boundary=--WebKitFormBoundaryXYZ
-                //std::map<std::string, std::string> body_;
+                std::map<std::string, std::string> body_;
                 std::string body_with_no_cd_;
                 std::vector<ContentDisposition_> CDs_list_;
 };

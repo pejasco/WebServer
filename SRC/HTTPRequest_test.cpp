@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest_test.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/19 17:39:05 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/21 11:57:11 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,19 +28,19 @@ Accept::~Accept(){}
 
 //<<HTTPRequest>>
 HTTPRequest::HTTPRequest() : instance_index_(global_index_++), content_flag_(false),
-    cgi_flag_(false), is_in_the_body_flag_(false), boundary_index_(-1){}
+    is_in_the_body_flag_(false), boundary_index_(-1), cgi_flag_(false){}
 
 HTTPRequest::~HTTPRequest(){}
 
 
 //Setters
 
-void setContentFlag(const bool flag){
+void HTTPRequest::setContentFlag(const bool flag){
     content_flag_ = flag;
 
 }
 
-void setBoundaryIndex(int index){
+void HTTPRequest::setBoundaryIndex(int index){
     boundary_index_ = index;
 }
 
@@ -211,8 +211,8 @@ void HTTPRequest::setAcceptEncoding(const std::string& encoding){
 }
 
 void HTTPRequest::setConnection(const std::string& connection){
-    (void)connection;
-
+    if (connection == "keep-alive")
+        connection_ = true;
 }
 
 // void setCookie(const std::string& version)
@@ -289,6 +289,10 @@ bool HTTPRequest::getCGIFlag() {
     return cgi_flag_;
 }
 
+bool HTTPRequest::getIsInTheBody() {
+    return is_in_the_body_flag_;
+}
+
 //Parser
 
 void HTTPRequest::parseRequestLine(const std::string& request_line){
@@ -311,8 +315,11 @@ void HTTPRequest::parseContent(const std::string& body_line){
     size_t pos_begin;
     size_t pos_end;
     std::string line;
+    (void)pos_end;
     
+    // std::cout << BOLD MAGENTA "I got the body_line, time to parse content\n" RESET;
     if (body_line == content_.getBoundary()){
+        // std::cout << "check1\n";
         setIsInTheBodyFlag(true);
         if (boundary_index_ == -1)
             boundary_index_ = 0;
@@ -320,6 +327,7 @@ void HTTPRequest::parseContent(const std::string& body_line){
             boundary_index_ += 1;
         // multipart/form-data
     } else if (body_line == content_.getBoundary() + "--"){
+        // std::cout << "check1bis\n";
         setContentFlag(false);
         setCGIFlag(false);
         setIsInTheBodyFlag(false);
@@ -327,38 +335,46 @@ void HTTPRequest::parseContent(const std::string& body_line){
 
     } else if (cgi_flag_ == 0 && content_.getContentLength() >= 0 
         && !content_.getBoundary().empty() && is_in_the_body_flag_){
-        
+        // std::cout << "check2\n";
         if (cgi_flag_ == true){
+            // std::cout << "check2bis\n";
             size_t pos_begin = path_.rfind(".");
             cgi_type_ = path_.substr(pos_begin + 1);
         }
         
         if (body_line.find("Content-Disposition:") != std::string::npos){
-            content_.CDs_list_.push_back(ContentDisposition_());
+            // std::cout << "check3\n";
+            content_.getCDs().push_back(ContentDisposition_());
+            // std::cout << "is it working here\n";
             if((pos_begin = body_line.find(':')) != std::string::npos){
                 pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);
                 line = body_line.substr(pos_begin);
-                content_.setCDs(line, ContentDisposition, boundary_index_);}
-
+                content_.setCDs(line, ContentDisposition, boundary_index_);
+            }
         } else if (body_line.find("Content-Type:") != std::string::npos){
+            // std::cout << "check4\n";
             if((pos_begin = body_line.find(':')) != std::string::npos){
                 pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);
                 line = body_line.substr(pos_begin);
                 content_.setCDs(line, InterContentType, boundary_index_);}
         
         } else if (!body_line.empty()
-            && (content_.CDs_list_[boundary_index_].filename_.empty())){
-                content_.setCDs(body_line, Content, boundary_index_);
+            && (content_.getCDs()[boundary_index_].filename_.empty())){
+                // std::cout << "check4\n";
+                content_.setCDs(body_line, Cont, boundary_index_);
                 
         } else if (!body_line.empty()
-            && !(content_.CDs_list_[boundary_index_].filename_.empty())){
-            content_.setCDs(body_line, FileContent, boundary_index_);
+            && !(content_.getCDs()[boundary_index_].filename_.empty())){
+                // std::cout << "check5\n";
+                content_.setCDs(body_line, FileContent, boundary_index_);
     
         }
             
     } else {
         // Handle
+        // std::cout << "check6\n";
         content_.setBodyWithNoCD(body_line); 
+        
     }
 }
 //if (!(content_.getContentType()->first).empty() && content_.getContentLength() >= 0
@@ -370,73 +386,84 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
 
     while (std::getline(stream, line))
     {
+        // std::cout << "ParseRequest: " << line << std::endl;
         //GET
         if (line.empty()){
-            if (!(content_.getContentType().first).empty() && content_.getContentLength() >= 0 && is_in_the_body_flag_)
+            if (!(content_.getContentType().first).empty() && content_.getContentLength() >= 0 && is_in_the_body_flag_) {
+                // std::cout << BOLD MAGENTA "check content to fill\n" RESET;
                 parseContent(line);
+            }
             else
                 continue;
         } else if (line.find("Host") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string host = line.substr(pos_begin, std::string::npos);
-                setHost(host);}
-
+                setHost(host);
+                // std::cout << "Host: " << host << std::endl;
+            }
         } else if (line.find("Connection") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string connection = line.substr(pos_begin, std::string::npos);
-                setConnection(connection);}
-
+                setConnection(connection);
+                // std::cout << "connection: " << connection << std::endl;
+            }
         } else if (line.find("User-Agent") != std::string::npos){   
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string agents = line.substr(pos_begin, std::string::npos);
-                setUserAgent(agents);}
-
+                setUserAgent(agents);
+                // std::cout << "agents: " << agents << std::endl;
+            }
         } else if (line.find("Accept") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string accept = line.substr(pos_begin, std::string::npos);
-                setAccept(accept);}
-
-
+                setAccept(accept);
+                // std::cout << "accept: " << accept << std::endl;
+            }
         } else if (line.find("Referer") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string referer = line.substr(pos_begin, std::string::npos);
-                setReferer(referer);}
-
+                setReferer(referer);
+                // std::cout << "referer: " << referer << std::endl;
+            }
         } else if (line.find("Accept-Encoding") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string encoding = line.substr(pos_begin, std::string::npos);
-                setAcceptEncoding(encoding);}
-
+                setAcceptEncoding(encoding);
+                // std::cout << "encoding: " << encoding << std::endl;
+            }
         } else if (line.find("Accept-Language") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string languages = line.substr(pos_begin, std::string::npos);
-                setAcceptLanguage(languages);}
-
+                setAcceptLanguage(languages);
+                // std::cout << "languages: " << languages << std::endl;
+            }
         } 
         // content related (only applicable to POST and DEL)
         else if (line.find("Content-Type") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string cttype = line.substr(pos_begin, std::string::npos);
-                content_.setContentType(cttype);}
-
+                content_.setContentType(cttype);
+                // std::cout << "Content-Type: " << cttype << std::endl;
+            }
         } else if (line.find("Content-Length") != std::string::npos){
             if ((pos_begin = line.rfind(":")) != std::string::npos){
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string ctlength = line.substr(pos_begin, std::string::npos);
                 content_.setContentLength(ctlength);
-                }
-            
-        } else if (content_flag_ == true)
+                // std::cout << "Content-Length: " << ctlength << std::endl;
+            }
+        } else if (content_flag_ == true) {
+            // std::cout << BOLD YELLOW "Checker\n" RESET;  
             HTTPRequest::parseContent(line);
-        else
+        } else
             return;
     }
 }

@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/15 17:33:28 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/21 12:31:29 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest) : currentRequest(inp
 	}	
 };
 HTTPResponse::~HTTPResponse() {
-	std::cout << "method destructor\n";
+	// std::cout << "method destructor\n";
 };
 
 // SETTER
@@ -44,7 +44,7 @@ HTTPResponse::~HTTPResponse() {
 const std::string &HTTPResponse::getResponse() {
 	// std::cout << "status_line: " << status_line << std::endl;
 	// std::cout << "header: " << header << std::endl;
-	std::cout << "response header that is going to be sent:\n" << response;
+	// std::cout << "response header that is going to be sent:\n" << response;
 
 	return response;
 };
@@ -72,7 +72,11 @@ void HTTPResponse::setGetResponse() {
 }
 
 void HTTPResponse::setPostResponse() {
-	
+	status_line = currentRequest.getVersion() + " 500 Internal server error\r\n";
+	header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: 90\r\n";
+	body = "<!DOCTYPE html><html><head><title>510 Error</title></head><body><h1>500 Internal Server Error</h1><p>The website is in progress.</p></body></html>";
+	response = status_line + header + empty_line + body;
+	body_filename = "";
 }
 
 void HTTPResponse::setDeleteResponse() {
@@ -96,7 +100,7 @@ void HTTPResponse::setErrorResponse(int errorCode) {
 		response = status_line + header + empty_line;
 	} else {
 		std::cerr << "error\n";
-		status_line = currentRequest.getVersion() + " 500 Internal server erro\r\n";
+		status_line = currentRequest.getVersion() + " 500 Internal server error\r\n";
 		header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: 131\r\n";
 		body = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
 		response = status_line + header + empty_line + body;
@@ -168,7 +172,7 @@ void HTTPResponse::prepareStatusLine(int status_code) {
 
 int HTTPResponse::prepareHeader() {
 	//Probably to adapt so it can change for POST and DELETE as the content can be different
-	std::cout << "INSIDE PREPARE HEARDER\n";
+	// std::cout << "INSIDE PREPARE HEARDER\n";
 	if (currentRequest.getPath().find(".") != std::string::npos) {
 		size_t pos;
 		if ((pos = currentRequest.getPath().rfind(".")) != std::string::npos)
