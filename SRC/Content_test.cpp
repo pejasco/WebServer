@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/21 12:34:18 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/21 14:25:32 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ void Content::setCDs(const std::string& buffer, CD_header header, int index) { /
     std::cout << BOLD GREEN "IS THIS THE PROBLEM\n" RESET;
     std::cout << "buffer: " << buffer << std::endl;
     std::cout << "header: " << header << std::endl;
+    std::cout << "index: " << index << std::endl;
     switch (header){
         case ContentDisposition: {
             size_t pos_begin;
@@ -90,14 +91,55 @@ void Content::setCDs(const std::string& buffer, CD_header header, int index) { /
             std::string cd_element;
             std::cout << "check1\n";
             std::string type_part;
-            getline(iss, type_part, ';');
-            std::cout << "check2\n";
-            pos_begin = type_part.find_first_not_of(" \t");
-            if (pos_begin != std::string::npos) {
-                CDs_list_[index].CD_type_ = type_part.substr(pos_begin);
-                std::cout << "check2bis\n";    
-            }
-            while(getline(iss, cd_element, ';')){
+            // getline(iss, type_part, ';');
+            // std::cout << "type-part: " << type_part << std::endl;
+            // std::cout << "check2\n";
+            // pos_begin = type_part.find_first_not_of(" \t");
+            // if (pos_begin != std::string::npos) {
+            //     CDs_list_[index].CD_type_ = type_part.substr(pos_begin);
+            //     std::cout << "check2bis\n";    
+            // }
+            // if (getline(iss, type_part, ';'))
+            //     std::cout << "type-part2: " << type_part << std::endl;
+            // else {
+            //     // Failure: either EOF was reached or an error occurred
+            //     std::cout << "just"
+            //     if (iss.eof()) {
+            //         // End of file reached
+            //         std::cout << "End of file reached" << std::endl;
+            //     } else if (iss.bad()) {
+            //         // Unrecoverable stream error
+            //         std::cerr << "Unrecoverable stream error: " << std::strerror(errno) << std::endl;
+            //     } else if (iss.fail()) {
+            //         // Recoverable stream error (like format errors)
+            //         std::cerr << "Recoverable stream error" << std::endl;
+            //         iss.clear(); // Clear the error flags to continue using the stream
+            //     }
+            // }
+            // getline(iss, type_part, ';');
+            // std::cout << "type-part3: " << type_part << std::endl;
+            while(getline(iss, type_part, ';')){
+                std::cout << "type-part: " << type_part << std::endl;
+                std::cout << "check2\n";
+                pos_begin = type_part.find_first_not_of(" \t");
+                std::cout << "pos_begin: " << pos_begin << std::endl;
+                if (pos_begin != std::string::npos) {
+                    std::cout << "check2bis BEFORE\n";
+                    std::string newStr = type_part.substr(pos_begin);
+                    std::cout << "CD_type: " << newStr << std::endl;
+                    if (CDs_list_.empty()) {
+                        std::cout << "CD doesn't exist - vector is empty\n";
+                    } else {
+                        // Check if index is valid
+                        if (index < (int)CDs_list_.size()) {
+                            CDs_list_[index].CD_type_ = newStr;
+                        } else {
+                            std::cout << "Error: Index " << index << " out of bounds for CDs_list_ of size " << CDs_list_.size() << std::endl;
+                        }
+                    }
+                    
+                    std::cout << "check2bis AFTER\n";  
+                }
                 std::cout << "check3\n";
                 size_t pos_begin = cd_element.find_first_not_of(" \t");
                 if (pos_begin != std::string::npos) {
@@ -116,7 +158,9 @@ void Content::setCDs(const std::string& buffer, CD_header header, int index) { /
                     CDs_list_[index].filename_ = res;
                     std::cout << "filename= " << res << std::endl;
                 }
+                std::cout << "check4\n";
             }
+            std::cerr << "error with the getline function: " << strerror(errno) << std::endl;
             break;
         }
         case InterContentType: {
@@ -159,6 +203,6 @@ const std::map<std::string, std::string> Content::getBody(){
 }
 
 
-std::vector<ContentDisposition_> Content::getCDs(){
+std::vector<ContentDisposition_> &Content::getCDs(){
     return CDs_list_;
 }

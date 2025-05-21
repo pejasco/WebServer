@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/21 12:31:29 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/21 15:04:24 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,11 +72,19 @@ void HTTPResponse::setGetResponse() {
 }
 
 void HTTPResponse::setPostResponse() {
-	status_line = currentRequest.getVersion() + " 500 Internal server error\r\n";
-	header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: 90\r\n";
-	body = "<!DOCTYPE html><html><head><title>510 Error</title></head><body><h1>500 Internal Server Error</h1><p>The website is in progress.</p></body></html>";
-	response = status_line + header + empty_line + body;
-	body_filename = "";
+	// Switch or if statement to see if it is an upload request (CD --> filename)
+		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload
+		int status_code = CreateTheUploadFIle()
+		if (status_code == 200) { 
+		prepareStatusLine(status_code);
+		prepareHeader();
+		// if (cgi_flag) -- Check with Shally if we need that
+		// 	CGI_Body();
+		headerResponse();
+		bodyResponse(); // html page that going to show "File successfully uploaded + redirect them to the server homepage"
+	} else {
+		setErrorResponse(status_code);
+	}
 }
 
 void HTTPResponse::setDeleteResponse() {
