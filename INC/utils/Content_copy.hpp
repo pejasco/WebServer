@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/21 10:41:59 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/21 14:19:41 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,13 +81,14 @@ class Content {
                 void setContentLength(const std::string& buffer);
                 void setBodyWithNoCD(const std::string& buffer);
                 void setCDs(const std::string& buffer, CD_header header, int index);
+                // void addCDs();
 
                 //getters
                 const std::pair<std::string, std::string>& getContentType();
                 const std::string& getBoundary();
                 int getContentLength();
                 const std::map<std::string, std::string> getBody();
-                std::vector<ContentDisposition_> getCDs();
+                std::vector<ContentDisposition_> &getCDs();
 
         private:
 

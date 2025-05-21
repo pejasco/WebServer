@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/14 14:49:25 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/21 14:19:26 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,6 +105,6 @@ const std::map<std::string, std::string> Content::getBody(){
 }
 
 
-const std::vector<ContentDisposition_> Content::getCDs(){
+std::vector<ContentDisposition_> &Content::getCDs(){
     return CDs_list_;
 }
