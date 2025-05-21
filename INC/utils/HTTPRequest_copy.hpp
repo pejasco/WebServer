@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest_copy.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/19 17:23:18 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/21 10:48:08 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ class HTTPRequest {
 
                 //Getters
                 MET getMethod();
-                const bool getIsInTheBody();
+                bool getIsInTheBody();
                 const std::string& getPath();
                 const std::string& getVersion();
                 const std::string& getHost();

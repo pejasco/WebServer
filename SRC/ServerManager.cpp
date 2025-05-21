@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/15 15:12:54 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/21 12:29:54 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -403,11 +403,18 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 		currentRequest.parseRequest(request);
 		HTTPResponse currentResponse(currentRequest);
 		std::string response = currentResponse.getResponse();
+		std::cout << "response to send: " << response << std::endl;
+		if (currentFd < 0)
+			std::cerr << "Error, currentFD socket is already close: " << std::endl;
+		if (response.empty())
+			std::cerr << "Error, response is empty" << std::endl;
 		ssize_t bytes_sent = send(currentFd, response.c_str(), strlen(response.c_str()), 0);
-		if (bytes_sent < 0) // to check as I got the error active when 0 with errno "ClientSuccess" so I change for -1
-			std::cerr << "Error when sending response to client" << strerror(errno) << std::endl;
+		if (bytes_sent < 0) {// to check as I got the error active when 0 with errno "ClientSuccess" so I change for -1
+			std::cerr << "Error when sending response to client: " << strerror(errno) << std::endl;
+			return ;}
 		std::string bodyFilename = currentResponse.getBodyFilename();
 		if (!bodyFilename.empty()) {
+			std::cout << "check bodyFilename\n";
 			std::ifstream file(bodyFilename.c_str(), std::ios::binary);
 			if (file.is_open()) {				
 				while (!file.eof()) {
