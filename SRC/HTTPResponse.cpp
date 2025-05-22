@@ -74,17 +74,18 @@ void HTTPResponse::setGetResponse() {
 void HTTPResponse::setPostResponse() {
 	// Switch or if statement to see if it is an upload request (CD --> filename)
 		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload
-		int status_code = CreateTheUploadFIle()
-		if (status_code == 200) { 
-		prepareStatusLine(status_code);
-		prepareHeader();
-		// if (cgi_flag) -- Check with Shally if we need that
-		// 	CGI_Body();
-		headerResponse();
-		bodyResponse(); // html page that going to show "File successfully uploaded + redirect them to the server homepage"
-	} else {
-		setErrorResponse(status_code);
-	}
+	// 	int status_code = CreateTheUploadFIle()
+	// 	if (status_code == 200) { 
+	// 	prepareStatusLine(status_code);
+	// 	prepareHeader();
+	// 	// if (cgi_flag) -- Check with Shally if we need that
+	// 	// 	CGI_Body();
+	// 	headerResponse();
+	// 	bodyResponse(); // html page that going to show "File successfully uploaded + redirect them to the server homepage"
+	// } else {
+	// 	setErrorResponse(status_code);
+	// }
+	;
 }
 
 void HTTPResponse::setDeleteResponse() {
