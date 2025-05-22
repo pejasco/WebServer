@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/22 16:06:16 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/22 17:50:10 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,10 +103,18 @@ int HTTPResponse::checkDirectory(std::string& location){
 int HTTPResponse::createUploadFile(std::string& location, ContentDisposition_& cd){
 	int status_code = checkDirectory(location);
 	std::string filepath = location + "/" + cd.filename_;
-	
 
+	std::ofstream file(filepath.c_str(), std::ios::binary);
+	if (!file.is_open())
+		return 500;
+	file.write(cd.file_content_.c_str(), cd.file_content_.length());
 	
+	if (file.fail()){
+		file.close();
+		return 500;
+	}
 	
+	file.close();
 
 
 	
@@ -119,8 +127,7 @@ void HTTPResponse::setPostResponse(std::string& location, ContentDisposition_& c
 		if (!(cd.file_content_).empty())
 			createUploadFile(location, cd);
 
-		
-		
+
 		int status_code = createUploadFIle(location, cd)
 		if (status_code == 200) { 
 		prepareStatusLine(status_code);
@@ -129,7 +136,7 @@ void HTTPResponse::setPostResponse(std::string& location, ContentDisposition_& c
 		// 	CGI_Body();
 		headerResponse();
 		bodyResponse(); // html page that going to show "File successfully uploaded + redirect them to the server homepage"
-	} else {
+	} else {f
 		setErrorResponse(status_code);
 	}
 }
