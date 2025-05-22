@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/22 15:25:19 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/22 16:06:16 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,10 @@ int HTTPResponse::checkDirectory(std::string& location){
 
 int HTTPResponse::createUploadFile(std::string& location, ContentDisposition_& cd){
 	int status_code = checkDirectory(location);
-	if (
+	std::string filepath = location + "/" + cd.filename_;
+	
+
+	
 	
 
 
