@@ -6,7 +6,7 @@
 #    By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/14 17:39:37 by ssottori          #+#    #+#              #
-#    Updated: 2025/05/18 00:41:15 by ssottori         ###   ########.fr        #
+#    Updated: 2025/05/23 18:18:29 by ssottori         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,7 +31,7 @@ SRCS = main.cpp \
 		$(SRC_DIR)/prepEnv.cpp \
 		$(SRC_DIR)/executeScript.cpp \
 		$(SRC_DIR)/returnOutput.cpp \
-		#$(SRC_DIR)/CgiHandler.cpp \
+		$(SRC_DIR)/CgiHandler.cpp \
 
 
 OBJS = $(SRCS:.cpp=.o)
