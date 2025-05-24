@@ -6,7 +6,7 @@
 #    By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/24 01:20:10 by ssottori          #+#    #+#              #
-#    Updated: 2025/05/24 01:20:12 by ssottori         ###   ########.fr        #
+#    Updated: 2025/05/24 19:16:55 by ssottori         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,7 @@ NC = \033[0m
 
 # ======================= COMPILER ======================
 NAME = webserv
-CXX = clang++
+CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 RM = rm -rf
 
