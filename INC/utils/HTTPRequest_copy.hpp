@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest_copy.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/21 10:48:08 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/24 18:45:33 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,6 @@ class HTTPRequest {
                 //Getters
                 MET getMethod();
                 bool getIsInTheBody();
-                const std::string& getPath();
                 const std::string& getVersion();
                 const std::string& getHost();
                 const std::map<std::string, std::string>& getUserAgent();
@@ -90,6 +89,13 @@ class HTTPRequest {
                 const Content& getContent();
                 const std::map <std::string, std::string>& getUnknown();
                 bool getCGIFlag();
+                std::string getMethodAsStr() const;
+                std::string getQueryStr() const;
+                std::string getPath();
+                std::map<std::string, std::string> getBody() const;
+                std::string getRawBody() const;
+                std::map<std::string, std::string> getHeaders() const;
+
 
                 //Parser
                 void parseContent(const std::string& body_line);
@@ -114,6 +120,7 @@ class HTTPRequest {
                 std::vector<std::string> accept_encoding_; //Accept-encoding: gzip, deflate, br, zstd
                 bool connection_; // Connection: keep-alive
                 // std::string cookie_; //Cookie: session=abc123; user=john
+                std::string query_string_;
                 
                 // Sec_Fetch fetch_data_;
                 std::vector<std::string> priority;
@@ -127,6 +134,7 @@ class HTTPRequest {
                 bool cgi_flag_;
                 Content content_;
                 std::map <std::string, std::string> unknown_; 
+                std::map<std::string, std::string> headers_;  //map to store headers
         //
 
 
