@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/24 18:45:33 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/24 20:03:21 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,8 @@ class HTTPRequest {
                 bool getCGIFlag();
                 std::string getMethodAsStr() const;
                 std::string getQueryStr() const;
-                std::string getPath();
+                const std::string& getPath();
+                std::string getcgiPath();
                 std::map<std::string, std::string> getBody() const;
                 std::string getRawBody() const;
                 std::map<std::string, std::string> getHeaders() const;

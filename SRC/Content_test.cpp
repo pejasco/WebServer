@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/24 18:22:24 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/24 20:09:54 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,7 +198,11 @@ int Content::getContentLength(){
     return content_length_;
 }
 
-const std::map<std::string, std::string> Content::getBody() const {
+const std::map<std::string, std::string> Content::getBody(){
+    return body_;
+}
+
+const std::map<std::string, std::string> Content::getBodyconst() const{
     return body_;
 }
 

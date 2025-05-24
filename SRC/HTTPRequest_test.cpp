@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/24 18:49:01 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/24 20:14:21 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,12 +248,16 @@ std::string HTTPRequest::getMethodAsStr() const //cgi needs it as a string
 	}
 }
 
-std::string HTTPRequest::getPath(){
+const std::string& HTTPRequest::getPath(){
+    return path_;
+}
+
+std::string HTTPRequest::getcgiPath(){
     return path_;
 }
 
 std::map<std::string, std::string> HTTPRequest::getBody() const {
-	return content_.getBody();
+	return content_.getBodyconst();
 }
 
 std::string HTTPRequest::getQueryStr() const {

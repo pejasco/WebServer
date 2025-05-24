@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/24 18:31:11 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/24 20:09:50 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,9 +87,10 @@ class Content {
                 const std::pair<std::string, std::string>& getContentType();
                 const std::string& getBoundary();
                 int getContentLength();
-                const std::map<std::string, std::string> getBody() const;
+                const std::map<std::string, std::string> getBody();
                 std::vector<ContentDisposition_> &getCDs();
                 std::string getBodyWithNoCD() const;
+                const std::map<std::string, std::string> getBodyconst() const;
 
         private:
 
