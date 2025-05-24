@@ -1,3 +1,15 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2025/05/24 01:20:10 by ssottori          #+#    #+#              #
+#    Updated: 2025/05/24 01:20:12 by ssottori         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 # ======================= COLORS ========================
 MAKEFLAGS += --silent
 GREEN = \033[1;32m
@@ -15,6 +27,8 @@ RM = rm -rf
 SRC_DIR = SRC
 OBJ_DIR = OBJ
 INC_DIR = INC/utils
+CGI_INC = CGI/inc
+CGI_SRC = CGI/src
 
 SRC = $(SRC_DIR)/Server.cpp \
 	  $(SRC_DIR)/Socket.cpp \
@@ -25,7 +39,14 @@ SRC = $(SRC_DIR)/Server.cpp \
 	  $(SRC_DIR)/Client.cpp \
 	  $(SRC_DIR)/HTTPResponse.cpp \
 	  $(SRC_DIR)/Utils.cpp \
-	  $(SRC_DIR)/main.cpp
+	  $(SRC_DIR)/main.cpp 
+
+CGI_SRC_FILES = CGI/cgi_test.cpp \
+	  $(CGI_SRC)/CgiHandler.cpp \
+	  $(CGI_SRC)/executeScript.cpp \
+	  $(CGI_SRC)/prepEnv.cpp \
+	  $(CGI_SRC)/receiveRequest.cpp \
+	  $(CGI_SRC)/returnOutput.cpp \
 
 INC = $(INC_DIR)/Colors.hpp \
 	  $(INC_DIR)/Webserver.hpp \
@@ -39,13 +60,19 @@ INC = $(INC_DIR)/Colors.hpp \
 	  $(INC_DIR)/Content_copy.hpp \
 	  $(INC_DIR)/Utils.hpp \
 	  $(INC_DIR)/ServerManager.hpp \
+	  $(CGI_INC)/CgiHandler.hpp \
+	  $(CGI_INC)/executeScript.hpp \
+	  $(CGI_INC)/prepEnv.hpp \
+	  $(CGI_INC)/receiveRequest.hpp \
+	  $(CGI_INC)/returnOutput.hpp \
 
-OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+CGI_OBJ = $(CGI_SRC_FILES:$(CGI_SRC)/%.cpp=$(OBJ_DIR)/CGI/%.o)
+OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o) $(CGI_OBJ)
 
 # ======================= RULES =========================
 all: $(NAME)
 
-$(NAME): banner $(OBJ)
+$(NAME): banner $(OBJ) $(CGI_OBJ)
 	@$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
 	@echo "${BLUE}===============================${NC}"
 	@echo "${NC}"
@@ -53,8 +80,13 @@ $(NAME): banner $(OBJ)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
-	@$(CXX) $(CXXFLAGS) -I$(INC_DIR) -c $< -o $@
-	@echo "[${GREEN}webserv${NC}] Compiled into $@"
+	@$(CXX) $(CXXFLAGS) -I$(INC_DIR) -I$(CGI_INC) -c $< -o $@
+	@echo "[${GREEN}webserv${NC}] Compiling... $<"
+
+$(OBJ_DIR)/CGI/%.o: $(CGI_SRC)/%.cpp
+	@mkdir -p $(dir $@)
+	@$(CXX) $(CXXFLAGS) -I$(INC_DIR) -I$(CGI_INC) -c $< -o $@
+	@echo "[${GREEN}webserv${NC}] Compiling... $<"
 
 clean:
 	@$(RM) $(OBJ_DIR)

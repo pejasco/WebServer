@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   cgi_test.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/17 20:57:59 by ssottori          #+#    #+#             */
-/*   Updated: 2025/05/22 16:28:38 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/24 00:43:03 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "executeScript.hpp"
-#include "receiveRequest.hpp"
-#include "prepEnv.hpp"
+#include "inc/executeScript.hpp"
+#include "inc/receiveRequest.hpp"
+#include "inc/prepEnv.hpp"
 #include <iostream>
 
 void testEnvMap(std::map<std::string, std::string> headers)
@@ -41,13 +41,13 @@ void testingExecutor(std::map<std::string, std::string> headers)
 	std::cout << "[CGI OUTPUT] ===\n" << output << std::endl;
 }
 
-int main() {
-	std::map<std::string, std::string> headers;
-	headers["Content-Type"] = "application/testing-cgi-modules";
-	headers["Content-Length"] = "42";
+// int main() {
+// 	std::map<std::string, std::string> headers;
+// 	headers["Content-Type"] = "application/testing-cgi-modules";
+// 	headers["Content-Length"] = "42";
 
-	testEnvMap(headers);
-	//testingExecutor(headers);
+// 	//testEnvMap(headers);
+// 	testingExecutor(headers);
 
-	return 0;
-}
+// 	return 0;
+// }

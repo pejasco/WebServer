@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/21 15:04:24 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/24 01:21:29 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,7 +205,21 @@ void HTTPResponse::headerResponse() {
 	// std::cout << "response: " << response << std::endl;
 }
 
-void HTTPResponse::CGI_Body() {
-	
-	return;
+void HTTPResponse::CGI_Body()
+{
+    // std::string scriptPath = "cgi-bin" + currentRequest.getPath();
+
+    // RequestData data;
+    // data.setMethod(currentRequest.getMethod());
+    // data.setPath(currentRequest.getPath());
+    // data.setQueryString(currentRequest.getQueryString());
+    // data.setHeaders(currentRequest.getHeaders());
+    // data.setBody(currentRequest.getBody());
+
+    // CgiHandler handler(data, scriptPath);
+    // std::string cgiOutput = handler.run();
+
+    // body = cgiOutput;
+    // // overwrite response with final headers + body
+    // response += body;
 }
