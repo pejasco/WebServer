@@ -6,11 +6,13 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/24 01:21:29 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/25 02:16:14 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/HTTPResponse.hpp"
+#include "../CGI/inc/receiveRequest.hpp"
+#include "../CGI/inc/CgiHandler.hpp"
 
 bool cgi_flag = false;
 
@@ -205,18 +207,19 @@ void HTTPResponse::headerResponse() {
 	// std::cout << "response: " << response << std::endl;
 }
 
-void HTTPResponse::CGI_Body()
+void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI and storing it in RequestData
 {
-    // std::string scriptPath = "cgi-bin" + currentRequest.getPath();
+	// std::string path = currentRequest.getPath();  // e.g. "/cgi-bin/test.py"
+	// std::string scriptPath = "." + path;
 
     // RequestData data;
-    // data.setMethod(currentRequest.getMethod());
+    // data.setMethod(currentRequest.getMethodAsStr());
     // data.setPath(currentRequest.getPath());
-    // data.setQueryString(currentRequest.getQueryString());
+    // data.setQueryString(currentRequest.getQueryStr());
     // data.setHeaders(currentRequest.getHeaders());
-    // data.setBody(currentRequest.getBody());
+    // data.setBody(currentRequest.getRawBody());
 
-    // CgiHandler handler(data, scriptPath);
+    // CgiHandler handler(data, scriptPath); //new object
     // std::string cgiOutput = handler.run();
 
     // body = cgiOutput;
