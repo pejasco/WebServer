@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content_test.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/24 20:09:54 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/21 14:25:32 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,16 +202,7 @@ const std::map<std::string, std::string> Content::getBody(){
     return body_;
 }
 
-const std::map<std::string, std::string> Content::getBodyconst() const{
-    return body_;
-}
-
 
 std::vector<ContentDisposition_> &Content::getCDs(){
     return CDs_list_;
 }
-
-std::string Content::getBodyWithNoCD() const {
-	return body_with_no_cd_;
-}
-

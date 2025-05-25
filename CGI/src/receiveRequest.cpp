@@ -6,11 +6,11 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 17:12:40 by ssottori          #+#    #+#             */
-/*   Updated: 2025/05/24 01:55:46 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/14 17:49:52 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/receiveRequest.hpp"
+#include "receiveRequest.hpp"
 
 RequestData::RequestData() {}
 

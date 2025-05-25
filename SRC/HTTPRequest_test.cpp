@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest_test.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/24 20:14:21 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/21 11:57:11 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ int HTTPRequest::global_index_ = 0;
 //<<Accept>>
 Accept::Accept(std::string type, std::string subtype, float piority) : type_(type), subtype_(subtype), piority_(piority){}
 Accept::~Accept(){}
+
+
 
 //<<HTTPRequest>>
 HTTPRequest::HTTPRequest() : instance_index_(global_index_++), content_flag_(false),
@@ -238,32 +240,9 @@ MET HTTPRequest::getMethod() {
     return method_;
 };
 
-std::string HTTPRequest::getMethodAsStr() const //cgi needs it as a string
-{
-	switch (method_) {
-		case GET: return "GET";
-		case POST: return "POST";
-		case DELETE: return "DELETE";
-		default: return "UNKNOWN";
-	}
-}
-
 const std::string& HTTPRequest::getPath(){
     return path_;
 }
-
-std::string HTTPRequest::getcgiPath(){
-    return path_;
-}
-
-std::map<std::string, std::string> HTTPRequest::getBody() const {
-	return content_.getBodyconst();
-}
-
-std::string HTTPRequest::getQueryStr() const {
-	return query_string_;
-}
-
 
 const std::string& HTTPRequest::getVersion(){
     return version_;
@@ -271,10 +250,6 @@ const std::string& HTTPRequest::getVersion(){
 
 const std::string& HTTPRequest::getHost(){
     return host_;
-}
-
-std::string HTTPRequest::getRawBody() const {
-	return content_.getBodyWithNoCD();
 }
 
 const std::map<std::string, std::string>& HTTPRequest::getUserAgent(){
@@ -291,10 +266,6 @@ const std::map<std::string, float>& HTTPRequest::getAcceptLanguage(){
 
 bool HTTPRequest::getConnection(){
     return connection_;
-}
-
-std::map<std::string, std::string> HTTPRequest::getHeaders() const {
-	return headers_;
 }
 
 const std::string& HTTPRequest::getReferer(){
@@ -415,16 +386,6 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
 
     while (std::getline(stream, line))
     {
-        size_t colon = line.find(":"); //setting headers to _headers
-        if (colon != std::string::npos) {
-            std::string key = line.substr(0, colon);
-            std::string val = line.substr(colon + 1);
-
-            // Trim leading space
-            val.erase(0, val.find_first_not_of(" \t"));
-
-            headers_[key] = val;
-        }
         // std::cout << "ParseRequest: " << line << std::endl;
         //GET
         if (line.empty()){

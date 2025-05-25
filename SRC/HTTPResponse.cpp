@@ -6,15 +6,11 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/24 20:15:27 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/24 01:21:29 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/HTTPResponse.hpp"
-#include "../CGI/inc/receiveRequest.hpp"
-#include "../CGI/inc/CgiHandler.hpp"
-
-
 
 bool cgi_flag = false;
 
@@ -209,22 +205,21 @@ void HTTPResponse::headerResponse() {
 	// std::cout << "response: " << response << std::endl;
 }
 
-void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI and storing it in RequestData
+void HTTPResponse::CGI_Body()
 {
-	std::string path = currentRequest.getPath();  // e.g. "/cgi-bin/test.py"
-	std::string scriptPath = "." + path;
+    // std::string scriptPath = "cgi-bin" + currentRequest.getPath();
 
-    RequestData data;
-    data.setMethod(currentRequest.getMethodAsStr());
-    data.setPath(currentRequest.getPath());
-    data.setQueryString(currentRequest.getQueryStr());
-    data.setHeaders(currentRequest.getHeaders());
-    data.setBody(currentRequest.getRawBody());
+    // RequestData data;
+    // data.setMethod(currentRequest.getMethod());
+    // data.setPath(currentRequest.getPath());
+    // data.setQueryString(currentRequest.getQueryString());
+    // data.setHeaders(currentRequest.getHeaders());
+    // data.setBody(currentRequest.getBody());
 
-    CgiHandler handler(data, scriptPath); //new object
-    std::string cgiOutput = handler.run();
+    // CgiHandler handler(data, scriptPath);
+    // std::string cgiOutput = handler.run();
 
-    body = cgiOutput;
-    // overwrite response with final headers + body
-    response += body;
+    // body = cgiOutput;
+    // // overwrite response with final headers + body
+    // response += body;
 }
