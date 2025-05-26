@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/07 15:50:33 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/26 12:26:41 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,10 +79,11 @@ void Server::addServerName(const std::string &inputName) {
     	serverNames.push_back(token);
 	}
 };
-void Server::setMaxSize(int inputMaxSize) {
+void Server::setMaxSize(size_t inputMaxSize) {
 	maxSize = inputMaxSize;
 };
-void Server::addLocation(const std::string &inputLocation) {
+void Server::addLocation(std::string &inputLocation) {
+	inputLocation.erase(inputLocation.end() - 1);
 	locations.push_back(new Location(inputLocation));
 };
 void Server::setKeepAlive(bool inputAlive) {
@@ -105,7 +106,7 @@ std::map<int,std::string> &Server::getErrorDir() {
 std::vector<std::string> &Server::getServerName() {
 	return serverNames;
 };
-int Server::getMaxSize() {
+size_t Server::getMaxSize() {
 	return maxSize;
 };
 std::vector<Location*> &Server::getLocation() {

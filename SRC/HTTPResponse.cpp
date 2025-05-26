@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/25 02:16:14 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/26 15:29:24 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,18 +16,36 @@
 
 bool cgi_flag = false;
 
-HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest) : currentRequest(inputRequest) {
+HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP) : currentRequest(inputRequest) {
 	empty_line = "\r\n";
+	defaultServer = serverManager.getServers().front();
+	defaultLocation = defaultServer->getLocation().front();
+	server = getCurrentServer(inputRequest, serverManager, serverIP);
+	location = getCurrentLocation(inputRequest, *server);
+	if (location == NULL && (inputRequest.getPath() == "/"))
+		location = defaultServer->getLocation().front();
 	switch (currentRequest.getMethod()) {
 	case GET:
+		if (checkMethod() != 200) {
+			setErrorResponse(405);
+			break;
+		}
 		setGetResponse();
 		cgi_flag = false;
 		break;
 	case POST:
+		if (checkMethod() != 200) {
+			setErrorResponse(405);
+			return;
+		}
 		setPostResponse();
 		cgi_flag = false;
 		break;
 	case DELETE:
+		if (checkMethod() != 200) {
+			setErrorResponse(405);
+			return;
+		}
 		setDeleteResponse();
 		cgi_flag = false; // is it useful ?
 		break;
@@ -120,8 +138,11 @@ void HTTPResponse::setErrorResponse(int errorCode) {
 
 //Checking if the file requested exist and if it is possible to read it 
 int HTTPResponse::checkFile() {
+	std::string defaultPath = defaultLocation->getRoot();
+	defaultPath.erase(std::remove(defaultPath.begin(), defaultPath.end(), '/'), defaultPath.end());
 	if (currentRequest.getPath() == "/") {
-		body_filename = "documents/index.html";
+		body_filename = defaultPath + "/" + defaultLocation->getIndex();
+		std::cout << "body_filename: " << body_filename << std::endl;
 		std::ifstream body_file(body_filename.c_str(), std::ios::binary);
 		if (body_file.is_open()) {
 			body_file.close();
@@ -133,7 +154,16 @@ int HTTPResponse::checkFile() {
 			return 500;
 		}
 	} else {
-		body_filename = "documents" + currentRequest.getPath();
+		body_filename = defaultPath;
+		std::cout << "body_filename: " << body_filename << std::endl;
+		if (currentRequest.getPath().find(".") == std::string::npos) {
+			body_filename += "/" + location->getRoot() + location->getIndex();
+			std::cout << "adding the file from config\n";
+		} else {
+			body_filename += currentRequest.getPath();
+			std::cout << "adding the file from request\n";
+		}
+		std::cout << "New body_filename: " << body_filename << std::endl;
 		if (fileExists(body_filename)){
 			std::ifstream body_file(body_filename.c_str(), std::ios::binary);
 			if (body_file.is_open()) {
@@ -148,6 +178,29 @@ int HTTPResponse::checkFile() {
 			return 404;
 	}
 	return 500;	
+}
+
+int HTTPResponse::checkMethod() {
+	std::vector<MET>::iterator begM;
+	std::vector<MET>::iterator endM;
+	if (location->getMethod().empty()) {
+		Location &defaultLocation = *defaultServer->getLocation().front();
+		begM = defaultLocation.getMethod().begin();
+		endM = defaultLocation.getMethod().end();
+			for (; begM != endM; ++begM) {
+				if (*begM == currentRequest.getMethod())
+					return 200;
+			}
+			return 405;
+	} else {
+		begM = location->getMethod().begin();
+		endM = location->getMethod().end();
+		for (; begM != endM; ++begM) {
+			if (*begM == currentRequest.getMethod())
+				return 200;
+			}
+		return 405;
+	}
 }
 
 
@@ -226,3 +279,4 @@ void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI a
     // // overwrite response with final headers + body
     // response += body;
 }
+

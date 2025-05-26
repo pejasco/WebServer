@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/21 13:56:01 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/26 10:53:25 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,9 +186,7 @@ void ServerManager::parseServer(std::string &line, Server *currentServer, std::f
 			currentServer->setKeepAlive(true);
 	} else if (line.find("client_max_body_size") != std::string::npos) { // limit for the HTTP request body info
 		if ((pos = line.rfind(":")) != std::string::npos) {
-			std::string newLine = line.substr(pos + 2);
-			newLine.erase(newLine.end() - 1);
-			currentServer->setMaxSize(convertToNb<int>(newLine));
+			currentServer->setMaxSize(getMaxSize(line.substr(pos + 2)));
 		}
 	} else if (line.find("location") != std::string::npos) {
 		parseLocation(line, currentServer, configFile);
@@ -239,9 +237,7 @@ void ServerManager::parseLocation(std::string &line, Server *currentServer, std:
 				currentLocation->setUploadDir(line.substr(pos + 2));
 		} else if (line.find("max_body_size") != std::string::npos) {
 			if ((pos = line.rfind(":")) != std::string::npos) {
-				std::string newLine = line.substr(pos + 2);
-				newLine.erase(newLine.end() - 1);
-				currentLocation->setMaxBodySize(static_cast<size_t>(convertToNb<int>(newLine)));
+				currentLocation->setMaxBodySize(getMaxSize(line.substr(pos + 2)));
 			}
 				/////////////////////////////////
 		} else if (line.find("cgi:") != std::string::npos) {
@@ -401,7 +397,8 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 	HTTPRequest currentRequest;
 	if (!request.empty()) {
 		currentRequest.parseRequest(request);
-		HTTPResponse currentResponse(currentRequest);
+		std::string serverIP = getServerIP(currentFd);
+		HTTPResponse currentResponse(currentRequest, *this, serverIP);
 		std::string response = currentResponse.getResponse();
 		std::cout << "response to send: " << response << std::endl;
 		if (currentFd < 0)

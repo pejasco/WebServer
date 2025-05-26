@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest_test.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/25 01:43:00 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/26 12:24:12 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,19 +73,22 @@ void HTTPRequest::setMet(const std::string&  method){
         throw std::invalid_argument("Invalid HTTP method: " + method);
 }
 
-void HTTPRequest::setPath(const std::string& path){
+void HTTPRequest::setPath(const std::string& path) {
     path_ = path;
+    // std::cout << "path: " << path << std::endl;
     if (path_.find("cgi") != std::string::npos)
         setCGIFlag(true);
 }
 
 void HTTPRequest::setVersion(const std::string& version){
     version_ = version;
+    // std::cout << "version: " << version << std::endl;
 }
 
-void HTTPRequest::setHost(const std::string& host){
+void HTTPRequest::setHost(std::string& host) {
+    host.erase(host.end() - 1);
     host_ = host;
-
+    // std::cout << "host: " << host << std::endl;
 }
 
 void HTTPRequest::setUserAgent(const std::string& agents){
@@ -199,6 +202,7 @@ void HTTPRequest::setAcceptLanguage(const std::string& languages){
 
 void HTTPRequest::setReferer(const std::string& referer){
     referer_ = referer;
+    // std::cout << "referer: " << referer << std::endl;
 }
 
 void HTTPRequest::setAcceptEncoding(const std::string& encoding){
@@ -240,7 +244,7 @@ MET HTTPRequest::getMethod() {
     return method_;
 };
 
-const std::string& HTTPRequest::getPath(){
+const std::string& HTTPRequest::getPath() const{
     return path_;
 }
 
@@ -248,7 +252,7 @@ const std::string& HTTPRequest::getVersion(){
     return version_;
 }
 
-const std::string& HTTPRequest::getHost(){
+const std::string& HTTPRequest::getHost() const {
     return host_;
 }
 
