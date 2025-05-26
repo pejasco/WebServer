@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/26 15:29:24 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/26 15:49:24 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,15 +155,15 @@ int HTTPResponse::checkFile() {
 		}
 	} else {
 		body_filename = defaultPath;
-		std::cout << "body_filename: " << body_filename << std::endl;
+		std::cout << BOLD YELLOW "body_filename: " << body_filename << RESET << std::endl;
 		if (currentRequest.getPath().find(".") == std::string::npos) {
-			body_filename += "/" + location->getRoot() + location->getIndex();
+			body_filename += location->getRoot() + "/" + location->getIndex();
 			std::cout << "adding the file from config\n";
 		} else {
 			body_filename += currentRequest.getPath();
 			std::cout << "adding the file from request\n";
 		}
-		std::cout << "New body_filename: " << body_filename << std::endl;
+		std::cout << BOLD YELLOW "New body_filename: " << body_filename << RESET << std::endl;
 		if (fileExists(body_filename)){
 			std::ifstream body_file(body_filename.c_str(), std::ios::binary);
 			if (body_file.is_open()) {
