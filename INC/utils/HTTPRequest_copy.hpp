@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest_copy.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/21 10:48:08 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/26 12:24:03 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ class HTTPRequest {
                 void setCGIType(const std::string cgi_type);
                 void setPath(const std::string& path);
                 void setVersion(const std::string& version);
-                void setHost(const std::string& host);
+                void setHost(std::string& host);
                 void setUserAgent(const std::string& agent);
                 void setAccept(const std::string& media_type);
                 void setAcceptLanguage(const std::string& languages);
@@ -77,9 +77,9 @@ class HTTPRequest {
                 //Getters
                 MET getMethod();
                 bool getIsInTheBody();
-                const std::string& getPath();
+                const std::string& getPath() const;
                 const std::string& getVersion();
-                const std::string& getHost();
+                const std::string& getHost() const;
                 const std::map<std::string, std::string>& getUserAgent();
                 const std::vector<Accept>& getAccept();
                 const std::vector<std::string>& getAcceptEncoding();

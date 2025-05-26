@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/07 15:50:05 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/26 12:26:58 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,8 @@ class Server {
 		void setPort(const std::string &inputPort);
 		void setErrorDir(const std::string &inputErrorDir);
 		void addServerName(const std::string &inputName);
-		void setMaxSize(int inputMaxSize);
-		void addLocation(const std::string &inputLocation);
+		void setMaxSize(size_t inputMaxSize);
+		void addLocation(std::string &inputLocation);
 		void setKeepAlive(bool inputAlive);
 
 		//GETTER//
@@ -38,7 +38,7 @@ class Server {
 		std::vector<std::string> &getPort();
 		std::map<int, std::string> &getErrorDir();
 		std::vector<std::string> &getServerName();
-		int getMaxSize();
+		size_t getMaxSize();
 		std::vector<Location*> &getLocation();
 		bool getKeepAlive();
 		
@@ -54,7 +54,7 @@ class Server {
 		std::string host;
 		std::vector<std::string> port;
 		std::vector<std::string> serverNames;
-		int maxSize;
+		size_t maxSize;
 		bool keep_alive;
 
 		// error_pages settings

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/15 14:58:35 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/26 15:21:07 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,6 +242,21 @@ std::string getContentType(const std::string &inputExtension) {
 	return "application/octet-stream";
 }
 
+std::string getServerIP(int socketFd) {
+	struct sockaddr_in serverAddr;
+	socklen_t serverAddrLen = sizeof(serverAddr);
+	
+	// Get the server socket's address information
+	if (getsockname(socketFd, (struct sockaddr*)&serverAddr, &serverAddrLen) == 0) {
+		char ipStr[INET_ADDRSTRLEN];
+		if (inet_ntop(AF_INET, &serverAddr.sin_addr, ipStr, INET_ADDRSTRLEN)) {
+			return std::string(ipStr);
+		}
+	}
+	
+	return "unknown";
+}
+
 std::string toLowerCase(const std::string& input) {
 	std::string result = input;
 	for (size_t i = 0; i < result.length(); ++i) {
@@ -264,26 +279,114 @@ int calculateFileSize(std::string &filename) {
 	return length;
 }
 
+size_t getMaxSize(const std::string &inputSize) {
+	//B -> size
+	//KB -> size * 1024
+	//MB -> size * 1024 * 1024
+	//GB -> size * 1024 * 1024 * 1024
+	size_t size = 0;
+	char value = inputSize[-2];
+	if (value == ' ')
+		return size = convertToNb<size_t>(inputSize);
+	else if (value == 'K' || value == 'k')
+		return size = (convertToNb<size_t>(inputSize)) * 1024;
+	else if (value == 'M' || value == 'm')
+		return size = (convertToNb<size_t>(inputSize)) * 1024 * 1024;
+	else if (value == 'G' || value == 'g')
+		return size = (convertToNb<size_t>(inputSize)) * 1024 * 1024 * 1024;
+	else {
+		std::cerr << " Error: size not recognized\n";
+		return 0;
+	}
+		
+}
+
+Server *getCurrentServer(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP) {
+	std::vector<Server*>::iterator begSe = serverManager.getServers().begin();
+	std::vector<Server*>::iterator endSe = serverManager.getServers().end();
+	
+	for (; begSe != endSe; ++begSe) {
+		if ((*begSe)->getHost() == serverIP) {
+			std::cout << "current server: " << (*begSe)->getHost() << ", request host: " << serverIP << std::endl;
+			std::vector<std::string> tempPort = (*begSe)->getPort();
+			std::vector<std::string>::iterator begPo = tempPort.begin();
+			std::vector<std::string>::iterator endPo = tempPort.end();
+			for (; begPo != endPo; ++ begPo) {
+				std::cout << "current port " << *begPo << ", request port: " << inputRequest.getHost() << std::endl;
+				if (inputRequest.getHost() == *begPo) {
+					std::cout << "found the matching port, bye\n";
+					return *begSe; 
+				}
+					
+			}
+		}
+	}
+	return serverManager.getServers().front();
+}
+
+Location *getCurrentLocation(const HTTPRequest &inputRequest, Server &currentServer) {
+	if (currentServer.getLocation().empty())
+		return NULL;
+	else {
+		std::vector<Location*>::iterator begLo = currentServer.getLocation().begin();
+		std::vector<Location*>::iterator endLo = currentServer.getLocation().end();
+		for (; begLo != endLo; ++begLo) {
+			std::string requestPath = formatURL(inputRequest.getPath());
+			std::cout << "Request: " << requestPath << ", request size: " << requestPath << ", server location: " << (*begLo)->getPath() << ", size: " << (*begLo)->getPath().size() << std::endl;
+			if (requestPath == (*begLo)->getPath()) {
+				std::cout << "found the matching location, bye\n";
+				return *begLo;
+			}		
+		}
+		if (inputRequest.getPath() == "/")
+			return NULL;
+		else 
+			return currentServer.getLocation().front();
+	}
+}
+
+std::string formatURL(const std::string &input) {
+	std::cout << "input before processing: " << input << std::endl;
+	if (input.empty() || input[0] != '/') {
+		return input;
+	}
+	std::string::size_type secondSlashPos = input.find('/', 1);
+	if (secondSlashPos != std::string::npos) {
+		return input.substr(0, secondSlashPos);
+	} else {
+		return input;
+	}
+}
+
+std::string getFilenameFromPath(const std::string& path) {
+	std::string::size_type slashPos = path.rfind('/');
+	if (slashPos != std::string::npos) {
+		return path.substr(slashPos + 1);
+	} else {
+		return path;
+	}
+}
+
 /*
 ///
 /// Get me my file size in bytes (long long to support any file size supported by your OS.
 ///
 long long Logger::getFileSize()
 {
-    std::streampos fsize = 0;
+	std::streampos fsize = 0;
 
-    std::ifstream myfile ("myfile.txt", ios::in);  // File is of type const char*
+	std::ifstream myfile ("myfile.txt", ios::in);  // File is of type const char*
 
-    fsize = myfile.tellg();         // The file pointer is currently at the beginning
-    myfile.seekg(0, ios::end);      // Place the file pointer at the end of file
+	fsize = myfile.tellg();         // The file pointer is currently at the beginning
+	myfile.seekg(0, ios::end);      // Place the file pointer at the end of file
 
-    fsize = myfile.tellg() - fsize;
-    myfile.close();
+	fsize = myfile.tellg() - fsize;
+	myfile.close();
 
-    static_assert(sizeof(fsize) >= sizeof(long long), "Oops.");
+	static_assert(sizeof(fsize) >= sizeof(long long), "Oops.");
 
-    cout << "size is: " << fsize << " bytes.\n";
-    return fsize;
+	cout << "size is: " << fsize << " bytes.\n";
+	return fsize;
 }
 
 */
