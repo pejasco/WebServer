@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/28 00:50:32 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/28 02:08:23 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -391,6 +391,16 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
 
 	while (std::getline(stream, line))
 	{
+		size_t colon = line.find(":"); //setting headers to _headers
+		if (colon != std::string::npos) {
+			std::string key = line.substr(0, colon);
+			std::string val = line.substr(colon + 1);
+
+			// Trim leading space
+			val.erase(0, val.find_first_not_of(" \t"));
+
+			headers_[key] = val;
+		}
 		// std::cout << "ParseRequest: " << line << std::endl;
 		//GET
 		if (line.empty()){
@@ -508,3 +518,14 @@ std::string HTTPRequest::getMethodAsStr() const //cgi needs it as a string
 		default: return "UNKNOWN";
 	}
 }
+
+std::string HTTPRequest::getQueryStr() const { return query_string_; }
+
+std::map<std::string, std::string> HTTPRequest::getHeaders() const { return headers_; }
+
+std::string HTTPRequest::getRawBody() const
+{
+	return content_.getBodyWithNoCD();
+}
+
+//std::string HTTPRequest::getcgiPath() { return path_; }

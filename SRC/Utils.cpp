@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/28 00:40:31 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/28 03:13:34 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,6 +230,10 @@ std::string getContentType(const std::string &inputExtension) {
 	contentType.insert(std::make_pair(".otf", "font/otf"));
 	contentType.insert(std::make_pair(".woff", "font/woff"));
 	contentType.insert(std::make_pair(".woff2", "font/woff2"));
+
+	//CGI
+	contentType.insert(std::make_pair(".py", "text/plain"));
+	contentType.insert(std::make_pair(".sh", "text/plain"));
 	
 	std::map<std::string, std::string>::iterator beg = contentType.begin();
 	std::map<std::string, std::string>::iterator end = contentType.end();

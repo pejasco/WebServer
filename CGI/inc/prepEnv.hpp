@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 17:44:08 by ssottori          #+#    #+#             */
-/*   Updated: 2025/05/14 17:54:52 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/28 02:18:25 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 #include <map> //env vars
 #include <string>
 #include "receiveRequest.hpp"
+#include <iostream>
+
 
 //Envbuilder is going to ""translate all the data received.
 //It is responsible for turning the request infor into proper CGI env variables

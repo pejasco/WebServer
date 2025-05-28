@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 17:49:28 by ssottori          #+#    #+#             */
-/*   Updated: 2025/05/23 18:13:06 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/28 02:18:29 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,13 @@ void EnvBuilder::initFromRequest(const RequestData& request) //building map of c
 		_env["CONTENT_TYPE"] = headers["Content-Type"];
 	if (headers.find("Content-Length") != headers.end()) // specifically for POST - tells CGI script how many bytes to read from stdin
 		_env["CONTENT_LENGTH"] = headers["Content-Length"];
+
+	std::cerr << "[CGI DEBUG] === ENVIRONMENT VARIABLES ===" << std::endl;
+	for (std::map<std::string, std::string>::const_iterator it = _env.begin(); it != _env.end(); ++it) {
+		std::cerr << it->first << "=" << it->second << std::endl;
+	}
+	std::cerr << "[CGI DEBUG] ==============================" << std::endl;
+
 }
 
 std::map<std::string, std::string> EnvBuilder::getEnvMap() const { return _env; }

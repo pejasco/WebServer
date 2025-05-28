@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content_copy.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/22 13:46:13 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/28 02:05:37 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,8 @@ class Content {
                 int getContentLength();
                 const std::map<std::string, std::string> getBody();
                 std::vector<ContentDisposition_> &getCDs();
+                std::string getBodyWithNoCD() const;
+                const std::map<std::string, std::string> getBodyconst() const;
 
         private:
 

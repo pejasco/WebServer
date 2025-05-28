@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 16:26:00 by ssottori          #+#    #+#             */
-/*   Updated: 2025/05/22 16:20:33 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/28 02:51:34 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ char** ScriptExecutor::createArgv() const
 	std::strcpy(av[0], interpreter.c_str());
 	av[1] = new char[_scriptPath.size() + 1];
 	std::strcpy(av[1], _scriptPath.c_str());
-//-
+	av[2] = NULL;
 	return av;
 }
 
@@ -90,6 +90,9 @@ void ScriptExecutor::execveScript()
 	execve(av[0], av, envp);
 	std::cerr << "execve failed: " << strerror(errno) << std::endl;
 	envBuilder.freeEnvArray(envp);
+	for (int i = 0; av[i]; ++i)
+		delete[] av[i];
+	delete[] av;
 	///might need to delete?? if i dinamically allocate av
 	_exit(1);
 }

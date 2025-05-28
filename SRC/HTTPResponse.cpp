@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/28 01:48:04 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/28 03:15:51 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serve
 		break;
 	}	
 };
+
 HTTPResponse::~HTTPResponse() {
 	// std::cout << "method destructor\n";
 };
@@ -289,25 +290,49 @@ void HTTPResponse::headerResponse() {
 
 void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI and storing it in RequestData
 {
-	std::cerr << "----- [CGI] we are in CGI_Body" << std::endl;
-	std::string path = currentRequest.getPath();  // e.g. "/cgi-bin/test.py"
-	std::string scriptPath = "." + path;
+	const std::string CGI_ROOT = "./CGI/cgi-bin";
+	std::string uri = currentRequest.getPath();  // e.G /cgi-bin/test.py
+	std::string prefix = "/cgi-bin";
+	std::string scriptPath;
+
+	if (uri.find(prefix) == 0) {
+		std::string relativePath = uri.substr(prefix.size());     // e.g. "/test.py"
+		scriptPath = CGI_ROOT + relativePath;         // e.g. "./CGI/cgi-bin/test.py"
+		std::cerr << "[CGI DEBUG] full path to script: " << scriptPath << std::endl;
+	} else {
+		setErrorResponse(404);  // unexpected URI
+		return;
+	}
 
 	RequestData data;
 	data.setMethod(currentRequest.getMethodAsStr());
-	data.setPath(currentRequest.getPath());
+	data.setPath(scriptPath); //for SCRIPT_FILENAME and SCRIPT_NAME
+	data.setQueryString(currentRequest.getQueryStr());
+	data.setHeaders(currentRequest.getHeaders());
+	data.setBody(currentRequest.getRawBody());
 	std::cerr << "[CGI] method : " << data.getMethod() << std::endl;
 	std::cerr << "[CGI] - path saved: " << data.getPath() << std::endl;
+	std::cerr << "[CGI] - query str: " << data.getQueryString() << std::endl;
+	std::cerr << "[CGI] - body saved: " << data.getBody() << std::endl;
 
-	// data.setQueryString(currentRequest.getQueryStr());
-	// data.setHeaders(currentRequest.getHeaders());
-	// data.setBody(currentRequest.getRawBody());
+	CgiHandler handler(data, scriptPath); //new object
+	std::string cgiOutput = handler.run();
 
-	// CgiHandler handler(data, scriptPath); //new object
-	// std::string cgiOutput = handler.run();
+	size_t headerEnd = cgiOutput.find("\r\n\r\n");
+	if (headerEnd != std::string::npos) {
+		std::string headers = cgiOutput.substr(0, headerEnd);
+		std::string body = cgiOutput.substr(headerEnd + 4);
 
-	// body = cgiOutput;
-	// // overwrite response with final headers + body
-	// response += body;
+		if (headers.find("Content-Type:") == std::string::npos)
+			headers = "Content-Type: text/html\r\n" + headers;
+
+		response = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
+	} else {
+		// fallback (not ideal, but prevents broken response)
+		response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;
+	}
+
+	//std::cerr << "[CGI] Raw CGI output:\n" << cgiOutput << "\n";
+	//response = cgiOutput;
 }
 
