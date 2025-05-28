@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/22 20:28:52 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/28 15:12:33 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,24 +95,18 @@ int HTTPResponse::checkDirectory(std::string& location){
 		std::cout << "Error: " << strerror(errno) << std::endl;
 		return 404;
 	}
+	closedir(dir);
 	return 200;
 }
 
 
 
 int HTTPResponse::createUploadFile(std::string& location, ContentDisposition_& cd){
-	DIR* dir = opendir(location.c_str();)
-	if (dir == NULL)
-	{
-		std::error << "Error: " << strerror(errno) << "\n";
-
-
-	}
-
-
+	// check if the directory exists
 	int status_code = checkDirectory(location);
+	if (status_code != 200)
+		return status_code; //if it doesnt exist
 	std::string filepath = location + "/" + cd.filename_;
-
 	std::ofstream file(filepath.c_str(), std::ios::binary);
 	if (!file.is_open())
 		return 500;
@@ -124,31 +118,39 @@ int HTTPResponse::createUploadFile(std::string& location, ContentDisposition_& c
 	}
 	
 	file.close();
-	return 400;
+	return 200;
 }
 
 
 void HTTPResponse::setPostResponse(std::string& location, ContentDisposition_& cd) {
 	// Switch or if statement to see if it is an upload request (CD --> filename)
 		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload		
-		if (!(cd.file_content_).empty())
-			createUploadFile(location, cd);
-
-
-		int status_code = createUploadFIle(location, cd)
+		
+		int status_code = 400; //default to be bad
+		if (!(cd.filename_).empty())
+			status_code = createUploadFile(location, cd);
 		if (status_code == 200) { 
-		prepareStatusLine(status_code);
-		prepareHeader();
+			prepareStatusLine(status_code);
+			
+			body = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
 		// if (cgi_flag) -- Check with Shally if we need that
 		// 	CGI_Body();
-		headerResponse();
-		bodyResponse(); // html page that going to show "File successfully uploaded + redirect them to the server homepage"
-	} else {f
-		setErrorResponse(status_code);
+			content_length = body.length();
+			header = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length) + "\r\n";
+			response = status_line + header + empty_line + body;
+	
+		} else {
+			setErrorResponse(status_code);
 	}
 }
 
-
+// void HTTPResponse::setPostResponse() {
+//     std::string location = "uploads";
+    
+//     ContentDisposition_ cd = currentRequest.getContentDisposition();
+    
+//     setPostResponse(location, cd);
+// }
 
 
 
