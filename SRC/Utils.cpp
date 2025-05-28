@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/26 15:21:07 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/28 00:40:31 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -295,7 +295,7 @@ size_t getMaxSize(const std::string &inputSize) {
 	else if (value == 'G' || value == 'g')
 		return size = (convertToNb<size_t>(inputSize)) * 1024 * 1024 * 1024;
 	else {
-		std::cerr << " Error: size not recognized\n";
+		//std::cerr << " Error: size not recognized\n";
 		return 0;
 	}
 		

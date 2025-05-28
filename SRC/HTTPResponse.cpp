@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/26 15:49:24 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/28 01:48:04 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,20 @@ void HTTPResponse::setGetResponse() {
 	//1st -- check if the path request by the user exist
 	//2nd -- check if the file exist and readable (not already open, with correct permission (not sure if we need to set it up)) 
 	cgi_flag = currentRequest.getCGIFlag();
-	int status_code = checkFile();
+	std::cerr << "[debugging] cgi_flag = " << cgi_flag << std::endl;
+	//body_filename = "./CGI/cgi-bin/test.py"; //need to figure out how to set the correct root path for the cgi....maybe checkFile?
+
+	//int status_code = checkFile();
+	int status_code;
+	if (cgi_flag) {
+		body_filename = "./CGI/cgi-bin/test.py";  // TEMPORARY override for testing
+		status_code = fileExists(body_filename) ? 200 : 404;
+	}
+	else
+	{
+		status_code = checkFile();
+	}
+
 	if (status_code == 200) { 
 		prepareStatusLine(status_code);
 		prepareHeader();
@@ -88,6 +101,20 @@ void HTTPResponse::setGetResponse() {
 	} else {
 		setErrorResponse(status_code);
 	}
+	// if (cgi_flag) {
+	// 	CGI_Body(); // <- run the actual CGI handler
+	// 	return; // <- do NOT check or open the file
+	// }
+
+	// int status_code = checkFile(); //fallback for static files
+	// if (status_code == 200) {
+	// 	prepareStatusLine(status_code);
+	// 	prepareHeader();
+	// 	headerResponse();
+	// } else {
+	// 	setErrorResponse(status_code);
+	// }
+
 
 }
 
@@ -214,11 +241,11 @@ Connection: keep-alive\r\n
 <!DOCTYPE html>\r\n
 <html>\r\n
 <head>\r\n
-    <title>My Page</title>\r\n
+	<title>My Page</title>\r\n
 </head>\r\n
 <body>\r\n
-    <h1>Welcome to my server</h1>\r\n
-    <p>This is a sample page.</p>\r\n
+	<h1>Welcome to my server</h1>\r\n
+	<p>This is a sample page.</p>\r\n
 </body>\r\n
 </html>
 */
@@ -262,21 +289,25 @@ void HTTPResponse::headerResponse() {
 
 void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI and storing it in RequestData
 {
-	// std::string path = currentRequest.getPath();  // e.g. "/cgi-bin/test.py"
-	// std::string scriptPath = "." + path;
+	std::cerr << "----- [CGI] we are in CGI_Body" << std::endl;
+	std::string path = currentRequest.getPath();  // e.g. "/cgi-bin/test.py"
+	std::string scriptPath = "." + path;
 
-    // RequestData data;
-    // data.setMethod(currentRequest.getMethodAsStr());
-    // data.setPath(currentRequest.getPath());
-    // data.setQueryString(currentRequest.getQueryStr());
-    // data.setHeaders(currentRequest.getHeaders());
-    // data.setBody(currentRequest.getRawBody());
+	RequestData data;
+	data.setMethod(currentRequest.getMethodAsStr());
+	data.setPath(currentRequest.getPath());
+	std::cerr << "[CGI] method : " << data.getMethod() << std::endl;
+	std::cerr << "[CGI] - path saved: " << data.getPath() << std::endl;
 
-    // CgiHandler handler(data, scriptPath); //new object
-    // std::string cgiOutput = handler.run();
+	// data.setQueryString(currentRequest.getQueryStr());
+	// data.setHeaders(currentRequest.getHeaders());
+	// data.setBody(currentRequest.getRawBody());
 
-    // body = cgiOutput;
-    // // overwrite response with final headers + body
-    // response += body;
+	// CgiHandler handler(data, scriptPath); //new object
+	// std::string cgiOutput = handler.run();
+
+	// body = cgiOutput;
+	// // overwrite response with final headers + body
+	// response += body;
 }
 
