@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/28 15:13:04 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/29 13:14:20 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,15 +20,17 @@ HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serve
 	empty_line = "\r\n";
 	defaultServer = serverManager.getServers().front();
 	defaultLocation = defaultServer->getLocation().front();
+	std::cout << BOLD UNDERLINE GREEN "\n###### ENTERING SERVER//LOCATION DEBUUGING ######\n\n" RESET;
 	server = getCurrentServer(inputRequest, serverManager, serverIP);
 	location = getCurrentLocation(inputRequest, *server);
 	if (location == NULL && (inputRequest.getPath() == "/"))
 		location = defaultServer->getLocation().front();
+	std::cout << BOLD UNDERLINE GREEN "\n###### LEAVING SERVER//LOCATION DEBUUGING ######\n\n" RESET;
 	switch (currentRequest.getMethod()) {
 	case GET:
 		if (checkMethod() != 200) {
 			setErrorResponse(405);
-			break;
+			return ;
 		}
 		setGetResponse();
 		cgi_flag = false;
@@ -38,7 +40,7 @@ HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serve
 			setErrorResponse(405);
 			return;
 		}
-		setPostResponse();
+		// setPostResponse();
 		cgi_flag = false;
 		break;
 	case DELETE:
@@ -79,7 +81,7 @@ void HTTPResponse::setGetResponse() {
 	//1st -- check if the path request by the user exist
 	//2nd -- check if the file exist and readable (not already open, with correct permission (not sure if we need to set it up)) 
 	cgi_flag = currentRequest.getCGIFlag();
-	std::cerr << "[debugging] cgi_flag = " << cgi_flag << std::endl;
+	// std::cerr << "[debugging] cgi_flag = " << cgi_flag << std::endl;
 	//body_filename = "./CGI/cgi-bin/test.py"; //need to figure out how to set the correct root path for the cgi....maybe checkFile?
 
 	//int status_code = checkFile();
@@ -87,19 +89,20 @@ void HTTPResponse::setGetResponse() {
 	if (cgi_flag) {
 		body_filename = "./CGI/cgi-bin/test.py";  // TEMPORARY override for testing
 		status_code = fileExists(body_filename) ? 200 : 404;
-	}
-	else
-	{
+	} else {
 		status_code = checkFile();
+		std::cout << "status_code of checkFIle in GET: " << status_code << std::endl;
 	}
 
-	if (status_code == 200) { 
+	if (status_code == 200) {
+		std::cout << "GET requested an existing file --> proceed to response pre\n";
 		prepareStatusLine(status_code);
 		prepareHeader();
 		if (cgi_flag)
 			CGI_Body();
 		headerResponse();
 	} else {
+		std::cout << "GET requested a file that doesn't exist --> proceed to error response pre\n";
 		setErrorResponse(status_code);
 	}
 	// if (cgi_flag) {
@@ -119,61 +122,63 @@ void HTTPResponse::setGetResponse() {
 
 }
 
-int HTTPResponse::checkDirectory(std::string& location){
-	DIR* dir = opendir(location.c_str());
-	if (dir == NULL)
-	{
-		std::cout << "Error: " << strerror(errno) << std::endl;
-		return 404;
-	}
-	closedir(dir);
-	return 200;
-}
+// int HTTPResponse::checkDirectory(std::string& location){
+	// DIR* dir = opendir(location.c_str());
+	// if (dir == NULL)
+	// {
+	// 	std::cout << "Error: " << strerror(errno) << std::endl;
+	// 	return 404;
+	// }
+	// closedir(dir);
+	// return 200;
+// 	(void)location;
+// }
 
 
 
-int HTTPResponse::createUploadFile(std::string& location, ContentDisposition_& cd){
-	// check if the directory exists
-	int status_code = checkDirectory(location);
-	if (status_code != 200)
-		return status_code; //if it doesnt exist
-	std::string filepath = location + "/" + cd.filename_;
-	std::ofstream file(filepath.c_str(), std::ios::binary);
-	if (!file.is_open())
-		return 500;
-	file.write(cd.file_content_.c_str(), cd.file_content_.length());
+// int HTTPResponse::createUploadFile(std::string& location, ContentDisposition_& cd){
+// 	// check if the directory exists
+// 	int status_code = checkDirectory(location);
+// 	if (status_code != 200)
+// 		return status_code; //if it doesnt exist
+// 	std::string filepath = location + "/" + cd.filename_;
+// 	std::ofstream file(filepath.c_str(), std::ios::binary);
+// 	if (!file.is_open())
+// 		return 500;
+// 	file.write(cd.file_content_.c_str(), cd.file_content_.length());
 	
-	if (file.fail()){
-		file.close();
-		return 500;
-	}
+// 	if (file.fail()){
+// 		file.close();
+// 		return 500;
+// 	}
 	
-	file.close();
-	return 200;
-}
+// 	file.close();
+// 	return 200;
+	
+// }
 
 
-void HTTPResponse::setPostResponse(std::string& location, ContentDisposition_& cd) {
-	// Switch or if statement to see if it is an upload request (CD --> filename)
-		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload		
+// void HTTPResponse::setPostResponse(std::string& location, ContentDisposition_& cd) {
+// 	// Switch or if statement to see if it is an upload request (CD --> filename)
+// 		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload		
 		
-		int status_code = 400; //default to be bad
-		if (!(cd.filename_).empty())
-			status_code = createUploadFile(location, cd);
-		if (status_code == 200) { 
-			prepareStatusLine(status_code);
+// 		int status_code = 400; //default to be bad
+// 		if (!(cd.filename_).empty())
+// 			status_code = createUploadFile(location, cd);
+// 		if (status_code == 200) { 
+// 			prepareStatusLine(status_code);
 			
-			body = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
-		// if (cgi_flag) -- Check with Shally if we need that
-		// 	CGI_Body();
-			content_length = body.length();
-			header = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length) + "\r\n";
-			response = status_line + header + empty_line + body;
+// 			body = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
+// 		// if (cgi_flag) -- Check with Shally if we need that
+// 		// 	CGI_Body();
+// 			content_length = body.length();
+// 			header = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length) + "\r\n";
+// 			response = status_line + header + empty_line + body;
 	
-		} else {
-			setErrorResponse(status_code);
-	}
-}
+// 		} else {
+// 			setErrorResponse(status_code);
+// 	}
+// }
 
 // void HTTPResponse::setPostResponse() {
 //     std::string location = "uploads";
@@ -197,18 +202,32 @@ void HTTPResponse::setDeleteResponse() {
 }
 
 void HTTPResponse::setErrorResponse(int errorCode) {
-	body_filename = "documents/errors/" + convertToStr(errorCode) + ".html";
+	if (!server->getErrorList().empty()) {
+		std::cout << "Error list exist inside current server\n";
+		std::map<int, std::string>::iterator begEr = server->getErrorList().begin();
+		std::map<int, std::string>::iterator endEr = server->getErrorList().end();
+		for (; begEr != endEr; ++begEr) {
+			if (begEr->first == errorCode)
+				body_filename = begEr->second;
+		}
+		if (begEr == endEr)
+			body_filename = server->getErrorDir() + convertToStr(errorCode) + ".html";
+	} else 
+		body_filename = defaultServer->getErrorDir() + convertToStr(errorCode) + ".html";
+	std::cout << "body_filename found via map lookup: " << body_filename << std::endl;
 	if (fileExists(body_filename)) {
+		std::cout << "error_file exist " << body_filename << std::endl;
 		prepareStatusLine(errorCode);
 		content_length = calculateFileSize(body_filename);
-		header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(content_length) + "\r\n";
+		header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(content_length) + "\r\nConnection: close\r\n";
 		response = status_line + header + empty_line;
 	} else {
-		std::cerr << "error\n";
-		status_line = currentRequest.getVersion() + " 500 Internal server error\r\n";
-		header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: 131\r\n";
+		std::cout << "error: error-file " << body_filename << " doesn't exist\n";
 		body = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
+		status_line = currentRequest.getVersion() + " 500 Internal server error\r\n";
+		header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(body.size()) + "\r\nConnection: close\r\n";
 		response = status_line + header + empty_line + body;
+		body_filename = "";
 	}
 }
 
@@ -254,6 +273,7 @@ int HTTPResponse::checkFile() {
 			return 404;
 	}
 	return 500;	
+	std::cout << BOLD UNDERLINE RED "\n###### LEAVING URL REFORMAT DEBUUGING ######\n\n" RESET;
 }
 
 int HTTPResponse::checkMethod() {
@@ -264,17 +284,23 @@ int HTTPResponse::checkMethod() {
 		begM = defaultLocation.getMethod().begin();
 		endM = defaultLocation.getMethod().end();
 			for (; begM != endM; ++begM) {
-				if (*begM == currentRequest.getMethod())
+				if (*begM == currentRequest.getMethod()) {
+					std::cout << "return value of checkMethod: 200\n";
 					return 200;
+				}
 			}
+			std::cout << "return value of checkMethod: 405\n";
 			return 405;
 	} else {
 		begM = location->getMethod().begin();
 		endM = location->getMethod().end();
 		for (; begM != endM; ++begM) {
-			if (*begM == currentRequest.getMethod())
-				return 200;
+				if (*begM == currentRequest.getMethod()) {
+					std::cout << "return value of checkMethod: 200\n";
+					return 200;
+				}
 			}
+		std::cout << "return value of checkMethod: 405\n";
 		return 405;
 	}
 }

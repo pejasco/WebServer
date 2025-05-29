@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/26 12:26:58 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 10:37:53 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ class Server {
 		//SETTER//
 		void setHost(const std::string &inputHost);
 		void setPort(const std::string &inputPort);
-		void setErrorDir(const std::string &inputErrorDir);
+		void setErrorList(const std::string &inputErrorInfo);
 		void addServerName(const std::string &inputName);
 		void setMaxSize(size_t inputMaxSize);
 		void addLocation(std::string &inputLocation);
@@ -36,7 +36,8 @@ class Server {
 		//GETTER//
 		std::string &getHost();
 		std::vector<std::string> &getPort();
-		std::map<int, std::string> &getErrorDir();
+		std::map<int, std::string> &getErrorList();
+		std::string &getErrorDir();
 		std::vector<std::string> &getServerName();
 		size_t getMaxSize();
 		std::vector<Location*> &getLocation();
@@ -59,7 +60,7 @@ class Server {
 
 		// error_pages settings
 		std::map<int, std::string> errors_list;
-		
+		std::string error_dir;
 		// location settings
 		std::vector<Location*> locations;
 		

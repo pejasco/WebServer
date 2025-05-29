@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/26 10:53:25 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 12:23:37 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,7 @@ void ServerManager::parseServer(std::string &line, Server *currentServer, std::f
 			currentServer->addServerName(line.substr(pos + 2));
 	} else if (line.find("error_pages") != std::string::npos) {
 		while (std::getline(configFile, line) && line.find("}") == std::string::npos) {
-			currentServer->setErrorDir(line);	
+			currentServer->setErrorList(line);	
 		}
 	} else if (line.find("keep_alive") != std::string::npos) {
 		if (line.find("on") != std::string::npos)
@@ -372,6 +372,7 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 	bool message_completed = false;
 	std::string request;
 	
+	// RECEIVE CURRENT CLIENT REQUEST
 	while (!message_completed) {
 		ssize_t byte_received = recv(currentFd, received, sizeof(received), MSG_WAITALL); // or MSG_DONTWAIT depending on which flag we want for receiving data
 		if (byte_received <= 0) {
@@ -385,19 +386,12 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 		}	
 	}
 	/**START THE HTTP READING NOW**/
-	// HTTPRequest currentRequest;
-	// if (!request.empty()) {
-	// 	currentRequest.parseRequest(request);
-	// 	HTTPResponse currentResponse(currentRequest);
-	// 	std::string response = currentResponse.getResponse();
-	// 	ssize_t bytes_sent = send(currentFd, response.c_str(), strlen(response.c_str()), 0);
-	// 	if (bytes_sent < 0) // to check as I got the error active when 0 with errno "ClientSuccess" so I change for -1
-	// 		std::cerr << "Error when sending response to client" << strerror(errno) << std::endl;
-	// }
 	HTTPRequest currentRequest;
 	if (!request.empty()) {
 		currentRequest.parseRequest(request);
 		std::string serverIP = getServerIP(currentFd);
+		
+		//SEND THE RESPONSE HEADER
 		HTTPResponse currentResponse(currentRequest, *this, serverIP);
 		std::string response = currentResponse.getResponse();
 		std::cout << "response to send: " << response << std::endl;
@@ -406,28 +400,46 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 		if (response.empty())
 			std::cerr << "Error, response is empty" << std::endl;
 		ssize_t bytes_sent = send(currentFd, response.c_str(), strlen(response.c_str()), 0);
-		if (bytes_sent < 0) {// to check as I got the error active when 0 with errno "ClientSuccess" so I change for -1
+		if (bytes_sent < 0) {
 			std::cerr << "Error when sending response to client: " << strerror(errno) << std::endl;
-			return ;}
+			return ;
+		}
+		
+		// SEND THE BODY FILE IF THERE IS ONE
 		std::string bodyFilename = currentResponse.getBodyFilename();
 		if (!bodyFilename.empty()) {
-			std::cout << "check bodyFilename\n";
+			std::cout << "check bodyFilename: " << bodyFilename << std::endl;
 			std::ifstream file(bodyFilename.c_str(), std::ios::binary);
-			if (file.is_open()) {				
+			if (file.is_open()) {
 				while (!file.eof()) {
 					file.read(buffer, sizeof(buffer));
 					std::streamsize bytesRead = file.gcount();
 					if (bytesRead > 0) {
 						bytes_sent = send(currentFd, buffer, bytesRead, 0);
-						if (bytes_sent < 0) {
-							if (bytes_sent < 0)
+						if (bytes_sent <= 0) { // Check for both error and connection closed
+							if (bytes_sent < 0) {
 								std::cerr << "Error sending file data: " << strerror(errno) << std::endl;
+							} else {
+								std::cerr << "Connection closed by client" << std::endl;
+							}
+							break; // Exit the loop on error
 						}
+						
+						// Optional: Check for partial sends
+						if (bytes_sent < bytesRead) {
+							std::cerr << "Warning: Partial send - expected " << bytesRead 
+									<< " bytes, sent " << bytes_sent << " bytes" << std::endl;
+						}
+					}
+					
+					// Check for file read errors
+					if (file.bad()) {
+						std::cerr << "Error reading from file: " << bodyFilename << std::endl;
+						break;
 					}
 				}
 				file.close();
-			} else {
-				std::cerr << "Failed to open file: " << bodyFilename << std::endl;
+				bodyFilename = "";
 			}
 		}
 	}
