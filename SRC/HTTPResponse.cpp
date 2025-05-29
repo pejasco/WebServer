@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/29 16:50:55 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/29 17:19:58 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,6 +177,8 @@ int HTTPResponse::createUploadFile(std::string& location, Content& content){
 	return 200;
 	
 }
+
+std::vector<ContentDisposition_> CDs_list_
 
 
 // void HTTPResponse::setPostResponse(std::string& location, Content& content) {
