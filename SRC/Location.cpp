@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:37:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/02 09:29:33 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 16:05:47 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,13 @@
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-Location::Location(const std::string &inputPath) : pathPattern(inputPath), directories(false), upload_enable(false),
+Location::Location(const std::string &inputPath) : pathPattern(inputPath), auto_index(false), upload_enable(false),
 cgi_enabled(false), redirect_enable(false) {
 	upload_store = "";
 	max_body_size = 0;
 	redirect_code = -1;
 	redirect_url = "";
+	root = "";
 };
 Location::~Location() {
 	// std::cout << "deleting location\n";
@@ -50,8 +51,8 @@ void Location::setMethod(const std::string &inputMethod) {
 void Location::setIndex(const std::string &inputIndex) {
 	index = inputIndex;
 };
-void Location::setDirectories(bool inputAIndex) {
-	directories = inputAIndex;
+void Location::setAutoIndex(bool inputAIndex) {
+	auto_index = inputAIndex;
 };
 
 /*******UPLOAD INFO********/
@@ -104,7 +105,7 @@ std::string &Location::getIndex() {
 	return index;
 };
 bool Location::getAutoIndex() {
-	return directories;
+	return auto_index;
 };
 std::string &Location::getPath() {
 	return pathPattern;

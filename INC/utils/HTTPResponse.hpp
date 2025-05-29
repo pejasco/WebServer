@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/29 11:14:47 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 15:11:21 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ class HTTPResponse {
 		int prepareHeader();
 		void headerResponse();
 		void CGI_Body();
+		void autoIndexRequest();
 	
 	private:
 		//PREPARING RESPONSE

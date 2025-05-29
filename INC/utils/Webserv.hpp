@@ -6,13 +6,15 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 10:19:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/15 16:38:18 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 16:10:42 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSER_HPP
 #define WEBSER_HPP
 
+#include <dirent.h>
+ #include <sys/stat.h>
 #include <iostream>
 #include <sstream>
 #include <cstring>

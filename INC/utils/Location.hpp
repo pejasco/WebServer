@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:36:56 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/14 15:17:33 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 15:54:54 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ class Location {
 		void setRoot(const std::string &inputRoot);
 		void setMethod(const std::string &inputMethod);
 		void setIndex(const std::string &inputIndex);
-		void setDirectories(bool inputAIndex);
+		void setAutoIndex(bool inputAIndex);
 		
 		/***UPLOAD INFO***/
 		void setUpload(bool inputUpload);
@@ -73,7 +73,7 @@ class Location {
 		std::string root; 			// location of the folder
 		std::vector<MET> method; 	// methods allow for this location
 		std::string index; 			// set a default file to server when the request is for the directory
-		bool directories; 			// set if directory is listed or not 
+		bool auto_index; 			// set if directory is listed or not 
 
 		// Upload settings
 		bool upload_enable;			// Whether uploads are permitted

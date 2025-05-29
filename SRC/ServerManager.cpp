@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/29 12:23:37 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 16:05:36 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -222,13 +222,12 @@ void ServerManager::parseLocation(std::string &line, Server *currentServer, std:
 		} else if (line.find("root") != std::string::npos) {
 			if ((pos = line.rfind(":")) != std::string::npos)
 				currentLocation->setRoot(line.substr(pos + 2));
-		} else if (line.find("index") != std::string::npos) {
+		} else if (line.find("autoindex") != std::string::npos) {
+			if (line.find("on") != std::string::npos)
+				currentLocation->setAutoIndex(true);
+		} else if (line.find("index:") != std::string::npos) {
 			if ((pos = line.rfind(":")) != std::string::npos)
 				currentLocation->setIndex(line.substr(pos + 2));
-		} else if (line.find("directories") != std::string::npos) {
-			if (line.find("on") != std::string::npos)
-				currentLocation->setDirectories(true);
-				//////////////////////////////////
 		} else if (line.find("upload:") != std::string::npos) {
 			if (line.find("on") != std::string::npos)
 				currentLocation->setUpload(true);
@@ -442,7 +441,9 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 				bodyFilename = "";
 			}
 		}
+		std::cout << "SUCCESSFULLY REACH END OF RESPONSE!\n";
 	}
+	close(currentFd);
 	/********DEBUGGING*********/
 	// std::cout << "\nrequest: \n" << request << std::endl;
 	/********DEBUGGING*********/
