@@ -9,21 +9,15 @@
 > This HTTP webserver is currently under active development as part of the 42 School curriculum. While core functionality is implemented and working, several features are still being developed and refined.
 > 
 > **Current State:**
-> - ✅ Basic HTTP request/response handling
+> - ✅ Basic GET HTTP request/response handling
 > - ✅ Static file serving
 > - ✅ Configuration file parsing
 > - 🔄 CGI implementation (in progress)
 > - 🔄 Advanced error handling (in progress)
-> - ❌ File upload functionality (planned)
-> - ❌ Virtual host support (planned)
-> 
-> **Known Issues:**
-> - Some edge cases in request parsing may not be handled
-> - Performance optimizations are ongoing
-> - Complete RFC compliance is still being implemented
-> 
-> Contributions and feedback are welcome as this project evolves!
-
+> - 🔄 File upload functionality (in progress)
+> - 🔄 Static Webserv website to display functionnality (in progress)
+> - 🔄 Signal handling and graceful shutdown
+>
 
 ## ✨ Features
 
@@ -31,12 +25,11 @@
 - **Static File Serving** - Efficient serving of HTML, CSS, JS, images, and other static content
 - **CGI Support** - Execute dynamic scripts and applications
 - **Configuration File** - Flexible server configuration via config files
-- **Multi-Client Handling** - Concurrent connection management using select/poll
+- **Multi-Client Handling** - Concurrent connection management using epoll
 - **File Upload** - Support for POST requests with file uploads (in development)
 - **Virtual Hosts** - Multiple website hosting on single server instance
-- **Non-blocking I/O** - Asynchronous request processing for better performance
+- **Non-blocking I/O** - Asynchronous request processing
 - **Error Handling** - Proper HTTP status codes and error pages
-- **Access Logging** - Request logging and monitoring capabilities
 
 ## 🛠️ Tech Stack
 
@@ -49,7 +42,6 @@
 **Key Concepts Implemented:**
 - Non-blocking I/O with epoll
 - HTTP request parsing and validation
-- MIME type detection and handling
 - Process management for CGI execution
 - Memory management and resource cleanup
 - Signal handling and graceful shutdown
@@ -60,13 +52,12 @@
 - C++ compiler (g++ or clang++)
 - Make utility
 - Unix-like operating system (Linux, macOS)
-- Basic understanding of HTTP protocol
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/webserver.git
+   git clone https://github.com/yourusername/webserver.git webserver
    cd webserver
    ```
 
@@ -77,15 +68,14 @@
 
 3. **Run with default configuration**
    ```bash
+   # webserver with default configuration file
    ./webserver
+
+   # Webserver with custom configuration file
+   ./webserver config/your_filename.conf
    ```
 
-4. **Run with custom configuration**
-   ```bash
-   ./webserver config/server.conf
-   ```
-
-5. **Test the server**
+4. **Test the server**
    ```bash
    curl http://localhost:8080
    # or open in browser
@@ -94,38 +84,7 @@
 ## 📁 Project Structure
 
 ```
-webserver/
-├── src/
-│   ├── main.cpp              # Program entry point
-│   ├── server/
-│   │   ├── Server.cpp        # Main server class
-│   │   ├── Client.cpp        # Client connection handling
-│   │   └── Config.cpp        # Configuration parser
-│   ├── http/
-│   │   ├── Request.cpp       # HTTP request parsing
-│   │   ├── Response.cpp      # HTTP response generation
-│   │   └── Methods.cpp       # HTTP method handlers
-│   ├── cgi/
-│   │   ├── CGI.cpp          # CGI execution engine
-│   │   └── CGIHandler.cpp   # CGI request processing
-│   └── utils/
-│       ├── Utils.cpp        # Utility functions
-│       ├── Logger.cpp       # Logging functionality
-│       └── MimeTypes.cpp    # MIME type detection
-├── includes/
-│   └── webserver.hpp        # Main header file
-├── config/
-│   ├── default.conf         # Default server configuration
-│   └── virtual_hosts.conf   # Virtual host examples
-├── www/                     # Document root
-│   ├── index.html          # Default homepage
-│   ├── error/              # Error pages
-│   └── cgi-bin/            # CGI scripts
-├── tests/
-│   ├── unit_tests/         # Unit test files
-│   └── integration/        # Integration tests
-├── Makefile
-└── README.md
+In Progress...
 ```
 
 ## ⚙️ Configuration
@@ -134,55 +93,22 @@ webserver/
 
 ```nginx
 # config/server.conf
-server {
-    listen 8080;
-    server_name localhost;
-    root ./www;
-    index index.html index.htm;
-    
-    error_page 404 /error/404.html;
-    error_page 500 /error/500.html;
-    
-    client_max_body_size 1M;
-    
-    location / {
-        allow_methods GET POST DELETE;
-        autoindex on;
-    }
-    
-    location /cgi-bin/ {
-        allow_methods GET POST;
-        cgi_extension .py .php .pl;
-        cgi_path /usr/bin/python3 /usr/bin/php /usr/bin/perl;
-    }
-    
-    location /upload/ {
-        allow_methods POST;
-        upload_path ./uploads/;
-    }
-}
-```
+server {	
+	host: 127.0.0.1
+	port: 8080 8081 8082
+	server_names: Example.com www.example.com
+	client_max_body_size: 10M
+	keep_alive: on
+	error_pages {
+		404 /documents/errors/404.html
+		500 /documents/errors/500.html
+	}
 
-### Virtual Host Configuration
-
-```nginx
-server {
-    listen 8080;
-    server_name site1.local;
-    root ./www/site1;
-    index index.html;
-}
-
-server {
-    listen 8080;
-    server_name site2.local;
-    root ./www/site2;
-    index index.php;
-    
-    location *.php {
-        cgi_extension .php;
-        cgi_path /usr/bin/php;
-    }
+	location / {
+		root: folder_path
+		methods: GET POST DELETE 
+		index: filename_index
+	}
 }
 ```
 
@@ -191,23 +117,17 @@ server {
 | Method | Status | Description |
 |--------|--------|-------------|
 | `GET` | ✅ Complete | Retrieve resources |
-| `POST` | ✅ Complete | Submit data, file uploads |
-| `DELETE` | ✅ Complete | Delete resources |
-| `HEAD` | 🔄 In Progress | Get headers only |
-| `PUT` | ❌ Planned | Upload/update resources |
+| `POST` | 🔄 In progress | Submit data, file uploads |
+| `DELETE` | 🔄 In progress | Delete resources |
 
 ## 🧪 Testing
 
 ```bash
-# Compile with debug flags
-make debug
-
 # Run unit tests
 make test
 
 # Test different HTTP methods
 curl -X GET http://localhost:8080/
-curl -X POST -d "data=test" http://localhost:8080/form
 curl -X DELETE http://localhost:8080/file.txt
 
 # Test file upload
@@ -223,17 +143,7 @@ ab -n 1000 -c 10 http://localhost:8080/
 ### Available Test Scripts
 
 ```bash
-# Basic functionality tests
-./tests/basic_tests.sh
-
-# CGI functionality tests  
-./tests/cgi_tests.sh
-
-# Performance benchmarks
-./tests/performance_tests.sh
-
-# RFC compliance tests
-./tests/rfc_compliance.sh
+In Progress...
 ```
 
 ## 📊 Performance Metrics
@@ -271,40 +181,6 @@ make fclean
 make re
 ```
 
-## 🐛 Known Issues & Limitations
-
-### Current Limitations
-- **File Upload Size**: Limited to configured max size
-- **CGI Timeout**: Scripts have execution time limits
-- **Concurrent Connections**: Optimized for moderate load
-- **HTTPS Support**: Not yet implemented
-- **HTTP/2**: Not supported (HTTP/1.1 only)
-
-### Planned Improvements
-- [ ] Complete RFC 7230-7235 compliance
-- [ ] Enhanced security features
-- [ ] WebSocket support
-- [ ] SSL/TLS encryption
-- [ ] Advanced caching mechanisms
-- [ ] Load balancing capabilities
-
-## 🤝 Contributing
-
-This project is part of the 42 School curriculum and follows their coding standards:
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/NewHTTPMethod`)
-3. Commit your changes (`git commit -m 'Add PUT method support'`)
-4. Push to the branch (`git push origin feature/NewHTTPMethod`)
-5. Open a Pull Request
-
-### Development Guidelines
-- Follow C++98 standards where applicable
-- Write comprehensive tests for new features
-- Update documentation for API changes
-- Ensure memory leak-free code
-- Follow RFC specifications for HTTP compliance
-
 ## 📚 Learning Resources
 
 - [RFC 7230 - HTTP/1.1 Message Syntax](https://tools.ietf.org/html/rfc7230)
@@ -320,7 +196,7 @@ This project is part of the 42 School curriculum and follows their coding standa
 **Port already in use:**
 ```bash
 # Check what's using the port
-lsof -i :8080
+lsof -i :8080 #or other ports
 # Kill the process or change port in config
 ```
 
@@ -334,6 +210,8 @@ sudo ./webserver  # For ports < 1024
 ```bash
 # Check script permissions
 chmod +x www/cgi-bin/script.py
+# Check script outside program
+./script.py
 # Verify interpreter path in config
 ```
 
@@ -370,6 +248,7 @@ This project demonstrates mastery of:
 - Socket programming and network I/O
 - CGI and dynamic content generation
 - Configuration file parsing
+- File uploading system
 - Multi-client connection handling
 - Memory and resource management
 - Error handling and logging
@@ -379,10 +258,12 @@ This project demonstrates mastery of:
 - Non-blocking I/O implementation
 - HTTP request parsing edge cases
 - CGI process management and communication
+- Perfomance management in sharing big size documents
+- URI-URL reformatting to access correct resources
 - Concurrent connection scaling
 - RFC compliance and standards adherence
 
-**Grade:** [Your grade if you want to share]
+**Grade:** TBD
 
 ## 📈 Development Roadmap
 
@@ -397,11 +278,11 @@ This project demonstrates mastery of:
 - [ ] File upload completion
 - [ ] Enhanced error handling
 - [ ] Performance optimization
+- [ ] Testing edge cases
 
-### Phase 3: Extended Features ❌
-- [ ] Virtual host support
-- [ ] SSL/TLS encryption
-- [ ] Advanced logging
+### Phase 3: Extended Features (optional) ❌
+- [ ] Security feature (loggin system)
+- [ ] Database connection
 - [ ] WebSocket support
 
 **Last Updated:** [Current Date]
