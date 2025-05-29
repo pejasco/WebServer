@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 10:19:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/29 16:10:42 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 17:33:52 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,5 +39,7 @@
 #include "MET.hpp"
 #include "Colors.hpp"
 #include "Utils.hpp"
+
+#include <sys/stat.h> //for checking the stat of a direct (used for post upload)
 
 #endif
