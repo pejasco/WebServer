@@ -12,10 +12,12 @@
 > - ✅ Basic GET HTTP request/response handling
 > - ✅ Static file serving
 > - ✅ Configuration file parsing
-> - 🔄 CGI implementation (in progress)
-> - 🔄 Advanced error handling (in progress)
-> - 🔄 File upload functionality (in progress)
-> - 🔄 Static Webserv website to display functionnality (in progress)
+> - 🔄 CGI implementation
+> - 🔄 Autoindex management
+> - 🔄 Redirection
+> - 🔄 Advanced error handling
+> - 🔄 File upload functionality
+> - 🔄 Static Webserv website to display functionnality
 > - 🔄 Signal handling and graceful shutdown
 >
 
@@ -30,6 +32,8 @@
 - **Virtual Hosts** - Multiple website hosting on single server instance
 - **Non-blocking I/O** - Asynchronous request processing
 - **Error Handling** - Proper HTTP status codes and error pages
+- **AutoIndex** - Display a crafted HTML webpage listing the available folder/files within an URL, if authorised
+- **Redirection** - send redirection URL to browser for specific URL requests
 
 ## 🛠️ Tech Stack
 
