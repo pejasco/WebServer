@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/29 17:19:58 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/29 17:33:58 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -301,6 +301,11 @@ int HTTPResponse::checkFile() {
 		body_filename = defaultPath;
 		std::cout << BOLD YELLOW "body_filename: " << body_filename << RESET << std::endl;
 		if (currentRequest.getPath().find(".") == std::string::npos) {
+			std::cout << "XXXXXX -- " << location->getIndex() << " -- " << location->getAutoIndex() << std::endl;
+			if (location->getIndex().empty() && location->getAutoIndex() == true) {
+				autoIndexRequest();
+				return 404;
+			}
 			body_filename += location->getRoot() + "/" + location->getIndex();
 			std::cout << "adding the file from config\n";
 		} else {
@@ -458,4 +463,56 @@ void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI a
 	//std::cerr << "[CGI] Raw CGI output:\n" << cgiOutput << "\n";
 	//response = cgiOutput;
 }
+
+void HTTPResponse::autoIndexRequest() {
+	// the idea is to return an ugly HTML page that will list the folder in the current location
+	// Simplified internal logic
+	// DIR *dir = opendir("/var/www/tools/");
+	// struct dirent *entry;
+
+	// while ((entry = readdir(dir)) != NULL) {
+	// 	struct stat file_stat;
+	// 	stat(entry->d_name, &file_stat);
+		
+		// Collect file info:
+		// - filename
+		// - size (file_stat.st_size)
+		// - modification time (file_stat.st_mtime)
+		// - type (directory vs file)
+	// }
+	// closedir(dir);
+
+	//create a directory structure
+	std::cout << "STARTING DIRECTORY LOOKUP\n"; 
+	DIR *dir = NULL;
+	struct dirent *entry = NULL;
+	
+	// open the current directory if exist
+	std::cout << "directory to lookup: " << body_filename + currentRequest.getPath() << std::endl;
+	dir = opendir((body_filename + currentRequest.getPath()).c_str());
+	if (dir == NULL) {
+		std::cout << "Error: " << strerror(errno) << std::endl;
+		//send the error 404 return error code or call setErrorResponse(404)
+		return ;
+	}
+	while ((entry = readdir(dir)) != NULL) {
+		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) { // if it is the '.' for current directory
+        	continue;
+    	}
+		errno = 0;
+		struct stat file_info;
+		// stat need the full path of a file element to check it
+    	stat(entry->d_name, &file_info);
+        std::cout << "file_name: " << entry->d_name << ", file_size: " << file_info.st_size << ", file_last_modify: " << ctime(&file_info.st_mtime) << ", d_type: " << std::endl;
+        closedir(dir);
+        return;
+	}
+    if (errno != 0)
+        perror("error reading directory");
+    else
+        (void) printf("failed to find\n");
+    (void) closedir(dir);
+	std::cout << "\nLEAVING DIRECTORY LOOKUP\n";
+    return;
+};
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/29 16:41:33 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/29 17:33:29 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,11 +50,6 @@ class HTTPResponse {
 		int prepareHeader();
 		void headerResponse();
 		void CGI_Body();
-		//for the http post response (upload):
-		int checkDirectory(std::string& location);
-		int createUploadFile(std::string& location, Content& cd);
-		// void setPostResponse(std::string& location, ContentDisposition_& cd);
-		void setPostResponse();
 	
 	private:
 		//PREPARING RESPONSE

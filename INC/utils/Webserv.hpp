@@ -3,16 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 10:19:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/29 13:42:53 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/29 17:33:52 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSER_HPP
 #define WEBSER_HPP
 
+#include <dirent.h>
+ #include <sys/stat.h>
 #include <iostream>
 #include <sstream>
 #include <cstring>
