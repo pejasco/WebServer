@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/26 12:26:41 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 11:15:42 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,28 +55,27 @@ void Server::setPort(const std::string &inputPort) {
 	std::string token;
 
 	while (std::getline(ss, token, ' ')) {
-    	port.push_back(token);
+		port.push_back(token);
 	}
 };
-void Server::setErrorDir(const std::string &inputErrorDir) {
+void Server::setErrorList(const std::string &inputErrorDir) {
 	std::stringstream ss(inputErrorDir);
 	std::string directory;
+	size_t pos = 0;
 	int code;
 	char space;
-	if (inputErrorDir.find("default") != std::string::npos) {
-		code = 0;
-		std::string garbage;
-		ss >> garbage >> space >> directory;
-	} else
-		ss >> code >> space >> directory;
-	errors_list.insert(std::pair<int, std::string>(code, directory));	
+	ss >> code >> space >> directory;
+	errors_list.insert(std::pair<int, std::string>(code, directory));
+	if ((pos = directory.rfind('/')) != std::string::npos)
+		error_dir = directory.substr(0, pos + 1);
 };
+
 void Server::addServerName(const std::string &inputName) {
 	std::stringstream ss(inputName);
 	std::string token;
 
 	while (std::getline(ss, token, ' ')) {
-    	serverNames.push_back(token);
+		serverNames.push_back(token);
 	}
 };
 void Server::setMaxSize(size_t inputMaxSize) {
@@ -100,8 +99,11 @@ std::string &Server::getHost() {
 std::vector<std::string> &Server::getPort() {
 	return port;
 };
-std::map<int,std::string> &Server::getErrorDir() {
+std::map<int,std::string> &Server::getErrorList() {
 	return errors_list;
+};
+std::string &Server::getErrorDir() {
+	return error_dir;
 };
 std::vector<std::string> &Server::getServerName() {
 	return serverNames;

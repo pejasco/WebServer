@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/28 03:13:34 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/29 11:31:37 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,8 +78,8 @@ void printServer(Server &server) {
 	std::cout << std::endl;
 
 	/*ERROR PAGES CODE LIST*/
-	std::map<int, std::string>::iterator itr = server.getErrorDir().begin();
-	std::map<int, std::string>::iterator iter = server.getErrorDir().end();
+	std::map<int, std::string>::iterator itr = server.getErrorList().begin();
+	std::map<int, std::string>::iterator iter = server.getErrorList().end();
 	std::cout << BOLD BLUE << "error page: " RESET;
 	for (; itr != iter; ++itr)
 		std::cout << itr->first << " " << itr->second << std::endl;
@@ -170,6 +170,7 @@ std::string getStatusStr(int status_code) {
 }
 
 bool fileExists(const std::string& filename) {
+	std::cout << BOLD UNDERLINE RED "\n###### ENTERING URL REFORMAT DEBUUGING ######\n" RESET;
 	std::ifstream file(filename.c_str());
 	return file.good();
 }
@@ -289,18 +290,16 @@ size_t getMaxSize(const std::string &inputSize) {
 	//MB -> size * 1024 * 1024
 	//GB -> size * 1024 * 1024 * 1024
 	size_t size = 0;
-	char value = inputSize[-2];
-	if (value == ' ')
+	if (inputSize.find("B") != std::string::npos || inputSize.find("b") != std::string::npos)
 		return size = convertToNb<size_t>(inputSize);
-	else if (value == 'K' || value == 'k')
+	else if (inputSize.find("K") != std::string::npos || inputSize.find("k") != std::string::npos)
 		return size = (convertToNb<size_t>(inputSize)) * 1024;
-	else if (value == 'M' || value == 'm')
+	else if (inputSize.find("M") != std::string::npos || inputSize.find("m") != std::string::npos)
 		return size = (convertToNb<size_t>(inputSize)) * 1024 * 1024;
-	else if (value == 'G' || value == 'g')
+	else if (inputSize.find("G") != std::string::npos || inputSize.find("g") != std::string::npos)
 		return size = (convertToNb<size_t>(inputSize)) * 1024 * 1024 * 1024;
 	else {
-		//std::cerr << " Error: size not recognized\n";
-		return 0;
+		return 0; 
 	}
 		
 }

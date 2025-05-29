@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/26 12:37:15 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 11:14:47 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ class HTTPResponse {
 			
 		//METHOD
 		void setGetResponse();
-		void setPostResponse();
+		// void setPostResponse();
 		void setDeleteResponse();
 		void setErrorResponse(int errorCode);
 		int checkFile();
