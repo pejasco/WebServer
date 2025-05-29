@@ -2,3 +2,5 @@
 /.vscode
 index.html.*
 output
+/OBJ
+webserv

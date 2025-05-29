@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/29 17:33:29 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 18:47:26 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,11 @@ class HTTPResponse {
 		int prepareHeader();
 		void headerResponse();
 		void CGI_Body();
+		void autoIndexRequest();
+		// int createUploadFile(std::string& location, Content& content);
+		// int checkDirectory(std::string& location);
+		// void makePostResponse(ContentDisposition_ &cd);
+		
 	
 	private:
 		//PREPARING RESPONSE

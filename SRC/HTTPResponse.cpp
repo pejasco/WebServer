@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/29 17:33:58 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/29 18:58:44 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serve
 			setErrorResponse(405);
 			return;
 		}
-		setPostResponse(); // main > SM::serverMonitoring() > SM::existingClientConnection > HTTPRequest currentRequest > HTTPResponse constructor(currentRequest, *the pointer of serverManger, string serverIP)
+		// setPostResponse(); // main > SM::serverMonitoring() > SM::existingClientConnection > HTTPRequest currentRequest > HTTPResponse constructor(currentRequest, *the pointer of serverManger, string serverIP)
 		cgi_flag = false;
 		break;
 	case DELETE:
@@ -135,50 +135,50 @@ void HTTPResponse::setGetResponse() {
 // }
 
 
-int HTTPResponse::checkDirectory(std::string& location){
-	struct stat st;
+// int HTTPResponse::checkDirectory(std::string& location){
+// 	struct stat st;
 
-	 if (stat(location.c_str(), &st) == 0){
-		if (S_ISDIR(st.st_mode)){
-			return 200;
-		} else {
-			std::cout << "Error: Path exits but is not a directory" << '\n';
-			return 500; //conflict
-		}
-	 } else {
-		if (errno == ENOENT) {
-			std::cout << "Error: Directory does not exist" << std::endl;
-			return 500; //not found
-		} else {
-			std::cout << "Error: " << strerror(errno) << std::endl;
-			return 500; //internal error
-		}
-	 }
-}
+// 	 if (stat(location.c_str(), &st) == 0){
+// 		if (S_ISDIR(st.st_mode)){
+// 			return 200;
+// 		} else {
+// 			std::cout << "Error: Path exits but is not a directory" << '\n';
+// 			return 500; //conflict
+// 		}
+// 	 } else {
+// 		if (errno == ENOENT) {
+// 			std::cout << "Error: Directory does not exist" << std::endl;
+// 			return 500; //not found
+// 		} else {
+// 			std::cout << "Error: " << strerror(errno) << std::endl;
+// 			return 500; //internal error
+// 		}
+// 	 }
+// }
 
 
-int HTTPResponse::createUploadFile(std::string& location, Content& content){
-	// check if the directory exists
-	int status_code = checkDirectory(location);
-	if (status_code != 200)
-		return status_code; //if it doesnt exist
-	//std::string filepath = location + "/" + content.filename_;
-	std::ofstream file(filepath.c_str(), std::ios::binary);
-	if (!file.is_open())
-		return 500;
-	file.write(cd.file_content_.c_str(), cd.file_content_.length());
+// int HTTPResponse::createUploadFile(std::string& location, Content& content){
+// 	// check if the directory exists
+// 	int status_code = checkDirectory(location);
+// 	if (status_code != 200)
+// 		return status_code; //if it doesnt exist
+// 	std::string filepath = location + "/" + content.filename_;
+// 	std::ofstream file(filepath.c_str(), std::ios::binary);
+// 	if (!file.is_open())
+// 		return 500;
+// 	file.write(cd.file_content_.c_str(), cd.file_content_.length());
 	
-	if (file.fail()){
-		file.close();
-		return 500;
-	}
+// 	if (file.fail()){
+// 		file.close();
+// 		return 500;
+// 	}
 	
-	file.close();
-	return 200;
+// 	file.close();
+// 	return 200;
 	
-}
+// }
 
-std::vector<ContentDisposition_> CDs_list_
+// std::vector<ContentDisposition_> CDs_list_;
 
 
 // void HTTPResponse::setPostResponse(std::string& location, Content& content) {
@@ -203,29 +203,28 @@ std::vector<ContentDisposition_> CDs_list_
 // 	}
 // }
 
-void HTTPResponse::setPostResponse() {
-	// Switch or if statement to see if it is an upload request (CD --> filename)
-		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload		
+// void HTTPResponse::makePostResponse(ContentDisposition_ &cd) {
+// 	// Switch or if statement to see if it is an upload request (CD --> filename)
+// 		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload		
 		
-		int status_code = 400; //default to be bad
-		std::string path = currentRequest.getPath();
-		Content cd = currentRequest.getContent();
-		if (!path.empty()) //for upload only && not cgi 
-			status_code = createUploadFile(path, cd);
-		if (status_code == 200) { 
-			prepareStatusLine(status_code);
+// 		int status_code = 400; //default to be bad
+// 		std::string path = currentRequest.getPath();
+// 		Content cd = currentRequest.getContent();
+// 		if (!path.empty()) //for upload only && not cgi 
+// 			status_code = createUploadFile(path, cd);
+// 		if (status_code == 200) { 
+// 			prepareStatusLine(status_code);
 			
-			body = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
-		// if (cgi_flag) -- Check with Shally if we need that
-		// 	CGI_Body();
-			content_length = body.length();
-			header = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length) + "\r\n";
-			response = status_line + header + empty_line + body;
+// 			body = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
+// 		// if (cgi_flag) -- Check with Shally if we need that
+// 		// 	CGI_Body();
+// 			content_length = body.length();
+// 			header = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length) + "\r\n";
+// 			response = status_line + header + empty_line + body;
 	
-		} else {
-			setErrorResponse(status_code);
-	}
-}
+// 		} else
+// 			setErrorResponse(status_code);
+// }
 
 
 
@@ -234,7 +233,7 @@ void HTTPResponse::setPostResponse() {
     
 //     ContentDisposition_ cd = currentRequest.getContentDisposition();
     
-//     setPostResponse(location, cd);
+//     makePostResponse(cd);
 // }
 
 
@@ -496,22 +495,60 @@ void HTTPResponse::autoIndexRequest() {
 		return ;
 	}
 	while ((entry = readdir(dir)) != NULL) {
-		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) { // if it is the '.' for current directory
+		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) // if it is the '.' for current directory
         	continue;
+    	std::string file_type;
+    	bool need_stat = false;
+	
+    	// Use d_type if available (Linux/BSD)
+    	switch (entry->d_type) {
+    	    case DT_DIR:
+    	        file_type = "directory";
+    	        break;
+    	    case DT_REG:
+    	        file_type = "regular file";
+    	        break;
+    	    case DT_LNK:
+    	        file_type = "symbolic link";
+    	        break;
+    	    case DT_UNKNOWN:
+    	        need_stat = true;  // Fall back to stat()
+    	        break;
+    	    default:
+    	        file_type = "other";
+    	        break;
     	}
-		errno = 0;
-		struct stat file_info;
-		// stat need the full path of a file element to check it
-    	stat(entry->d_name, &file_info);
-        std::cout << "file_name: " << entry->d_name << ", file_size: " << file_info.st_size << ", file_last_modify: " << ctime(&file_info.st_mtime) << ", d_type: " << std::endl;
-        closedir(dir);
-        return;
+	
+    	// Only call stat() if we need size/time info or d_type is unknown
+    	if (need_stat || entry->d_type == DT_REG) {
+
+			// add a condition that if the server receive a autoindex request from a previous autoindex, 
+			// it will display the parent directory (so not ignoring the ".." filename)
+    	    std::string full_path = body_filename + currentRequest.getPath() + '/' + entry->d_name;
+    	    struct stat file_info;
+	
+    	    if (stat(full_path.c_str(), &file_info) == 0) {
+    	        if (need_stat) {
+    	            file_type = S_ISDIR(file_info.st_mode) ? "directory" : "file";
+    	        }
+
+				// Create a structure that will store these information
+				// call a function that will draft from scratch a HTML webpage to display the information (file name and folder)
+					// the HTML has to have a link to the relevant file so when the user click on then, it send automatically a GET request to the file 
+					// directory are just information ? 
+				// This HTML file will be the the body_filename to send back to client 
+    	        std::cout << "file_name: " << entry->d_name 
+    	                  << ", file_size: " << file_info.st_size 
+    	                  << ", file_last_modify: " << ctime(&file_info.st_mtime)
+    	                  << ", file_type: " << file_type << std::endl;
+    	    }
+    	} else {
+    	    // For directories, we don't need size info
+    	    std::cout << "file_name: " << entry->d_name 
+    	              << ", file_type: " << file_type << std::endl;
+    	}
 	}
-    if (errno != 0)
-        perror("error reading directory");
-    else
-        (void) printf("failed to find\n");
-    (void) closedir(dir);
+	closedir(dir);
 	std::cout << "\nLEAVING DIRECTORY LOOKUP\n";
     return;
 };
