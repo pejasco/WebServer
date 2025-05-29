@@ -146,30 +146,11 @@ ab -n 1000 -c 10 http://localhost:8080/
 In Progress...
 ```
 
-## 📊 Performance Metrics
-
-```bash
-# Benchmark results (on development machine)
-# Concurrent connections: 100
-# Requests per second: ~2000
-# Average response time: 50ms
-# Memory usage: <50MB
-
-# Run your own benchmarks
-make benchmark
-```
-
 ## 🔧 Building and Compilation
 
 ```bash
 # Standard build
 make
-
-# Debug build with symbols
-make debug
-
-# Release build with optimizations
-make release
 
 # Clean build files
 make clean
@@ -227,11 +208,11 @@ This project is part of the 42 School curriculum and follows their academic guid
 
 ## 👨‍💻 Authors
 
-**Your Name** & **CF** & **Shally**
+**Coline Fischer** & **Chung Fan Leung** & **Shaly**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- GitHub: [@yourusername](https://github.com/yourusername)
-- GitHub: [@yourusername](https://github.com/yourusername)
+- GitHub: [@CymF96](https://github.com/CymF96)
+- GitHub: [@pejasco](https://github.com/pejasco)
+- GitHub: [@pandashaly](https://github.com/pandashaly)
 
 
 ## 🏆 42 School Project
