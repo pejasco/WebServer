@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content_copy.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/28 02:05:37 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/29 17:06:00 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,7 @@ class Content {
                 // bool cd_flag_;
                 int content_length_; //Content-Length: 13
                 std::string boundary_; //Content-Type: multipart/form-dat; boundary=--WebKitFormBoundaryXYZ
-                std::map<std::string, std::string> body_;
+                // std::map<std::string, std::string> body_;
                 std::string body_with_no_cd_;
                 std::vector<ContentDisposition_> CDs_list_;
 };

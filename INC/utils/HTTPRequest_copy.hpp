@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest_copy.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/28 02:07:20 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/29 16:00:17 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,8 +137,8 @@ class HTTPRequest {
 		std::map <std::string, std::string> unknown_; 
 
 	// CGI
-	std::string query_string_;
-	std::map<std::string, std::string> headers_;  //map to store headers for cgi
+		std::string query_string_;
+		std::map<std::string, std::string> headers_;  //map to store headers for cgi
 	
 
 };
