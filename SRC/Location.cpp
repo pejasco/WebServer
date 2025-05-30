@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:37:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/29 16:05:47 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/30 18:40:27 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-Location::Location(const std::string &inputPath) : pathPattern(inputPath), auto_index(false), upload_enable(false),
+Location::Location(const std::string &inputPath) : pathPattern(inputPath), auto_index(false), (false),
 cgi_enabled(false), redirect_enable(false) {
 	upload_store = "";
 	max_body_size = 0;
@@ -57,7 +57,7 @@ void Location::setAutoIndex(bool inputAIndex) {
 
 /*******UPLOAD INFO********/
 void Location::setUpload(bool inputUpload) {
-	upload_enable = inputUpload;
+	 = inputUpload;
 };
 void Location::setUploadDir(const std::string &inputDir) {
 	upload_store = inputDir;
@@ -113,7 +113,7 @@ std::string &Location::getPath() {
 
 /*******UPLOAD INFO********/
 bool Location::getUpload() {
-	return upload_enable;
+	return ;
 };
 std::string &Location::getUploadDir() {
 	return upload_store;

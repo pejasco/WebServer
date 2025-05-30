@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/30 12:17:24 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/30 23:19:40 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/HTTPResponse.hpp"
 #include "../CGI/inc/receiveRequest.hpp"
 #include "../CGI/inc/CgiHandler.hpp"
+
 
 bool cgi_flag = false;
 
@@ -40,7 +41,8 @@ HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serve
 			setErrorResponse(405);
 			return;
 		}
-		// setPostResponse(); // main > SM::serverMonitoring() > SM::existingClientConnection > HTTPRequest currentRequest > HTTPResponse constructor(currentRequest, *the pointer of serverManger, string serverIP)
+		setPostResponse();
+		// SM got a array of server > setPostResponse(); // main > SM::serverMonitoring() > SM::existingClientConnection > HTTPRequest currentRequest > HTTPResponse constructor(currentRequest, *the pointer of serverManger, string serverIP)
 		cgi_flag = false;
 		break;
 	case DELETE:
@@ -122,86 +124,105 @@ void HTTPResponse::setGetResponse() {
 
 }
 
-// int HTTPResponse::checkDirectory(std::string& location){
-// 	DIR* dir = opendir(location.c_str());
-// 	if (dir == NULL)
-// 	{
-// 		std::cout << "Error: " << strerror(errno) << std::endl;
-// 		return 404;
-// 	}
-// 	closedir(dir);
-// 	return 200;
-// 	(void)location;
-// }
+int HTTPResponse::checkDirectory(std::string& location){
+	struct stat st;
+
+	 if (stat(location.c_str(), &st) == 0){
+		if (S_ISDIR(st.st_mode)){
+			return 200;
+		} else {
+			std::cout << "Error: Path exits but is not a directory" << '\n';
+			return 500; //conflict
+		}
+	 } else {
+		if (errno == ENOENT) {
+			std::cout << "Error: Directory does not exist" << std::endl;
+			return 500; //not found
+		} else {
+			std::cout << "Error: " << strerror(errno) << std::endl;
+			return 500; //internal error
+		}
+	 }
+}
 
 
-// int HTTPResponse::checkDirectory(std::string& location){
-// 	struct stat st;
+int HTTPResponse::createUploadFile(std::string& upload_dir, const Content& content){
 
-// 	 if (stat(location.c_str(), &st) == 0){
-// 		if (S_ISDIR(st.st_mode)){
-// 			return 200;
-// 		} else {
-// 			std::cout << "Error: Path exits but is not a directory" << '\n';
-// 			return 500; //conflict
-// 		}
-// 	 } else {
-// 		if (errno == ENOENT) {
-// 			std::cout << "Error: Directory does not exist" << std::endl;
-// 			return 500; //not found
-// 		} else {
-// 			std::cout << "Error: " << strerror(errno) << std::endl;
-// 			return 500; //internal error
-// 		}
-// 	 }
-// }
-
-
-// int HTTPResponse::createUploadFile(std::string& location, Content& content){
-// 	// check if the directory exists
-// 	int status_code = checkDirectory(location);
-// 	if (status_code != 200)
-// 		return status_code; //if it doesnt exist
-// 	std::string filepath = location + "/" + content.filename_;
-// 	std::ofstream file(filepath.c_str(), std::ios::binary);
-// 	if (!file.is_open())
-// 		return 500;
-// 	file.write(cd.file_content_.c_str(), cd.file_content_.length());
-	
-// 	if (file.fail()){
-// 		file.close();
-// 		return 500;
-// 	}
-	
-// 	file.close();
-// 	return 200;
-	
-// }
-
-// std::vector<ContentDisposition_> CDs_list_;
-
-
-// void HTTPResponse::setPostResponse(std::string& location, Content& content) {
-// 	// Switch or if statement to see if it is an upload request (CD --> filename)
-// 		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload		
+	const std::vector<ContentDisposition_>& allCDs = content.getCDs();
+	std::vector<ContentDisposition_>::const_iterator it = allCDs.begin();
+	for(it = allCDs.begin(); it != allCDs.end() && (it->filename_).empty(); ++it){
 		
-// 		int status_code = 400; //default to be bad
-// 		if (!(cd.filename_).empty())
-// 			status_code = createUploadFile(location, cd);
-// 		if (status_code == 200) { 
-// 			prepareStatusLine(status_code);
-			
-// 			body = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
-// 		// if (cgi_flag) -- Check with Shally if we need that
-// 		// 	CGI_Body();
-// 			content_length = body.length();
-// 			header = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length) + "\r\n";
-// 			response = status_line + header + empty_line + body;
+	}
+
+	std::string filename;
+	std::string file_content;
+	if (it != allCDs.end()){
+		std::string filename = it->filename_;
+		std::string file_content = it->content_;
+	} else {
+		std::cout << "Error: There is no filename found" << std::endl;
+		return 500;
+	}
+	std::string filepath = upload_dir + "/" + filename;
+	std::ofstream file(filepath.c_str(), std::ios::binary);
+	if (!file.is_open())
+		return 500;
+	file.write(cd.file_content_.c_str(), cd.file_content_.length());
+	const std::vector<ContentDisposition_>& allCDs = content.getCDs();
+	if (file.fail()){
+		file.close();
+		return 500;
+	}
 	
-// 		} else {
-// 			setErrorResponse(status_code);
-// 	}
-// }
+	file.close();
+	return 200;
+	
+}
+
+//std::vector<ContentDisposition_> CDs_list_;
+
+
+void HTTPResponse::setPostResponse() {
+	// Switch or if statement to see if it is an upload request (CD --> filename)
+		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload		
+		std::string upload_dir;
+		int status_code;
+
+		if (location && currentRequest.getPath().find("upload") != std::string::npos)
+			upload_dir = location->getUploadDir();
+		const Content& content = currentRequest.getContent();
+		status_code = checkDirectory(upload_dir);
+	o	if (status_code != 200){
+			createUploadFile(upload_dir, content);
+		} else{
+			return;
+		}
+
+
+
+		
+
+
+		//std::vector<ContentDisposition_> CDs_list
+		
+		
+		int status_code = 400; //default to be bad
+		if (!(cd.filename_).empty())
+			status_code = createUploadFile(location, cd);
+		if (status_code == 200) { 
+			prepareStatusLine(status_code);
+			
+			body = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
+		// if (cgi_flag) -- Check with Shally if we need that
+		// 	CGI_Body();
+			content_length = body.length();
+			header = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length) + "\r\n";
+			response = status_line + header + empty_line + body;
+	
+		} else {
+			setErrorResponse(status_code);
+	}
+}
 
 // void HTTPResponse::makePostResponse(ContentDisposition_ &cd) {
 // 	// Switch or if statement to see if it is an upload request (CD --> filename)
@@ -227,14 +248,6 @@ void HTTPResponse::setGetResponse() {
 // }
 
 
-
-// void HTTPResponse::setPostResponse() {
-//     std::string location = "uploads";
-    
-//     ContentDisposition_ cd = currentRequest.getContentDisposition();
-    
-//     makePostResponse(cd);
-// }
 
 
 void HTTPResponse::setDeleteResponse() {

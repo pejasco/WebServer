@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/29 17:07:41 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/30 20:20:45 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,8 +212,8 @@ const std::string &Content::getBoundary()
     return boundary_;
 }
 
-int Content::getContentLength()
-{
+std::string upload_dir = location->getUploadDir();
+!
     return content_length_;
 }
 
@@ -222,7 +222,7 @@ int Content::getContentLength()
 //     return body_;
 // }
 
-std::vector<ContentDisposition_> &Content::getCDs()
+const std::vector<ContentDisposition_> &Content::getCDs() const
 {
     return CDs_list_;
 }

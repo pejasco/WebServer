@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/30 12:17:31 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/30 20:26:04 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ class HTTPResponse {
 			
 		//METHOD
 		void setGetResponse();
-		// void setPostResponse();
+		void setPostResponse();
 		void setDeleteResponse();
 		void setErrorResponse(int errorCode);
 		int checkFile();
@@ -51,9 +51,9 @@ class HTTPResponse {
 		void headerResponse();
 		void CGI_Body();
 		void autoIndexRequest();
-		// int createUploadFile(std::string& location, Content& content);
-		// int checkDirectory(std::string& location);
-		// void makePostResponse(ContentDisposition_ &cd);
+		int createUploadFile(std::string& upload_dir, const Content& content);
+		int checkDirectory(std::string& location);
+		//void makePostResponse(ContentDisposition_ &cd);
 		
 	
 	private:
