@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/29 18:58:44 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/30 12:17:24 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -464,92 +464,10 @@ void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI a
 }
 
 void HTTPResponse::autoIndexRequest() {
-	// the idea is to return an ugly HTML page that will list the folder in the current location
-	// Simplified internal logic
-	// DIR *dir = opendir("/var/www/tools/");
-	// struct dirent *entry;
-
-	// while ((entry = readdir(dir)) != NULL) {
-	// 	struct stat file_stat;
-	// 	stat(entry->d_name, &file_stat);
-		
-		// Collect file info:
-		// - filename
-		// - size (file_stat.st_size)
-		// - modification time (file_stat.st_mtime)
-		// - type (directory vs file)
-	// }
-	// closedir(dir);
-
-	//create a directory structure
-	std::cout << "STARTING DIRECTORY LOOKUP\n"; 
-	DIR *dir = NULL;
-	struct dirent *entry = NULL;
-	
-	// open the current directory if exist
+	std::string dir_path = body_filename + currentRequest.getPath();
 	std::cout << "directory to lookup: " << body_filename + currentRequest.getPath() << std::endl;
-	dir = opendir((body_filename + currentRequest.getPath()).c_str());
-	if (dir == NULL) {
-		std::cout << "Error: " << strerror(errno) << std::endl;
-		//send the error 404 return error code or call setErrorResponse(404)
-		return ;
-	}
-	while ((entry = readdir(dir)) != NULL) {
-		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) // if it is the '.' for current directory
-        	continue;
-    	std::string file_type;
-    	bool need_stat = false;
-	
-    	// Use d_type if available (Linux/BSD)
-    	switch (entry->d_type) {
-    	    case DT_DIR:
-    	        file_type = "directory";
-    	        break;
-    	    case DT_REG:
-    	        file_type = "regular file";
-    	        break;
-    	    case DT_LNK:
-    	        file_type = "symbolic link";
-    	        break;
-    	    case DT_UNKNOWN:
-    	        need_stat = true;  // Fall back to stat()
-    	        break;
-    	    default:
-    	        file_type = "other";
-    	        break;
-    	}
-	
-    	// Only call stat() if we need size/time info or d_type is unknown
-    	if (need_stat || entry->d_type == DT_REG) {
+	int status_code = 0;
+	status_code = structureInfo(dir_path, currentRequest.getPath());
 
-			// add a condition that if the server receive a autoindex request from a previous autoindex, 
-			// it will display the parent directory (so not ignoring the ".." filename)
-    	    std::string full_path = body_filename + currentRequest.getPath() + '/' + entry->d_name;
-    	    struct stat file_info;
-	
-    	    if (stat(full_path.c_str(), &file_info) == 0) {
-    	        if (need_stat) {
-    	            file_type = S_ISDIR(file_info.st_mode) ? "directory" : "file";
-    	        }
-
-				// Create a structure that will store these information
-				// call a function that will draft from scratch a HTML webpage to display the information (file name and folder)
-					// the HTML has to have a link to the relevant file so when the user click on then, it send automatically a GET request to the file 
-					// directory are just information ? 
-				// This HTML file will be the the body_filename to send back to client 
-    	        std::cout << "file_name: " << entry->d_name 
-    	                  << ", file_size: " << file_info.st_size 
-    	                  << ", file_last_modify: " << ctime(&file_info.st_mtime)
-    	                  << ", file_type: " << file_type << std::endl;
-    	    }
-    	} else {
-    	    // For directories, we don't need size info
-    	    std::cout << "file_name: " << entry->d_name 
-    	              << ", file_type: " << file_type << std::endl;
-    	}
-	}
-	closedir(dir);
-	std::cout << "\nLEAVING DIRECTORY LOOKUP\n";
-    return;
-};
+}
 
