@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/15 14:21:53 by cofische         ###   ########.fr       */
+/*   Updated: 2025/05/30 11:13:57 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,43 @@ class ServerManager {
 		
 
 };
+
+/*
+class HTTPServer {
+private:
+    std::ofstream logFile;
+    
+public:
+    HTTPServer() {
+        logFile.open("server.log", std::ios::app);  // Append mode
+    }
+    
+    ~HTTPServer() {
+        if (logFile.is_open()) {
+            logFile.close();
+        }
+    }
+    
+    void logRequest(const std::string& clientIP, const std::string& request) {
+        if (logFile.is_open()) {
+            logFile << "[" << getCurrentTime() << "] " 
+                    << clientIP << " - " << request << std::endl;
+        }
+    }
+    
+    void logError(const std::string& error) {
+        if (logFile.is_open()) {
+            logFile << "[ERROR] " << error << std::endl;
+        }
+    }
+    
+    void handleRequest(int clientSocket) {
+        // Handle request...
+        logRequest("192.168.1.1", "GET /index.html HTTP/1.1");
+    }
+};
+
+*/
 
 
 #endif
