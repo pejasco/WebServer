@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/30 19:30:14 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/31 16:38:23 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ class Content {
                 const std::vector<ContentDisposition_> &getCDs() const;
                 std::string getBodyWithNoCD() const;
                 //const std::map<std::string, std::string> getBodyconst() const;
+                void addContentDisposition(const ContentDisposition_& cd); 
 
         private:
 

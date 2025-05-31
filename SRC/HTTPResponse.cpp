@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/30 23:19:40 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/31 18:35:40 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,36 +147,40 @@ int HTTPResponse::checkDirectory(std::string& location){
 
 
 int HTTPResponse::createUploadFile(std::string& upload_dir, const Content& content){
-
-	const std::vector<ContentDisposition_>& allCDs = content.getCDs();
-	std::vector<ContentDisposition_>::const_iterator it = allCDs.begin();
-	for(it = allCDs.begin(); it != allCDs.end() && (it->filename_).empty(); ++it){
-		
-	}
-
-	std::string filename;
-	std::string file_content;
-	if (it != allCDs.end()){
-		std::string filename = it->filename_;
-		std::string file_content = it->content_;
-	} else {
-		std::cout << "Error: There is no filename found" << std::endl;
-		return 500;
-	}
-	std::string filepath = upload_dir + "/" + filename;
-	std::ofstream file(filepath.c_str(), std::ios::binary);
-	if (!file.is_open())
-		return 500;
-	file.write(cd.file_content_.c_str(), cd.file_content_.length());
-	const std::vector<ContentDisposition_>& allCDs = content.getCDs();
-	if (file.fail()){
-		file.close();
-		return 500;
-	}
-	
-	file.close();
-	return 200;
-	
+    const std::vector<ContentDisposition_>& allCDs = content.getCDs();
+    std::vector<ContentDisposition_>::const_iterator it = allCDs.begin();
+    
+    for(; it != allCDs.end() && (it->filename_).empty(); ++it){
+    }
+    
+    if (it == allCDs.end()){
+        std::cout << "Error: There is no filename found" << std::endl;
+        return 500;
+    }
+    
+    std::string filename = it->filename_;
+    std::string file_content = it->content_;
+    
+    std::string filepath = upload_dir + "/" + filename;
+    std::cout << "Trying to create file: " << filepath << std::endl;
+    
+    std::ofstream file(filepath.c_str(), std::ios::binary);
+    if (!file.is_open()) {
+        std::cout << "Error: Could not open file for writing: " << strerror(errno) << std::endl;
+        return 500;
+    }
+    
+    file.write(file_content.c_str(), file_content.length());
+    
+    if (file.fail()){
+        std::cout << "Error: Failed to write to file: " << strerror(errno) << std::endl;
+        file.close();
+        return 500;
+    }
+    
+    file.close();
+    std::cout << "File created successfully: " << filepath << std::endl;
+    return 200;
 }
 
 //std::vector<ContentDisposition_> CDs_list_;
@@ -189,26 +193,17 @@ void HTTPResponse::setPostResponse() {
 		int status_code;
 
 		if (location && currentRequest.getPath().find("upload") != std::string::npos)
-			upload_dir = location->getUploadDir();
-		const Content& content = currentRequest.getContent();
+			upload_dir = location->getUploadDir(); //upload_dir
+		const Content& content = currentRequest.getContent(); //content
+		std::cout << "!!!!!!!!!!!!!!!!!" << upload_dir << "!!!!!!!!!!!!!!!!!" << "\n";
+		//std::cout << "!!!!!!!!!!!!!!!!!" << << "!!!!!!!!!!!!!!!!!\'n";
+
 		status_code = checkDirectory(upload_dir);
-	o	if (status_code != 200){
-			createUploadFile(upload_dir, content);
-		} else{
+		if (status_code != 200){
+			setErrorResponse(status_code);
 			return;
 		}
-
-
-
-		
-
-
-		//std::vector<ContentDisposition_> CDs_list
-		
-		
-		int status_code = 400; //default to be bad
-		if (!(cd.filename_).empty())
-			status_code = createUploadFile(location, cd);
+		status_code = createUploadFile(upload_dir, content);
 		if (status_code == 200) { 
 			prepareStatusLine(status_code);
 			
@@ -479,8 +474,8 @@ void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI a
 void HTTPResponse::autoIndexRequest() {
 	std::string dir_path = body_filename + currentRequest.getPath();
 	std::cout << "directory to lookup: " << body_filename + currentRequest.getPath() << std::endl;
-	int status_code = 0;
-	status_code = structureInfo(dir_path, currentRequest.getPath());
+	//int status_code = 0;
+	//status_code = structureInfo(dir_path, currentRequest.getPath());
 
 }
 

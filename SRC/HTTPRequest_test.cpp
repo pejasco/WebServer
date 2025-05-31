@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest_test.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/28 02:08:23 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/05/31 16:47:37 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -349,7 +349,7 @@ void HTTPRequest::parseContent(const std::string& body_line){
 		
 		if (body_line.find("Content-Disposition:") != std::string::npos){
 			// std::cout << "check3\n";
-			content_.getCDs().push_back(ContentDisposition_());
+			content_.addContentDisposition(ContentDisposition_());
 			// std::cout << "is it working here\n";
 			if((pos_begin = body_line.find(':')) != std::string::npos){
 				pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);

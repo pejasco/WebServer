@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:37:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/30 18:40:27 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/05/31 16:28:33 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-Location::Location(const std::string &inputPath) : pathPattern(inputPath), auto_index(false), (false),
+Location::Location(const std::string &inputPath) : pathPattern(inputPath), auto_index(false), upload_enable(false),
 cgi_enabled(false), redirect_enable(false) {
 	upload_store = "";
 	max_body_size = 0;
@@ -57,7 +57,7 @@ void Location::setAutoIndex(bool inputAIndex) {
 
 /*******UPLOAD INFO********/
 void Location::setUpload(bool inputUpload) {
-	 = inputUpload;
+	upload_enable = inputUpload;
 };
 void Location::setUploadDir(const std::string &inputDir) {
 	upload_store = inputDir;
@@ -113,7 +113,7 @@ std::string &Location::getPath() {
 
 /*******UPLOAD INFO********/
 bool Location::getUpload() {
-	return ;
+	return upload_enable;
 };
 std::string &Location::getUploadDir() {
 	return upload_store;
