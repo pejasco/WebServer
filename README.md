@@ -13,11 +13,11 @@
 > - ✅ Static file serving
 > - ✅ Configuration file parsing
 > - 🔄 CGI implementation
-> - 🔄 Autoindex management
+> - ✅  Autoindex management
 > - 🔄 Redirection
 > - 🔄 Advanced error handling
 > - 🔄 File upload functionality
-> - 🔄 Static Webserv website to display functionnality
+> - 🔄 Static Webserv website to display functionality
 > - 🔄 Signal handling and graceful shutdown
 >
 
@@ -270,4 +270,4 @@ This project demonstrates mastery of:
 - [ ] Database connection
 - [ ] WebSocket support
 
-**Last Updated:** 30/05/2025
+**Last Updated:** 02/06/2025
