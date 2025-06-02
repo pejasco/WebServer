@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/02 12:31:37 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/02 15:39:33 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,7 +158,9 @@ int HTTPResponse::createUploadFile(std::string& upload_dir, const Content& conte
     const std::vector<ContentDisposition_>& allCDs = content.getCDs();
     std::vector<ContentDisposition_>::const_iterator it = allCDs.begin();
     
-    for(; it != allCDs.end() && (it->filename_).empty(); ++it){
+	allCDs.empty() ? std::cout << "<<sievdebug>> " << "CD is empty!\n" : std::cout << "<<sievdebug>> " << "CD is not empty!\n";
+
+	for(; it != allCDs.end() && !((it->filename_).empty()); ++it){
     }
     
     if (it == allCDs.end()){
@@ -166,7 +168,11 @@ int HTTPResponse::createUploadFile(std::string& upload_dir, const Content& conte
         return 500;
     }
     
+	std::cout << "<<sievdebug>> " << "before filename\n";
     std::string filename = it->filename_;
+	std::cout << "<<sievdebug>> " << "filename:" << filename << "\n";
+	std::cout << "<<sievdebug>> " << "after filename\n";
+
     std::string file_content = it->content_;
     
     std::string filepath = upload_dir + "/" + filename;
@@ -200,10 +206,13 @@ void HTTPResponse::setPostResponse() {
 		std::string upload_dir;
 		int status_code;
 
+		std::cout << "<<sievdebug>>" << "yoyoyo " << location << " yoyoyo" << "\n";
+		std::cout << "<<sievdebug>>" << "xoxoxo " << currentRequest.getPath().find("upload") << " xoxoxo" << "\n";
+
 		if (location && currentRequest.getPath().find("upload") != std::string::npos)
 			upload_dir = location->getUploadDir(); //upload_dir
 		const Content& content = currentRequest.getContent(); //content
-		std::cout << "!!!!!!!!!!!!!!!!!" << upload_dir << "!!!!!!!!!!!!!!!!!" << "\n";
+		std::cout << "<<sievdebug>>" << "!!!!!!!!!!!!!!!!!" << upload_dir << "!!!!!!!!!!!!!!!!!" << "\n";
 		//std::cout << "!!!!!!!!!!!!!!!!!" << << "!!!!!!!!!!!!!!!!!\'n";
 
 		status_code = checkDirectory(upload_dir);
