@@ -1,0 +1,2 @@
+c++ test.cpp -o test
+./test yes.txt

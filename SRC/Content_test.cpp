@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/31 16:59:52 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/02 16:58:33 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,6 +235,15 @@ std::string Content::getBodyWithNoCD() const
 void Content::addContentDisposition(const ContentDisposition_& cd)
 {
     CDs_list_.push_back(cd);
+}
+
+
+void Content::printCDsList() const
+{
+    std::vector<ContentDisposition_>::const_iterator it = CDs_list_.begin();
+
+
+
 }
 
 // const std::map<std::string, std::string> Content::getBodyconst() const { return body_; }
