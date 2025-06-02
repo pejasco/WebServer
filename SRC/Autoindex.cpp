@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Autoindex.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 09:19:15 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/30 12:23:07 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/02 12:19:52 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,14 +43,14 @@ static int addDirectories(std::ofstream &HTML, const std::string &dir_path, cons
 	
 	dir = opendir((dir_path).c_str());
 	if (dir == NULL) {
-		std::cout << "Error: " << strerror(errno) << std::endl;
+		std::cout << "Error in addDir: " << strerror(errno) << std::endl;
 		closedir(dir);
 		return 404;
 	}
 	while ((entry = readdir(dir)) != NULL) {
 		/*NEED IT IF IT IS A SECOND CLICK TO DIRECTORY*/
-		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) // change for a c++ function 
-			continue;
+		// if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) // change for a c++ function 
+		// 	continue;
 		/*NEED IT IF IT IS A SECOND CLICK TO DIRECTORY*/
 		if (entry->d_type == DT_DIR) {
 			HTML << "\t\t<tr>\n";
@@ -70,15 +70,11 @@ static int addFiles(std::ofstream &HTML, const std::string &dir_path) {
 	
 	dir = opendir((dir_path).c_str());
 	if (dir == NULL) {
-		std::cout << "Error: " << strerror(errno) << std::endl;
+		std::cout << "Error in addFiles: " << strerror(errno) << std::endl;
 		closedir(dir);
 		return 404;
 	}
 	while ((entry = readdir(dir)) != NULL) {
-		/*NEED IT IF IT IS A SECOND CLICK TO DIRECTORY*/
-		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) // change for a c++ function 
-			continue;
-		/*NEED IT IF IT IS A SECOND CLICK TO DIRECTORY*/
 		if (entry->d_type == DT_REG || entry->d_type == DT_UNKNOWN) {
 			std::string full_path = dir_path + '/' + entry->d_name;
 			struct stat file_info;
@@ -107,6 +103,7 @@ static void setupHTML(std::ofstream &HTML, const std::string &sub_dir) {
 	HTML << "\t<base href=\"" << sub_dir << "\">\n";
 	HTML << "</head>\n";
 	HTML << "<body>\n";
+	HTML << "\t<h1>Index of " << sub_dir << "</h1>\n";
 	HTML << "\t<table>\n";
 	HTML << "\t\t<tr>\n";
 	HTML << "\t\t\t<th>Name</th>\n";
@@ -121,10 +118,12 @@ static void endSetupHTML(std::ofstream &HTML) {
 	HTML << "</html>\n";		
 }
 // function to fill in the structure with index info 
-int structureInfo(const std::string &dir_path, const std::string &sub_dir) {
-
+int structureInfo(const std::string &dir_path, const std::string &sub_dir, const std::string &default_folder) {
+	//default folder minus the '// in front
+	
+	std::cout << "location of HTML file: " << (default_folder) << std::endl;
 	// start to write the HTML file 
-	std::ofstream HTML("auto_index.html");
+	std::ofstream HTML((default_folder + "/auto_index.html").c_str());
 	int status_code = 0;
 	if (HTML.is_open()) {
 		setupHTML(HTML, sub_dir);
@@ -138,8 +137,10 @@ int structureInfo(const std::string &dir_path, const std::string &sub_dir) {
 		}
 		endSetupHTML(HTML);
 		HTML.close();
-	} else
+	} else {
+		std::cerr << "Error in structureInfo: " << strerror(errno) << std::endl;
 		return 500;
+	}	
 	std::cout << "\nLEAVING DIRECTORY LOOKUP\n";
 	return 200;
 };

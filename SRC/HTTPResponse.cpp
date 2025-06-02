@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/31 18:35:40 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/02 12:31:37 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 bool cgi_flag = false;
 
-HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP) : currentRequest(inputRequest) {
+HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP) : currentRequest(inputRequest), is_autoindex(false) {
 	empty_line = "\r\n";
 	defaultServer = serverManager.getServers().front();
 	defaultLocation = defaultServer->getLocation().front();
@@ -64,6 +64,10 @@ HTTPResponse::~HTTPResponse() {
 };
 
 // SETTER
+void HTTPResponse::setAutoIndex(bool newValue) {
+	is_autoindex = newValue;
+};
+
 
 // GETTER
 const std::string &HTTPResponse::getResponse() {
@@ -76,6 +80,10 @@ const std::string &HTTPResponse::getResponse() {
 
 std::string &HTTPResponse::getBodyFilename() {
 	return body_filename;
+}
+
+bool HTTPResponse::isAutoIndex() {
+	return is_autoindex;
 }
 
 //METHOD
@@ -306,12 +314,12 @@ int HTTPResponse::checkFile() {
 		}
 	} else {
 		body_filename = defaultPath;
-		std::cout << BOLD YELLOW "body_filename: " << body_filename << RESET << std::endl;
+		std::cout << BOLD YELLOW "body_filename: " << body_filename << "currentRequest: " << currentRequest.getPath() << RESET << std::endl;
 		if (currentRequest.getPath().find(".") == std::string::npos) {
 			std::cout << "XXXXXX -- " << location->getIndex() << " -- " << location->getAutoIndex() << std::endl;
 			if (location->getIndex().empty() && location->getAutoIndex() == true) {
 				autoIndexRequest();
-				return 404;
+				return 200;
 			}
 			body_filename += location->getRoot() + "/" + location->getIndex();
 			std::cout << "adding the file from config\n";
@@ -399,12 +407,14 @@ void HTTPResponse::prepareStatusLine(int status_code) {
 
 int HTTPResponse::prepareHeader() {
 	//Probably to adapt so it can change for POST and DELETE as the content can be different
-	// std::cout << "INSIDE PREPARE HEARDER\n";
+	std::cout << "INSIDE PREPARE HEARDER\n";
+	
 	if (currentRequest.getPath().find(".") != std::string::npos) {
 		size_t pos;
 		if ((pos = currentRequest.getPath().rfind(".")) != std::string::npos)
 			content_type = "Content-Type: " + getContentType(currentRequest.getPath().substr(pos)) + "\r\n";
 	}
+	std::cout << "body_filename: " << body_filename << std::endl;;
 	content_length = calculateFileSize(body_filename);
 	if (content_length < 0) {
 		std::cout << "Error: Content-Length is -1\n";
@@ -412,7 +422,7 @@ int HTTPResponse::prepareHeader() {
 	}
 	header = content_type + "Content-Length: " + convertToStr(content_length) + "\r\n";
 	/****DEBUGGING***/
-	// std::cout << "HEADER = \n" << header << std::endl;
+	std::cout << "HEADER = \n" << header << std::endl;
 	return 200;
 }
 
@@ -472,10 +482,21 @@ void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI a
 }
 
 void HTTPResponse::autoIndexRequest() {
+	//needed to look inside a directory
+	is_autoindex = true;
 	std::string dir_path = body_filename + currentRequest.getPath();
 	std::cout << "directory to lookup: " << body_filename + currentRequest.getPath() << std::endl;
-	//int status_code = 0;
-	//status_code = structureInfo(dir_path, currentRequest.getPath());
-
+	// needed to save the auto_index file in the base directory
+	std::string default_folder = defaultLocation->getRoot();
+	size_t pos = 0;
+	if ((pos = default_folder.find("/")) != std::string::npos)
+		default_folder = default_folder.substr(pos + 1);
+	int status_code = 0;
+	std::cout << "Auto_index future location: " << default_folder << std::endl;
+	status_code = structureInfo(dir_path, currentRequest.getPath(), default_folder);
+	if (status_code != 200)
+		setErrorResponse(status_code);
+	body_filename = default_folder + "/auto_index.html";
+	std::cout << "Auto_index file location: " << body_filename << std::endl;
 }
 

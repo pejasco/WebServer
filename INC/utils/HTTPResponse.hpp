@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/30 20:26:04 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/02 12:30:55 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ class HTTPResponse {
 		//GETTER
 		const std::string &getResponse();
 		std::string &getBodyFilename();
+		bool isAutoIndex();
+		void setAutoIndex(bool newValue);
 			
 		//METHOD
 		void setGetResponse();
@@ -71,6 +73,7 @@ class HTTPResponse {
 		std::string empty_line;
 		
 		//STATUS_LINE
+		bool is_autoindex; 
 		
 		//HEADER_FIELDS
 		std::string content_type;
@@ -87,6 +90,6 @@ class HTTPResponse {
 
 };
 
-int structureInfo(const std::string &dir_path, const std::string &sub_dir);
+int structureInfo(const std::string &dir_path, const std::string &sub_dir, const std::string &default_folder);
 
 #endif
