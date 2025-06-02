@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/29 11:31:37 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/02 11:49:18 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,8 +270,9 @@ std::string toLowerCase(const std::string& input) {
 	return result;
 }
 
-int calculateFileSize(std::string &filename) {
+int calculateFileSize(std::string &filename) { //auto_index.html
 	std::streampos pos = -1;
+	std::cout << "inside calculateFilesSize: " << filename << std::endl;
 	std::ifstream body_file(filename.c_str(), std::ios::binary);
 	if (body_file.is_open()) {
 		pos = body_file.tellg();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/29 16:05:36 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/02 12:35:14 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -438,7 +438,13 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 					}
 				}
 				file.close();
+				if (currentResponse.isAutoIndex()) {
+					if (!std::remove(bodyFilename.c_str())) {
+						currentResponse.setAutoIndex(false);
+					}
+				}
 				bodyFilename = "";
+					
 			}
 		}
 		std::cout << "SUCCESSFULLY REACH END OF RESPONSE!\n";
