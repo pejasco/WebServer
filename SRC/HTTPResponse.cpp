@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/02 15:39:33 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/03 01:14:47 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 bool cgi_flag = false;
 
-HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP) : currentRequest(inputRequest), is_autoindex(false) {
+HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP) : currentRequest(inputRequest), is_autoindex(false), _response_ready(false) {
 	empty_line = "\r\n";
 	defaultServer = serverManager.getServers().front();
 	defaultLocation = defaultServer->getLocation().front();
@@ -78,6 +78,11 @@ const std::string &HTTPResponse::getResponse() {
 	return response;
 };
 
+bool HTTPResponse::isReady() const {
+	return _response_ready;
+}
+
+
 std::string &HTTPResponse::getBodyFilename() {
 	return body_filename;
 }
@@ -104,17 +109,17 @@ void HTTPResponse::setGetResponse() {
 		std::cout << "status_code of checkFIle in GET: " << status_code << std::endl;
 	}
 
-	if (status_code == 200) {
-		std::cout << "GET requested an existing file --> proceed to response pre\n";
-		prepareStatusLine(status_code);
-		prepareHeader();
-		if (cgi_flag)
-			CGI_Body();
-		headerResponse();
-	} else {
-		std::cout << "GET requested a file that doesn't exist --> proceed to error response pre\n";
-		setErrorResponse(status_code);
-	}
+	// if (status_code == 200) {
+	// 	std::cout << "GET requested an existing file --> proceed to response pre\n";
+	// 	prepareStatusLine(status_code);
+	// 	prepareHeader();
+	// 	if (cgi_flag)
+	// 		CGI_Body();
+	// 	headerResponse();
+	// } else {
+	// 	std::cout << "GET requested a file that doesn't exist --> proceed to error response pre\n";
+	// 	setErrorResponse(status_code);
+	// }
 	// if (cgi_flag) {
 	// 	CGI_Body(); // <- run the actual CGI handler
 	// 	return; // <- do NOT check or open the file
@@ -128,8 +133,18 @@ void HTTPResponse::setGetResponse() {
 	// } else {
 	// 	setErrorResponse(status_code);
 	// }
-
-
+	if (status_code == 200) {
+		if (cgi_flag) {
+			CGI_Body(); // Run CGI handler, which builds full HTTP response
+			std::cerr << "[CGI] Early return after CGI_Body()\n";
+			_response_ready = true;
+			return ;
+		} else {
+			prepareStatusLine(status_code);
+			prepareHeader();
+			headerResponse();
+		}
+	}
 }
 
 int HTTPResponse::checkDirectory(std::string& location){
@@ -481,6 +496,7 @@ void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI a
 			headers = "Content-Type: text/html\r\n" + headers;
 
 		response = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
+		body_filename.clear();
 	} else {
 		// fallback (not ideal, but prevents broken response)
 		response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;

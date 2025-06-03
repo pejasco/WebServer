@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/02 12:30:55 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/03 01:06:57 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,8 @@ class HTTPResponse {
 		int createUploadFile(std::string& upload_dir, const Content& content);
 		int checkDirectory(std::string& location);
 		//void makePostResponse(ContentDisposition_ &cd);
+		bool isReady() const;
+
 		
 	
 	private:
@@ -87,6 +89,8 @@ class HTTPResponse {
 	
 		// static int global_index_; //dun know if it is useful
 		// int instance_index_;
+		bool _response_ready;
+
 
 };
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/02 12:35:14 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/03 01:10:26 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -403,6 +403,12 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 			std::cerr << "Error when sending response to client: " << strerror(errno) << std::endl;
 			return ;
 		}
+
+		if (currentResponse.isReady()) {
+			std::cout << "Response is already ready (e.g. from CGI), skipping body file send\n";
+		return;
+		}
+
 		
 		// SEND THE BODY FILE IF THERE IS ONE
 		std::string bodyFilename = currentResponse.getBodyFilename();
