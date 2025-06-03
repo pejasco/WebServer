@@ -71,19 +71,3 @@ public:
     const std::string openBoundary() const;
     const std::string closeBoundary() const;
     const std::string getBodyWithNoCD() const;
-    std::string getCDs_list();
-
-
-private:
-    static int global_index_;
-    int instance_index_;
-    std::string path_;
-    std::string version_;
-    std::string format_;
-    std::string boundary_;
-    std::string open_boundary_;
-    std::string close_boundary_;
-    std::string body_with_no_cd_;
-    std::vector<http_CD_> CDs_list_;
-
-};
