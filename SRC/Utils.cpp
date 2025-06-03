@@ -6,13 +6,12 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/02 11:49:18 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/03 09:56:43 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/ServerManager.hpp"
 #include "../INC/utils/Utils.hpp"
-#include <cstring>
 
 void printLocation(Location &location) {
 	/*BASIC INFO*/
@@ -329,38 +328,111 @@ Server *getCurrentServer(const HTTPRequest &inputRequest, ServerManager &serverM
 }
 
 Location *getCurrentLocation(const HTTPRequest &inputRequest, Server &currentServer) {
-	if (currentServer.getLocation().empty())
-		return NULL;
-	else {
-		std::vector<Location*>::iterator begLo = currentServer.getLocation().begin();
-		std::vector<Location*>::iterator endLo = currentServer.getLocation().end();
-		for (; begLo != endLo; ++begLo) {
-			std::string requestPath = formatURL(inputRequest.getPath());
-			std::cout << "Request: " << requestPath << ", request size: " << requestPath << ", server location: " << (*begLo)->getPath() << ", size: " << (*begLo)->getPath().size() << std::endl;
-			if (requestPath == (*begLo)->getPath()) {
-				std::cout << "found the matching location, bye\n";
-				return *begLo;
-			}		
-		}
-		if (inputRequest.getPath() == "/")
-			return NULL;
-		else 
-			return currentServer.getLocation().front();
-	}
+    if (currentServer.getLocation().empty())
+        return NULL;
+    
+    std::string requestPath = inputRequest.getPath();
+    
+    // Handle root request specially if needed
+    if (requestPath == "/") {
+        // Look for exact root location match first
+        std::vector<Location*>::iterator begLo = currentServer.getLocation().begin();
+        std::vector<Location*>::iterator endLo = currentServer.getLocation().end();
+        for (; begLo != endLo; ++begLo) {
+            if ((*begLo)->getPath() == "/") {
+                return *begLo;
+            }
+        }
+        return NULL; // or return default location if you prefer
+    }
+    
+    Location *bestMatch = NULL;
+    size_t longestMatchLength = 0;
+    
+    std::vector<Location*>::iterator begLo = currentServer.getLocation().begin();
+    std::vector<Location*>::iterator endLo = currentServer.getLocation().end();
+    
+    for (; begLo != endLo; ++begLo) {
+        std::string locationPath = (*begLo)->getPath();
+        std::cout << "Request: " << requestPath << ", server location: " << locationPath << std::endl;
+
+        // Check if request path starts with location path (prefix matching)
+        if (requestPath.length() >= locationPath.length() && 
+            requestPath.substr(0, locationPath.length()) == locationPath) {
+            
+            std::cout << "Prefix match found: " << requestPath.substr(0, locationPath.length()) << std::endl;
+            
+            // Additional check: ensure we match complete path segments
+            // /kapouet should match /kapouet/file but not /kapouetfile
+            bool isValidMatch = false;
+            
+            if (locationPath.length() == requestPath.length()) {
+                // Exact match
+                isValidMatch = true;
+            } else if (locationPath[-1] == '/') {
+                std::cout << "is seg fault there\n";
+                isValidMatch = true;
+            } else if (requestPath[locationPath.length()] == '/') {
+                // Next character in request is '/', valid path segment boundary
+                isValidMatch = true;
+            }
+            
+            if (isValidMatch) {
+                // Keep track of longest matching location (most specific)
+                if (locationPath.length() > longestMatchLength) {
+                    bestMatch = *begLo;
+                    longestMatchLength = locationPath.length();
+                    std::cout << "New best match: " << bestMatch->getPath() << " -> " << bestMatch->getRoot() << std::endl;
+                }
+            }
+        }
+    }
+    
+    // Check if we found a match before accessing it
+    if (bestMatch != NULL) {
+        std::cout << "Final best match: " << bestMatch->getPath() << " -> " << bestMatch->getRoot() << std::endl;
+        return bestMatch;
+    }
+    
+    // If no specific location matched, return default (first location or NULL)
+    std::cout << "No location match found, using default" << std::endl;
+    return currentServer.getLocation().empty() ? NULL : currentServer.getLocation().front();
 }
 
-std::string formatURL(const std::string &input) {
-	std::cout << "input before processing: " << input << std::endl;
-	if (input.empty() || input[0] != '/') {
-		return input;
-	}
-	std::string::size_type secondSlashPos = input.find('/', 1);
-	if (secondSlashPos != std::string::npos) {
-		return input.substr(0, secondSlashPos);
-	} else {
-		return input;
-	}
-}
+
+// Location *getCurrentLocation(const HTTPRequest &inputRequest, Server &currentServer) {
+// 	if (currentServer.getLocation().empty())
+// 		return NULL;
+// 	else {
+// 		std::vector<Location*>::iterator begLo = currentServer.getLocation().begin();
+// 		std::vector<Location*>::iterator endLo = currentServer.getLocation().end();
+// 		for (; begLo != endLo; ++begLo) {
+// 			std::string requestPath = formatURL(inputRequest.getPath());
+// 			std::cout << "Request: " << requestPath << ", request size: " << requestPath << ", server location: " << (*begLo)->getPath() << ", size: " << (*begLo)->getPath().size() << std::endl;
+// 			if (requestPath == (*begLo)->getPath()) {
+// 				std::cout << "found the matching location, bye\n";
+// 				return *begLo;
+// 			}		
+// 		}
+// 		if (inputRequest.getPath() == "/")
+// 			return NULL;
+// 		else 
+// 			return currentServer.getLocation().front();
+// 	}
+// }
+
+// std::string formatURL(const std::string &input) {
+// 	std::cout << "input before processing: " << input << std::endl;
+// 	if (input.empty() || input[0] != '/') {
+// 		return input;
+// 	}
+// 	std::string::size_type secondSlashPos = input.find('/', 1);
+// 	if (secondSlashPos != std::string::npos) {
+// 		return input.substr(0, secondSlashPos);
+// 	} else {
+// 		return input;
+// 	}
+// }
 
 std::string getFilenameFromPath(const std::string& path) {
 	std::string::size_type slashPos = path.rfind('/');

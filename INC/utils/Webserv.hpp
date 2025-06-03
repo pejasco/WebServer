@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 10:19:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/29 17:33:52 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/03 08:52:43 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #define WEBSER_HPP
 
 #include <dirent.h>
- #include <sys/stat.h>
+#include <sys/stat.h>
 #include <iostream>
 #include <sstream>
 #include <cstring>
@@ -39,7 +39,5 @@
 #include "MET.hpp"
 #include "Colors.hpp"
 #include "Utils.hpp"
-
-#include <sys/stat.h> //for checking the stat of a direct (used for post upload)
 
 #endif

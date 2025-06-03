@@ -1,19 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HTTPRequest_copy.hpp                               :+:      :+:    :+:   */
+/*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/29 16:00:17 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/03 08:51:57 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef HTTPREQUEST_COPY_HPP
-#define HTTPREQUEST_COPY_HPP
+#ifndef HTTPREQUEST_HPP
+#define HTTPREQUEST_HPP
 
-#include "Content_copy.hpp"
+#include "Content.hpp"
 
 // METHOD PATH HTTP/VERSION
 // Header1: Value1

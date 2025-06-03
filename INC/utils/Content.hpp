@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Content_copy.hpp                                   :+:      :+:    :+:   */
+/*   Content.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/02 16:50:54 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/03 08:51:46 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CONTENT_COPY_HPP
-#define CONTENT_COPY_HPP
+#ifndef CONTENT_HPP
+#define CONTENT_HPP
 
 #include "Webserv.hpp"
 // POST /upload HTTP/1.1

@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/03 01:06:57 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/03 09:22:59 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTPRESPONSE_HPP
 #define HTTPRESPONSE_HPP
 
-#include "HTTPRequest_copy.hpp"
+#include "HTTPRequest.hpp"
 #include "ServerManager.hpp"
 // // Construct response
 // std::string response = "HTTP/1.1 200 OK\r\n"; --> status line to send following the header following an empty blank and the reponse Body (content like HTML)
@@ -57,6 +57,9 @@ class HTTPResponse {
 		int checkDirectory(std::string& location);
 		//void makePostResponse(ContentDisposition_ &cd);
 		bool isReady() const;
+		bool checkRedirection();
+		void draft_error_response();
+		void draft_redirect_response();
 
 		
 	
