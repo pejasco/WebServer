@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/03 11:19:15 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/03 12:31:57 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,6 +189,8 @@ int HTTPResponse::createUploadFile(std::string& upload_dir, const Content& conte
     
 	allCDs.empty() ? std::cout << "<<sievdebug>> " << "CD is empty!\n" : std::cout << "<<sievdebug>> " << "CD is not empty!\n";
 
+	//<<sievdebug>>
+	content.printCDsList();
 	for(; it != allCDs.end() && !((it->filename_).empty()); ++it){
     }
     

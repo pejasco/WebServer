@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Content_test.cpp                                   :+:      :+:    :+:   */
+/*   Content.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/03 00:18:55 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/03 12:25:06 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,10 +240,19 @@ void Content::addContentDisposition(const ContentDisposition_& cd)
 
 void Content::printCDsList() const
 {
-    //std::vector<ContentDisposition_>::const_iterator it = CDs_list_.begin();
-
-
-
+    std::cout << "<sievdebug> beginning printing CDs\n";
+    for (std::vector<ContentDisposition_>::const_iterator it = CDs_list_.begin(); it != CDs_list_.end(); ++it) {
+        std::cout << "<<CD>>: " << global_index_ << " <CD>>" << "\n";
+        std::cout << "  global_index: " << global_index_ << "\n";
+        std::cout << "  index: " << it->instance_index_ << "\n";
+        std::cout << "  CD_type: [" << it->CD_type_ << "]\n";
+        std::cout << "  name: [" << it->name_ << "]\n";
+        std::cout << "  filename: [" << it->filename_ << "]\n";
+        std::cout << "  inner_content: [" << it->inner_content_type_ << "]\n";
+        std::cout << "  content_: [" << it->content_ << "]\n";
+        std::cout << "  file_content_: [" << it->file_content_ << "]\n";
+    }
+    std::cout << "<sievdebug> finishing printing CDs\n";
 }
 
 // const std::map<std::string, std::string> Content::getBodyconst() const { return body_; }
