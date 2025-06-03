@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/03 12:31:57 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/03 21:35:05 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,48 +184,48 @@ int HTTPResponse::checkDirectory(std::string& location){
 
 
 int HTTPResponse::createUploadFile(std::string& upload_dir, const Content& content){
-    const std::vector<ContentDisposition_>& allCDs = content.getCDs();
-    std::vector<ContentDisposition_>::const_iterator it = allCDs.begin();
-    
+	const std::vector<ContentDisposition_>& allCDs = content.getCDs();
+	std::vector<ContentDisposition_>::const_iterator it = allCDs.begin();
+	
 	allCDs.empty() ? std::cout << "<<sievdebug>> " << "CD is empty!\n" : std::cout << "<<sievdebug>> " << "CD is not empty!\n";
 
 	//<<sievdebug>>
 	content.printCDsList();
 	for(; it != allCDs.end() && !((it->filename_).empty()); ++it){
-    }
-    
-    if (it == allCDs.end()){
-        std::cout << "Error: There is no filename found" << std::endl;
-        return 500;
-    }
-    
+	}
+	
+	if (it == allCDs.end()){
+		std::cout << "Error: There is no filename found" << std::endl;
+		return 500;
+	}
+	
 	std::cout << "<<sievdebug>> " << "before filename\n";
-    std::string filename = it->filename_;
+	std::string filename = it->filename_;
 	std::cout << "<<sievdebug>> " << "filename:" << filename << "\n";
 	std::cout << "<<sievdebug>> " << "after filename\n";
 
-    std::string file_content = it->content_;
-    
-    std::string filepath = upload_dir + "/" + filename;
-    std::cout << "Trying to create file: " << filepath << std::endl;
-    
-    std::ofstream file(filepath.c_str(), std::ios::binary);
-    if (!file.is_open()) {
-        std::cout << "Error: Could not open file for writing: " << strerror(errno) << std::endl;
-        return 500;
-    }
-    
-    file.write(file_content.c_str(), file_content.length());
-    
-    if (file.fail()){
-        std::cout << "Error: Failed to write to file: " << strerror(errno) << std::endl;
-        file.close();
-        return 500;
-    }
-    
-    file.close();
-    std::cout << "File created successfully: " << filepath << std::endl;
-    return 200;
+	std::string file_content = it->content_;
+	
+	std::string filepath = upload_dir + "/" + filename;
+	std::cout << "Trying to create file: " << filepath << std::endl;
+	
+	std::ofstream file(filepath.c_str(), std::ios::binary);
+	if (!file.is_open()) {
+		std::cout << "Error: Could not open file for writing: " << strerror(errno) << std::endl;
+		return 500;
+	}
+	
+	file.write(file_content.c_str(), file_content.length());
+	
+	if (file.fail()){
+		std::cout << "Error: Failed to write to file: " << strerror(errno) << std::endl;
+		file.close();
+		return 500;
+	}
+	
+	file.close();
+	std::cout << "File created successfully: " << filepath << std::endl;
+	return 200;
 }
 
 //std::vector<ContentDisposition_> CDs_list_;
@@ -529,15 +529,16 @@ void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI a
 		if (headers.find("Content-Type:") == std::string::npos)
 			headers = "Content-Type: text/html\r\n" + headers;
 
+		if (headers.find("Connection:") == std::string::npos)
+			headers += "\r\nConnection: close";
+
 		response = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
 		body_filename.clear();
 	} else {
 		// fallback (not ideal, but prevents broken response)
 		response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;
 	}
-
-	//std::cerr << "[CGI] Raw CGI output:\n" << cgiOutput << "\n";
-	//response = cgiOutput;
+	_response_ready = true;
 }
 
 void HTTPResponse::autoIndexRequest() {

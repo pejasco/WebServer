@@ -1,5 +1,29 @@
 #!/bin/sh
 
+echo "Content-Type: text/html; charset=UTF-8"
+echo ""
+
+# Begin HTML
+cat << "EOF"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>42 Bash CGI</title>
+    <style>
+        body {
+            background-color: #0c0f1a;
+            color: #ffffff;
+            font-family: monospace;
+            white-space: pre;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<pre>
+EOF
+
 cat << "EOF"
 (
 
@@ -82,15 +106,13 @@ cat << "EOF"
 
 EOF
 
-echo "Content-Type: text/html"
-echo
-echo "Status: 200 OK"
-echo "<html>"
-echo "<body><h1>Hello from Bash CGI!</h1></body>"
-echo "</html>"
-echo "<pre>"
-env
-echo "</pre>"
-
-
-#need to fix this
+cat << EOF
+</pre>
+<hr>
+<h2>Environment Vars:</h2>
+<pre>
+$(env)
+</pre>
+</body>
+</html>
+EOF

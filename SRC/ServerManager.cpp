@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/03 10:33:37 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/03 19:50:40 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -408,6 +408,7 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 
 		if (currentResponse.isReady()) {
 			std::cout << "Response is already ready (e.g. from CGI), skipping body file send\n";
+			close(currentFd);
 		return;
 		}
 

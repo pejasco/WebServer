@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 16:26:00 by ssottori          #+#    #+#             */
-/*   Updated: 2025/05/28 02:51:34 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/03 21:40:31 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,19 +51,69 @@ char** ScriptExecutor::createArgv() const
 
 void ScriptExecutor::runChild()
 {
-	dup2(_pipe[1], STDOUT_FILENO); // redirect stdout to pipe
-	close(_pipe[0]);
-	close(_pipe[1]);
-
 	if (_request.getMethod() == "POST") {
-		bodytoStdin(); // handles input + exec
-	} else {
-		execveScript();
-	}
+		// Create a pipe for sending POST body to stdin
+		int postPipe[2];
+		if (pipe(postPipe) == -1) {
+			std::cerr << "Failed to create POST pipe\n";
+			_exit(1);
+		}
 
-	std::cerr << "Execve failed\n";
-	_exit(1);
+		pid_t grandchild = fork();
+		if (grandchild < 0) {
+			std::cerr << "Failed to fork grandchild for CGI\n";
+			_exit(1);
+		}
+
+		if (grandchild == 0) {
+			// Grandchild: sets up stdin/stdout and runs script
+			close(_pipe[0]);                    // stdout pipe read end
+			dup2(_pipe[1], STDOUT_FILENO);      // CGI stdout
+			close(_pipe[1]);
+
+			close(postPipe[1]);                 // write end of stdin pipe
+			dup2(postPipe[0], STDIN_FILENO);    // CGI stdin
+			close(postPipe[0]);
+
+			execveScript();                     // run the script
+			_exit(1);                           // only if execve fails
+		} else {
+			// Child: writes POST body into pipe, waits for grandchild
+			close(postPipe[0]);
+			std::string body = _request.getBody();
+			std::cerr << "[DEBUG] POST body: [" << body << "]\n";
+			write(postPipe[1], body.c_str(), body.size());
+			close(postPipe[1]);
+			waitpid(grandchild, NULL, 0);
+			_exit(0);  // done
+		}
+	}
+	else {
+		// GET/HEAD: just hook up stdout
+		dup2(_pipe[1], STDOUT_FILENO);
+		close(_pipe[0]);
+		close(_pipe[1]);
+		execveScript();
+		_exit(1);
+	}
 }
+
+
+// void ScriptExecutor::runChild()
+// {
+// 	dup2(_pipe[1], STDOUT_FILENO); // redirect stdout to pipe
+// 	close(_pipe[0]);
+// 	close(_pipe[1]);
+
+// 	if (_request.getMethod() == "POST") {
+// 		bodytoStdin(); // handles input + exec
+// 	} else {
+// 		execveScript();
+// 	}
+
+// 	std::cerr << "Execve failed\n";
+// 	_exit(1);
+// }
 
 std::string ScriptExecutor::runParent(pid_t pid)
 {
@@ -117,36 +167,36 @@ std::string ScriptExecutor::getInterpreter() const
 	return "";
 }
 
-void ScriptExecutor::bodytoStdin() // only for POST
-{
-	int pfd[2];
-	if (pipe(pfd) == -1)
-	{
-		std::cerr << "Failed to create pipe for stdin redirection.\n";
-		_exit(1);
-	}
-	pid_t pid = fork();
-	if (pid < 0)
-	{
-		std::cerr << "Fork failed in ---> bodytoStdin.\n";
-		_exit(1);
-	}
-	if (pid == 0)
-	{
-		// Child: redirect stdin
-		close(pfd[1]);
-		dup2(pfd[0], STDIN_FILENO);
-		close(pfd[0]);
-		execveScript(); //running the scripppttt
-		_exit(1);
-	}
-	else
-	{
-		// Parent: write body to child
-		close(pfd[0]); // close read end
-		std::string body = _request.getBody();
-		write(pfd[1], body.c_str(), body.size());
-		close(pfd[1]);
-		waitpid(pid, NULL, 0);
-	}
-}
+// void ScriptExecutor::bodytoStdin() // only for POST
+// {
+// 	int pfd[2];
+// 	if (pipe(pfd) == -1)
+// 	{
+// 		std::cerr << "Failed to create pipe for stdin redirection.\n";
+// 		_exit(1);
+// 	}
+// 	pid_t pid = fork();
+// 	if (pid < 0)
+// 	{
+// 		std::cerr << "Fork failed in ---> bodytoStdin.\n";
+// 		_exit(1);
+// 	}
+// 	if (pid == 0)
+// 	{
+// 		// Child: redirect stdin
+// 		close(pfd[1]);
+// 		dup2(pfd[0], STDIN_FILENO);
+// 		close(pfd[0]);
+// 		execveScript(); //running the scripppttt
+// 		_exit(1);
+// 	}
+// 	else
+// 	{
+// 		// Parent: write body to child
+// 		close(pfd[0]); // close read end
+// 		std::string body = _request.getBody();
+// 		write(pfd[1], body.c_str(), body.size());
+// 		close(pfd[1]);
+// 		//waitpid(pid, NULL, 0);
+// 	}
+// }
