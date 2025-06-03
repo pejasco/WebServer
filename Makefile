@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: cofische <cofische@student.42.fr>          +#+  +:+       +#+         #
+#    By: cofische <cofische@student.42london.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/24 01:20:10 by ssottori          #+#    #+#              #
-#    Updated: 2025/05/30 12:11:56 by cofische         ###   ########.fr        #
+#    Updated: 2025/06/03 08:55:02 by cofische         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,8 +35,8 @@ SRC = $(SRC_DIR)/Server.cpp \
 	  $(SRC_DIR)/Socket.cpp \
 	  $(SRC_DIR)/Location.cpp \
 	  $(SRC_DIR)/ServerManager.cpp \
-	  $(SRC_DIR)/HTTPRequest_test.cpp \
-	  $(SRC_DIR)/Content_test.cpp \
+	  $(SRC_DIR)/HTTPRequest.cpp \
+	  $(SRC_DIR)/Content.cpp \
 	  $(SRC_DIR)/Client.cpp \
 	  $(SRC_DIR)/HTTPResponse.cpp \
 	  $(SRC_DIR)/Utils.cpp \
@@ -56,9 +56,9 @@ INC = $(INC_DIR)/Colors.hpp \
 	  $(INC_DIR)/Location.hpp \
 	  $(INC_DIR)/Client.hpp \
 	  $(INC_DIR)/MET.hpp \
-	  $(INC_DIR)/HTTPRequest_copy.hpp \
+	  $(INC_DIR)/HTTPRequest.hpp \
 	  $(INC_DIR)/HTTPResponse.hpp \
-	  $(INC_DIR)/Content_copy.hpp \
+	  $(INC_DIR)/Content.hpp \
 	  $(INC_DIR)/Utils.hpp \
 	  $(INC_DIR)/ServerManager.hpp \
 	  $(CGI_INC)/CgiHandler.hpp \

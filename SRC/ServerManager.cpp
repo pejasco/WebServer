@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/03 01:10:26 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/03 10:33:37 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-bool server_flag = false;
-
 #include "../INC/utils/ServerManager.hpp"
+
+bool server_flag = false;
 
 /************************/
 /*CONSTRUCTOR/DESTRUCTOR*/
@@ -308,7 +308,8 @@ void ServerManager::serverMonitoring() {
 		/*STEP3 -- wait for an event to occur in any socket in epoll instance*/
 		num_events = epoll_wait(epoll_fd, events, MAX_EVENTS, -1); // -1 is timeout setup with -1 for infinite
 		if (num_events == -1) {
-			std::cerr << "Error epoll_wait: " << strerror(errno) << std::endl;
+			if (errno != 4)
+				std::cerr << "Error epoll_wait: " << strerror(errno) << std::endl;
 			return ;
 		}
 		
@@ -328,7 +329,8 @@ void ServerManager::serverMonitoring() {
 		// running become false
 		
 	}
-	/*LAST STEP -- clean the epoll instance and the structure (if needed but should be done in the destructor)*/
+	this->cleanClient(currentFd);
+	this->shutdown();
 }
 
 /****************/

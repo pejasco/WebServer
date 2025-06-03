@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/03 01:14:47 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/03 11:19:15 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,9 @@
 #include "../CGI/inc/receiveRequest.hpp"
 #include "../CGI/inc/CgiHandler.hpp"
 
-
 bool cgi_flag = false;
 
-HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP) : currentRequest(inputRequest), is_autoindex(false), _response_ready(false) {
-	empty_line = "\r\n";
+HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP) : currentRequest(inputRequest), empty_line("\r\n"), is_autoindex(false), _response_ready(false) {
 	defaultServer = serverManager.getServers().front();
 	defaultLocation = defaultServer->getLocation().front();
 	std::cout << BOLD UNDERLINE GREEN "\n###### ENTERING SERVER//LOCATION DEBUUGING ######\n\n" RESET;
@@ -27,6 +25,10 @@ HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serve
 	if (location == NULL && (inputRequest.getPath() == "/"))
 		location = defaultServer->getLocation().front();
 	std::cout << BOLD UNDERLINE GREEN "\n###### LEAVING SERVER//LOCATION DEBUUGING ######\n\n" RESET;
+	if (checkRedirection()) {
+		std::cout << "redirection was true, bye!\n";
+		return ;
+	}
 	switch (currentRequest.getMethod()) {
 	case GET:
 		if (checkMethod() != 200) {
@@ -56,7 +58,8 @@ HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serve
 	default:
 		setErrorResponse(405);
 		break;
-	}	
+	}
+	std::cout << "\nPRINTING RESPONSE\n\n" << response << std::endl;
 };
 
 HTTPResponse::~HTTPResponse() {
@@ -92,6 +95,17 @@ bool HTTPResponse::isAutoIndex() {
 }
 
 //METHOD
+
+bool HTTPResponse::checkRedirection() {
+	std::cout << "redirect debugging\n";
+	if (!location->getRedirectURL().empty()) {
+		std::cout << "location identify as redirection\n"; 
+		setErrorResponse(location->getRedirectCode());
+		return true;
+	}
+	return false;
+}
+
 void HTTPResponse::setGetResponse() {
 	//1st -- check if the path request by the user exist
 	//2nd -- check if the file exist and readable (not already open, with correct permission (not sure if we need to set it up)) 
@@ -308,15 +322,33 @@ void HTTPResponse::setErrorResponse(int errorCode) {
 		prepareStatusLine(errorCode);
 		content_length = calculateFileSize(body_filename);
 		header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(content_length) + "\r\nConnection: close\r\n";
+		if (!location->getRedirectURL().empty())
+			header += "Location: " + location->getRedirectURL() + "\r\n";
 		response = status_line + header + empty_line;
 	} else {
-		std::cout << "error: error-file " << body_filename << " doesn't exist\n";
-		body = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
-		status_line = currentRequest.getVersion() + " 500 Internal server error\r\n";
-		header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(body.size()) + "\r\nConnection: close\r\n";
-		response = status_line + header + empty_line + body;
-		body_filename = "";
+		if (!location->getRedirectURL().empty())
+			draft_redirect_response();
+		else
+			draft_error_response();
 	}
+}
+
+void HTTPResponse::draft_redirect_response() {
+	std::cout << "error: error-file " << body_filename << " doesn't exist\n";
+	// body = "<!DOCTYPE html><html><head><title>301 Moved permanently</title></head><body><h1>301 Moved permanently</h1><p>This page is not available anymore. If you are not automatically redirect, please follow this <a href=" + location->getRedirectURL() +">link</a></p></body></html>";
+	status_line = currentRequest.getVersion() + " 301 Moved Permanently\r\n";
+	header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: 0\r\nConnection: close\r\nLocation: " + location->getRedirectURL() + "\r\n";
+	response = status_line + header + empty_line;
+	body_filename = "";
+}
+
+void HTTPResponse::draft_error_response() {
+	std::cout << "error: error-file " << body_filename << " doesn't exist\n";
+	body = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
+	status_line = currentRequest.getVersion() + " 500 Internal server error\r\n";
+	header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(body.size()) + "\r\nConnection: close\r\n";
+	response = status_line + header + empty_line + body;
+	body_filename = "";
 }
 
 //Checking if the file requested exist and if it is possible to read it 

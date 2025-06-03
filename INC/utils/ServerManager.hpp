@@ -3,21 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/30 21:56:44 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/03 08:52:19 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVERMANAGER_HPP
 #define SERVERMANAGER_HPP
 
-//#include "Webserv.hpp"
 #include "Server.hpp"
 #include "Socket.hpp"
 #include "Client.hpp"
-// #include "HTTPRequest_copy.hpp"
 #include "HTTPResponse.hpp"
 
 
