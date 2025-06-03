@@ -14,11 +14,11 @@
 > - ✅ Configuration file parsing
 > - 🔄 CGI implementation
 > - ✅  Autoindex management
-> - 🔄 Redirection
+> - ✅ Redirection
 > - 🔄 Advanced error handling
 > - 🔄 File upload functionality
 > - 🔄 Static Webserv website to display functionality
-> - 🔄 Signal handling and graceful shutdown
+> - ✅ Signal handling and graceful shutdown
 >
 
 ## ✨ Features
@@ -270,4 +270,4 @@ This project demonstrates mastery of:
 - [ ] Database connection
 - [ ] WebSocket support
 
-**Last Updated:** 02/06/2025
+**Last Updated:** 03/06/2025
