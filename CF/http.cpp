@@ -119,7 +119,6 @@ void http_content::setHttpCD(std::string body){
 }
 
 void http_content::addHttpCD(){
-
     CDs_list_.push_back(http_CD_());
 }
 
@@ -258,7 +257,7 @@ void http::setHttp(std::string line_input){
 		std::string host = line_input.substr(pos_begin, std::string::npos);
         setHost(host);
     }
-    if (line_input.find("Content-Type") != std::string::npos){
+    else if (line_input.find("Content-Type") != std::string::npos){
 		if ((pos_begin = line_input.rfind(":")) != std::string::npos){
 			pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
 			pos_end = line_input.find(";");
@@ -271,15 +270,16 @@ void http::setHttp(std::string line_input){
             } 
         }
     }
-    if (line_input.find("Content-Length") != std::string::npos){
+    else if (line_input.find("Content-Length") != std::string::npos){
         if ((pos_begin = line_input.find(":")) != std::string::npos){
             pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
             std::string length = line_input.substr(pos_begin);
             setContentLength(atoi(length.c_str()));
         }
     }
-    if (line_input.find(getBoundary().c_str())){
-        if B
+    //if able to find the boundary 
+    else if (line_input.find(getBoundary().c_str())){
+        
 
 
     }
