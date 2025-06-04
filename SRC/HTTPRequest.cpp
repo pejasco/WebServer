@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/04 21:06:45 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/04 21:35:25 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -299,20 +299,6 @@ bool HTTPRequest::getIsInTheBody() {
 }
 
 //Parser
-
-// void HTTPRequest::parseRequestLine(const std::string& request_line){
-// 	std::string method, path, version;
-	
-// 	std::istringstream stream(request_line);
-// 	stream >> method >> path >> version;
-
-// 	setMet(method);
-// 	// std::cout << "This is the method: " << this->method_ << std::endl;
-// 	setPath(path);
-// 	// std::cout << "This is the path: " << this->path_ << std::endl;
-// 	setVersion(version);
-// 	// std::cout << "This is the version: " << this->version_ << std::endl;
-// }
 
 void HTTPRequest::parseRequestLine(const std::string& request_line){
 	std::string method, path_with_query, version;
