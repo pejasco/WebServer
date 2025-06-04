@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/03 08:51:57 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 21:04:12 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,7 @@ class HTTPRequest {
 		std::string getRawBody() const;
 		//std::string getcgiPath();
 		std::map<std::string, std::string> getHeaders() const;
+		void setQueryStr(const std::string& query);
 
 
 

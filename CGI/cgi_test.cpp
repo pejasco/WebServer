@@ -6,7 +6,7 @@
 /*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/17 20:57:59 by ssottori          #+#    #+#             */
-/*   Updated: 2025/06/04 20:34:20 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/04 21:21:31 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,10 +66,10 @@ void testBirthdayScriptGET(std::map<std::string, std::string> headers)
 	std::cout << "[CGI OUTPUT] ===\n" << output << std::endl;
 }
 
-void testBirthdayScriptPOST(std::map<std::string, std::string> headers)
+void testHelloScriptPOST(std::map<std::string, std::string> headers)
 {
-	RequestData request("POST", "./cgi-bin/birthday.py", "", headers, "day=13&month=11");
-	ScriptExecutor executor("./cgi-bin/birthday.py", request);
+	RequestData request("POST", "./cgi-bin/say_hello.py", "", headers, "name=shaly");
+	ScriptExecutor executor("./cgi-bin/say_hello.py", request);
 
 	std::string output = executor.runScript();
 	std::cout << "[CGI OUTPUT] ===\n" << output << std::endl;
@@ -80,8 +80,8 @@ void testBirthdayScriptPOST(std::map<std::string, std::string> headers)
 // 	headers["Content-Type"] = "application/x-www-form-urlencoded";
 // 	headers["Content-Length"] = "17"; // strlen("day=05&month=06")
 
-// 	testBirthdayScriptGET(headers);
-// 	//testBirthdayScriptPOST(headers);
+// 	//testBirthdayScriptGET(headers);
+// 	testHelloScriptPOST(headers);
 
 // 	return 0;
 // }

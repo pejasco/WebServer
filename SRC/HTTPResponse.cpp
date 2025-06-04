@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/04 15:26:05 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 21:12:23 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -490,36 +490,106 @@ void HTTPResponse::headerResponse() {
 	// std::cout << "response: " << response << std::endl;
 }
 
-void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI and storing it in RequestData
-{
+// void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI and storing it in RequestData
+// {
+// 	const std::string CGI_ROOT = "./CGI/cgi-bin";
+// 	std::string uri = current_request_.getPath();  // e.G /cgi-bin/test.py
+// 	std::string prefix = "/cgi-bin";
+// 	std::string scriptPath;
+
+// 	if (uri.find(prefix) == 0) {
+// 		std::string relativePath = uri.substr(prefix.size());     // e.g. "/test.py"
+// 		scriptPath = CGI_ROOT + relativePath;         // e.g. "./CGI/cgi-bin/test.py"
+// 		std::cerr << "[CGI DEBUG] full path to script: " << scriptPath << std::endl;
+// 	} else {
+// 		setErrorResponse(404);  // unexpected URI
+// 		return;
+// 	}
+// 	std::cerr << "[CGI DEBUG] Raw POST body (from HTTPRequest): [" << current_request_.getRawBody() << "]" << std::endl;
+
+
+// 	RequestData data;
+// 	data.setMethod(current_request_.getMethodAsStr());
+// 	data.setPath(scriptPath); //for SCRIPT_FILENAME and SCRIPT_NAME
+// 	data.setQueryString(current_request_.getQueryStr());
+// 	data.setHeaders(current_request_.getHeaders());
+// 	data.setBody(current_request_.getRawBody());
+// 	std::cerr << "[CGI] method : " << data.getMethod() << std::endl;
+// 	std::cerr << "[CGI] - path saved: " << data.getPath() << std::endl;
+// 	std::cerr << "[CGI] - query str: " << data.getQueryString() << std::endl;
+// 	std::cerr << "[CGI] - body saved: " << data.getBody() << std::endl;
+
+// 	if (data.getMethod() == "POST" && data.getBody().empty()) {
+// 		std::cerr << "[CGI ERROR] POST method but body is empty!" << std::endl;
+// 	}
+
+
+// 	CgiHandler handler(data, scriptPath); //new object
+// 	std::string cgiOutput = handler.run();
+
+// 	size_t headerEnd = cgiOutput.find("\r\n\r\n");
+// 	if (headerEnd != std::string::npos) {
+// 		std::string headers = cgiOutput.substr(0, headerEnd);
+// 		std::string body = cgiOutput.substr(headerEnd + 4);
+
+// 		if (headers.find("Content-Type:") == std::string::npos)
+// 			headers = "Content-Type: text/html\r\n" + headers;
+
+// 		if (headers.find("Connection:") == std::string::npos)
+// 			headers += "\r\nConnection: close";
+
+// 		response_ = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
+// 		body_filename_.clear();
+// 	} else {
+// 		// fallback (not ideal, but prevents broken response)
+// 		response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;
+// 	}
+// 	_response_ready_ = true;
+// }
+
+void HTTPResponse::CGI_Body() {
 	const std::string CGI_ROOT = "./CGI/cgi-bin";
-	std::string uri = current_request_.getPath();  // e.G /cgi-bin/test.py
-	std::string prefix = "/cgi-bin";
+	std::string uri = current_request_.getPath();  // e.g. /cgi-bin/birthday.py?day=13&month=11
+	const std::string prefix = "/cgi-bin";
 	std::string scriptPath;
 
+	// Strip query string from URI to get actual script file path
+	size_t qmark = uri.find('?');
+	if (qmark != std::string::npos)
+		uri = uri.substr(0, qmark);  // now uri = "/cgi-bin/birthday.py"
+
 	if (uri.find(prefix) == 0) {
-		std::string relativePath = uri.substr(prefix.size());     // e.g. "/test.py"
-		scriptPath = CGI_ROOT + relativePath;         // e.g. "./CGI/cgi-bin/test.py"
+		std::string relativePath = uri.substr(prefix.size());     // e.g. "/birthday.py"
+		scriptPath = CGI_ROOT + relativePath;                     // e.g. "./CGI/cgi-bin/birthday.py"
 		std::cerr << "[CGI DEBUG] full path to script: " << scriptPath << std::endl;
 	} else {
 		setErrorResponse(404);  // unexpected URI
 		return;
 	}
 
+	std::cerr << "[CGI DEBUG] Raw POST body (from HTTPRequest): [" << current_request_.getRawBody() << "]" << std::endl;
+
+	// Build the RequestData object for CGI
 	RequestData data;
 	data.setMethod(current_request_.getMethodAsStr());
-	data.setPath(scriptPath); //for SCRIPT_FILENAME and SCRIPT_NAME
+	data.setPath(scriptPath);  // Used for SCRIPT_FILENAME and SCRIPT_NAME
 	data.setQueryString(current_request_.getQueryStr());
 	data.setHeaders(current_request_.getHeaders());
 	data.setBody(current_request_.getRawBody());
+
 	std::cerr << "[CGI] method : " << data.getMethod() << std::endl;
 	std::cerr << "[CGI] - path saved: " << data.getPath() << std::endl;
 	std::cerr << "[CGI] - query str: " << data.getQueryString() << std::endl;
 	std::cerr << "[CGI] - body saved: " << data.getBody() << std::endl;
 
-	CgiHandler handler(data, scriptPath); //new object
+	if (data.getMethod() == "POST" && data.getBody().empty()) {
+		std::cerr << "[CGI WARNING] POST method but body is empty!" << std::endl;
+	}
+
+	CgiHandler handler(data, scriptPath); // pass to CGI engine
 	std::string cgiOutput = handler.run();
 
+	// Try to parse headers from CGI output
 	size_t headerEnd = cgiOutput.find("\r\n\r\n");
 	if (headerEnd != std::string::npos) {
 		std::string headers = cgiOutput.substr(0, headerEnd);
@@ -534,11 +604,12 @@ void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI a
 		response_ = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
 		body_filename_.clear();
 	} else {
-		// fallback (not ideal, but prevents broken response)
+		// fallback response, in case headers were missing
 		response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;
 	}
 	_response_ready_ = true;
 }
+
 
 void HTTPResponse::autoIndexRequest() {
 	//needed to look inside a directory

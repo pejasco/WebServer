@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HTTPRequest_test.cpp                               :+:      :+:    :+:   */
+/*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/05/31 16:47:37 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/04 21:06:45 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -300,19 +300,42 @@ bool HTTPRequest::getIsInTheBody() {
 
 //Parser
 
+// void HTTPRequest::parseRequestLine(const std::string& request_line){
+// 	std::string method, path, version;
+	
+// 	std::istringstream stream(request_line);
+// 	stream >> method >> path >> version;
+
+// 	setMet(method);
+// 	// std::cout << "This is the method: " << this->method_ << std::endl;
+// 	setPath(path);
+// 	// std::cout << "This is the path: " << this->path_ << std::endl;
+// 	setVersion(version);
+// 	// std::cout << "This is the version: " << this->version_ << std::endl;
+// }
+
 void HTTPRequest::parseRequestLine(const std::string& request_line){
-	std::string method, path, version;
+	std::string method, path_with_query, version;
 	
 	std::istringstream stream(request_line);
-	stream >> method >> path >> version;
+	stream >> method >> path_with_query >> version;
+
+	// Split path and query
+	size_t pos = path_with_query.find('?');
+	if (pos != std::string::npos) {
+		std::string path = path_with_query.substr(0, pos);
+		std::string query = path_with_query.substr(pos + 1);
+		setPath(path);
+		setQueryStr(query);
+	} else {
+		setPath(path_with_query);
+		setQueryStr("");
+	}
 
 	setMet(method);
-	// std::cout << "This is the method: " << this->method_ << std::endl;
-	setPath(path);
-	// std::cout << "This is the path: " << this->path_ << std::endl;
 	setVersion(version);
-	// std::cout << "This is the version: " << this->version_ << std::endl;
 }
+
 
 
 
@@ -528,4 +551,5 @@ std::string HTTPRequest::getRawBody() const
 	return content_.getBodyWithNoCD();
 }
 
+void HTTPRequest::setQueryStr(const std::string& query) { query_string_ = query; }
 //std::string HTTPRequest::getcgiPath() { return path_; }
