@@ -3,6 +3,7 @@
 
 int http_CD_::global_index_ = 0;
 int http_content::global_index_ = 0;
+int http::global_index_ = 0;
 
 //######### http_CD_ ###########//
 
@@ -71,7 +72,19 @@ const std::string http_CD_::getContent_() const{
 const std::string http_CD_::getFileContent_() const{
     return file_content_;
 }
-    
+
+void http_CD_::printHttpCD(){
+    std::cout << "xxxxxxxxxxxx" << global_index_ <<"xxxxxxxxxxxxx" << "\n";
+    std::cout << "global index: " << global_index_ << "\n";
+    std::cout << "instance index: " << instance_index_ << "\n";
+    std::cout << "CD_type: " << CD_type_ << "\n";
+    std::cout << "name: " << name_ << "\n";
+    std::cout << "filename: " << filename_ << "\n";
+    std::cout << "inner_content_type: " << inner_content_type_ << "\n";
+    std::cout << "content: " << content_ << "\n";
+    std::cout << "file_content: " << file_content_ << "\n";
+    std::cout << "xxxxxxxxxxxxxxxxxxxxxxxxx" << "\n";
+}
 
 
 //############# http_content #############
@@ -107,7 +120,6 @@ void http_content::setHttpCD(std::string body){
 }
 
 
-
 int http_content::getGlobalIndex(){
     return global_index_;
 }
@@ -137,14 +149,29 @@ std::vector<http_CD_>& http_content::getCDs_list_(){
     return CDs_list_;
 }
 
+void http_content::printHttpContent(){
+    std::cout << "global index: " << global_index_ << "\n";
+    std::cout << "instance index: " << instance_index_ << "\n";
+    std::cout << "method: " << boundary_ << "\n";
+    std::cout << "path: " << open_boundary_ << "\n";
+    std::cout << "format: " << close_boundary_ << "\n";
+    std::cout << "host: " << body_with_no_cd_ << "\n";
+    std::cout << "boundary" << boundary_ << "\n";
 
+    std::cout << "\nContent Dispositions List:\n";
+    for(std::vector<http_CD_>::iterator it = CDs_list_.begin();
+         it != CDs_list_.end(); ++it)
+    {
+        it->printHttpCD();
+    }
+}
 
 
 //############# http #############
 
 http::http(): instance_index_(global_index_++) {
 	// Constructor body
-	std::cout << "http_content_ instance created with index: " << instance_index_ << std::endl;
+	std::cout << "http instance created with index: " << instance_index_ << std::endl;
 }
 
 http::~http(){
@@ -190,7 +217,7 @@ const std::string http::getFormat() const{
     return format_;
 }
 
-const std::pair<std::string, std::string> http::getContentType() const{
+const std::map<std::string, std::string> http::getContentType() const{
     return content_type_;
 }
 
@@ -214,7 +241,7 @@ void http::setHttp(std::string line_input){
 			pos_end = line_input.find(";");
             std::string cttype = line_input.substr(pos_begin, pos_end - pos_begin);
 			setContentType(cttype);
-            
+            if 
 
 
         }
@@ -224,24 +251,16 @@ void http::setHttp(std::string line_input){
 void http::printHttp(){
     std::cout << "global index: " << global_index_ << "\n";
     std::cout << "instance index: " << instance_index_ << "\n";
-    std::cout << "method: "
-    std::cout << "path: "
-    std::cout << "format: "
-    std::cout << "host: "
-    std::cout << "boundary"
-    std::cout <<
-    std::cout <<
-    std::cout <<
-    std::cout <<
-    std::cout <<
-    std::cout <<
-    std::cout <<
-    std::cout <<
-    std::cout <<
-
-
-
-
-
+    std::cout << "method: " << method_ << "\n";
+    std::cout << "path: " << path_ << "\n";
+    std::cout << "format: " << format_ << "\n";
+    std::cout << "host: " << host_ << "\n";
+    std::cout << "boundary" << boundary_ << "\n";
+    for(std::map<std::string, std::string>::iterator it = content_type_.begin();
+         it != content_type_.end(); ++it)
+    {
+        std::cout << "first: " << it->first << "\n";
+        std::cout << "second: " << it->second << "\n";
+    }
 
 }

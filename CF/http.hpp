@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <map>
 
 
 //this 
@@ -27,7 +28,7 @@ public:
     const std::string getInnerContentType_() const;
     const std::string getContent_() const;
     const std::string getFileContent_() const;
-
+    void printHttpCD();
 
 
 private:
@@ -68,6 +69,7 @@ public:
     const std::string getCloseBoundary() const;
     const std::string getBodyWithNoCD() const;
     std::vector<http_CD_>& getCDs_list_();
+    void printHttpContent();
 
 private:
     static int global_index_;
@@ -80,7 +82,6 @@ private:
     std::string close_boundary_;
     std::string body_with_no_cd_;
     std::vector<http_CD_> CDs_list_;
-
 
 };
 
@@ -102,7 +103,7 @@ public:
     const std::string getPath() const;
     const std::string getFormat() const;
     const std::string getHost() const;
-    const std::pair<std::string, std::string> getContentType() const;
+    const std::map<std::string, std::string> getContentType() const;
     http_content& getContent();
     
     void setHttp(std::string line_input);
@@ -118,7 +119,7 @@ private:
     std::string format_;
     std::string host_;
     std::string boundary_;
-    std::pair<std::string, std::string> content_type_;
+    std::map<std::string, std::string> content_type_;
     http_content content_;
     
 };
