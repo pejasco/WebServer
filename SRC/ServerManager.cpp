@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 14:55:49 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 18:49:00 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,14 +18,19 @@ bool server_flag = false;
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-ServerManager::ServerManager(const std::string &input_config_file) : running_(true), epoll_fd_(-1), num_events_(-1), current_fd_(-1) {
+ServerManager::ServerManager(std::string &input_config_file) : running_(true), epoll_fd_(-1), num_events_(-1), current_fd_(-1) {
 	std::cout << BOLD RED "Starting MasterServer\n" RESET;
+	if (is_file_empty(input_config_file))
+		input_config_file = "configuration/default.conf";
 	std::fstream config_file(input_config_file.c_str());
+
 	if (!readFile(config_file))
-		return; 
+		exit(EXIT_FAILURE); 
 	setHostPort();
-	startSockets();
-	startEpoll();
+	if (!startSockets())
+		exit(EXIT_FAILURE);
+	if (!startEpoll())
+		exit(EXIT_FAILURE);
 	
 	//check on error of the config file (ex: incorrect format, missing essential elements) 
 	// --> can be place before the call of the object in main ??
@@ -270,25 +275,29 @@ void ServerManager::parseLocation(std::string &line, Server *current_server, std
 /* StartSockets purpose is to initiate the socket_fd per unique host:port combination that are saved in the attribute host_port*/
 /* Each of the socket_fd will start a Socket object that will test the IP address, bind it and start listening*/
 /****************/
-void ServerManager::startSockets() {
+int ServerManager::startSockets() {
 	std::map<std::string, std::string>::iterator beg = IP_ports_list_.begin();
 	std::map<std::string, std::string>::iterator end = IP_ports_list_.end();
 	for (; beg != end; ++beg) {
 		sockets_list_.push_back(new Socket(beg->second, beg->first));
-		sockets_fd_list_.push_back(sockets_list_.back()->getSocketFd());
+		if (!sockets_list_.back()->getSocketError()) {
+			sockets_list_.pop_back();
+			return 0;
+		} else
+			sockets_fd_list_.push_back(sockets_list_.back()->getSocketFd());
 	}
-	// Now we got a vector that has all the socket_fd active and ready to listen. We are able to start the epoll after this function
+	return 1;// Now we got a vector that has all the socket_fd active and ready to listen. We are able to start the epoll after this function
 }
 
 /****************/
 /*startEpoll --> setup and start an epoll instant that will monitore the socketFD from the servers*/
 /****************/
-void ServerManager::startEpoll() {
+int ServerManager::startEpoll() {
 	/*STEP1 -- creation of the epoll instance*/
 	epoll_fd_ = epoll_create(4096); // nb of socket_fd to monitor (BUT NOT IN USE NOWADAYS -- epoll_create1())
 	if (epoll_fd_ == -1) {
-		std::cerr << "Error pn epoll creation\n";
-		return ;
+		std::cerr << "Error on epoll creation\n";
+		return 0;
 	}
 	/*STEP2 -- add the socket_fd to monitor in the epoll*/
 	std::vector<int>::iterator begFd = sockets_fd_list_.begin();
@@ -299,8 +308,10 @@ void ServerManager::startEpoll() {
 		event.data.fd = *begFd;
 		if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, *begFd, &event) == -1) {
 			std::cerr << "Error adding socket " << *begFd << " to epoll instance\n";
+			close(*begFd); // closing the problematic socket to avoid error 
 		}
 	}
+	return 1;
 }
 
 /****************/
@@ -312,9 +323,9 @@ void ServerManager::serverMonitoring() {
 		/*STEP3 -- wait for an event to occur in any socket in epoll instance*/
 		num_events_ = epoll_wait(epoll_fd_, events_, MAX_EVENTS, -1); // -1 is timeout setup with -1 for infinite
 		if (num_events_ == -1) {
-			if (errno != 4)
+			if (errno != EINTR)
 				std::cerr << "Error epoll_wait: " << strerror(errno) << std::endl;
-			return ;
+			running_ = false ;
 		}
 		
 		/*STEP4 -- Process each event happening*/
@@ -329,9 +340,6 @@ void ServerManager::serverMonitoring() {
 				existingClientConnection(current_client);
 			}
 		}
-		//running stop either when there is a huge problem with the epoll instance or when receiving a signal from the server to shutdown
-		// running become false
-		
 	}
 	this->cleanClient(current_fd_);
 	this->shutdown();
@@ -349,9 +357,16 @@ void ServerManager::createNewClientConnection() {
 	if (temp_fd == -1) {
 		 //at this level, block so not accepting this client at all to avoid infinite loop or comment printing 
 		std::cerr << "Error accepting connection: " << strerror(errno) << std::endl;
+		
 		return;
 	}
 	Client *new_client = new Client(temp_fd, temp_client_addr_, temp_client_addr_len_);
+	if (new_client->getError()) {
+		blocked_clients_list_.insert(new_client->getClientIP());
+	} else if (isBlocked(new_client->getClientIP())) {
+		close(new_client->getClientFd());
+		std::cerr << BOLD RED "Error\n" RESET "Client has been blocked\n";	
+	}
 	int new_client_fd = new_client->getClientFd();
 	clients_list_.insert(std::pair<int,Client*>(new_client_fd, new_client));
 
@@ -380,6 +395,9 @@ void ServerManager::existingClientConnection(Client *current_client) {
 	// RECEIVE CURRENT CLIENT REQUEST
 	while (!message_completed) {
 		ssize_t byte_received = recv(current_fd_, received_, sizeof(received_), MSG_WAITALL); // or MSG_DONTWAIT depending on which flag we want for receiving data
+		// ADD A part to determine the HTTPRequest header that will give info on location and server block to check.
+		// Get the max_body_size from correct location, check and then ensure the last bytes receive added to total doesn't cross the limit, otherwise, send a error file (limit reach)
+		
 		if (byte_received <= 0) {
 			message_completed = cleanClient(current_fd_);
 			if (byte_received == 0)
@@ -495,3 +513,9 @@ bool ServerManager::cleanClient(int current_fd_) {
 void ServerManager::shutdown() {
 	cleanShutdown(*this);
 };
+
+/* BLOCKING PROBLEMATIC CLIENT ++ OPTION COUNTING STRIKE ATTEMPT*/
+bool ServerManager::isBlocked(const void *IP) {
+	return blocked_clients_list_.find(IP) != blocked_clients_list_.end();
+}
+

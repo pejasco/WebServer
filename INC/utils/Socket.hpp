@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 14:08:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 14:16:06 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 16:46:05 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,9 @@ class Socket {
 
 		int setSocketFd();
 
-		int &getSocketFd();
+		int getSocketFd();
 		struct sockaddr_in *getAddr();
+		int getSocketError();
 		
 		class SOCKERROR: public std::exception {
 			private:
@@ -63,6 +64,7 @@ class Socket {
 		struct addrinfo *rp_;
 		int status_;
 		int socket_fd_;
+		int error_;
 		
 		
 };

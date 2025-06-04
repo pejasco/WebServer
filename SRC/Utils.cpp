@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 15:14:39 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 16:23:31 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,11 @@ void printServer(Server &server) {
 		printLocation(**itL);
 		std::cout << std::endl;
 	}
+}
+
+bool is_file_empty(const std::string &config_file) {
+	std::ifstream filename(config_file.c_str());
+	return filename.tellg() == 0 && filename.peek() == std::ifstream::traits_type::eof();
 }
 
 bool isMessageCompleted(const std::string &request) {

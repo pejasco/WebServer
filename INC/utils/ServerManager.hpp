@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 14:41:53 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 18:34:53 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ class Socket;
 
 class ServerManager {
 	public:
-		ServerManager(const std::string &config_file);
+		ServerManager(std::string &config_file);
 		~ServerManager();
 
 		void setHostPort();
@@ -45,13 +45,14 @@ class ServerManager {
 		int	readFile(std::fstream &config_file);
 		void parseServer(std::string &line, Server *current_server, std::fstream &config_file);
 		void parseLocation(std::string &line, Server *current_server, std::fstream &config_file);
-		void startSockets();
-		void startEpoll();
+		int startSockets();
+		int startEpoll();
 		void serverMonitoring();
 		void createNewClientConnection();
 		void existingClientConnection(Client *current_client);
 		bool cleanClient(int current_fd);
 		void shutdown();
+		bool isBlocked(const void *IP);
 
 		
 	private:
@@ -71,6 +72,7 @@ class ServerManager {
 		struct sockaddr_storage temp_client_addr_;
 		socklen_t temp_client_addr_len_;
 		std::map<int,Client*> clients_list_;
+		std::set<const void *> blocked_clients_list_;
 
 		char received_[4096];
 		char buffer_[8192];
