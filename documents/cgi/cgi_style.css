@@ -1,0 +1,112 @@
+body {
+	background-color: #0a0a0a;
+	color: #00ffe7;
+	font-family: 'Fira Code', monospace;
+	margin: 0;
+	padding: 40px 20px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.logo-container img {
+	width: 400px;
+	filter: drop-shadow(0 0 8px #00ffe7);
+	margin-bottom: 20px;
+}
+
+.typing {
+	font-size: 2rem;
+	white-space: nowrap;
+	overflow: hidden;
+	border-right: 2px solid #00ffe7;
+	width: 25ch;
+	animation: typing 2.5s steps(25), blink 1s step-end infinite;
+	margin-bottom: 30px;
+}
+
+@keyframes typing {
+	from { width: 0 }
+	to { width: 25ch }
+}
+
+@keyframes blink {
+	50% { border-color: transparent }
+}
+
+.button-grid {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 20px;
+	max-width: 800px;
+}
+
+.intro {
+	color: #aaa; /* light grey */
+	max-width: 700px;
+	text-align: center;
+	margin-top: -10px;
+	margin-bottom: 40px;
+	line-height: 1.6;
+	font-size: 1rem;
+}
+
+
+.card {
+	background: #111;
+	border: 1px solid #00ffe7;
+	border-radius: 12px;
+	padding: 20px;
+	width: 150px;
+	text-align: center;
+	box-shadow: 0 0 8px #00ffe744;
+	transition: transform 0.2s ease;
+	filter: drop-shadow(0 0 4px #ff009d);
+}
+
+.card:hover {
+	transform: scale(1.05);
+}
+
+button {
+	background-color: #003344;
+	color: #00ffe7;
+	border: 1px solid #00ffe7;
+	border-radius: 6px;
+	padding: 10px 15px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+	margin-top: 10px;
+}
+
+button:hover {
+	background-color: #005566;
+}
+
+footer {
+	margin-top: 50px;
+	color: #444;
+	font-size: 0.9rem;
+}
+
+.giphy {
+	display: block;
+	max-width: 30%;
+	height: auto;
+	border-radius: 8px;
+}
+
+.cat {
+	position: fixed;
+	top: 0px;
+	right: 0px;
+	width: 242px;
+	transition: transform 0.2s ease;
+	z-index: 9999;
+	cursor: move;
+}
+
+.cat:hover {
+	transform: scale(1.1) rotate(3deg) ;
+}

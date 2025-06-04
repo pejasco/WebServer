@@ -1,40 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CGI Tester</title>
-    <style>
-        body {
-            background-color: #0c0f1a; /* dark navy */
-            color: #7fffd4; /* aqua */
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        a {
-            background-color: #003366; /* darker blue button */
-            color: #7fffd4;
-            text-decoration: none;
-            padding: 10px 20px;
-            margin: 10px;
-            border-radius: 6px;
-            border: 1px solid #7fffd4;
-            transition: background-color 0.2s ease;
-        }
-        a:hover {
-            background-color: #005580;
-        }
-    </style>
+	<meta charset="UTF-8">
+	<title>42 CGI Control Panel</title>
+	<link rel="stylesheet" href="cgi_style.css">
 </head>
 <body>
-    <h1>CGI Script Tester</h1>
-    <a href="/cgi-bin/say_hello.py">Say Hello</a>
-    <a href="/cgi-bin/show_env.py">Environment Debug</a>
-    <a href="/cgi-bin/mood_selector.py">Mood Selector</a>
-    <a href="/cgi-bin/bash_banner.sh">ASCII Banner</a>
+
+	<div class="logo-container">
+		<img src="https://upload.wikimedia.org/wikipedia/commons/8/8d/42_Logo.svg" alt="42 logo">
+	</div>
+
+	<h1 class="typing">42 CGI Control Panel</h1>
+
+	<p class="intro">
+		<strong>Welcome to the 42 CGI Testing grounds!</strong> CGI is a way for web servers to run external programs and send their output back as a web page. When you click a button, the server executes the corresponding CGI script.<br>Try it out!
+	</p>
+	
+	<div class="button-grid">
+		<div class="card">
+			<h3>say_hello.py</h3>
+			<button onclick="window.location.href='http://localhost:8080/cgi-bin/say_hello.py'">Run</button>
+		</div>
+		<div class="card">
+			<h3>mood.py</h3>
+			<button onclick="window.location.href='http://localhost:8080/cgi-bin/mood.py'">Run</button>
+		</div>
+		<div class="card">
+			<h3>time.py</h3>
+			<button onclick="window.location.href='http://localhost:8080/cgi-bin/time.py'">Run</button>
+		</div>
+		<div class="card">
+			<h3>banner.sh</h3>
+			<button onclick="window.location.href='http://localhost:8080/cgi-bin/webserv.sh'">Run</button>
+		</div>
+		<div class="card">
+			<h3>env.sh</h3>
+			<button onclick="window.location.href='http://localhost:8080/cgi-bin/env.py'">Run</button>
+		</div>
+		<div class="card">
+			<h3>fail_500.sh</h3>
+			<button onclick="window.location.href='http://localhost:8080/cgi-bin/fail_500.py'">Run</button>
+		</div>
+	</div>
+
+	<img class="cat" src="https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3eWZrcHJqOGlrYXEwM3VmaXoydmVwejRsa3cxMHhjNWU2dHVkN2w0ZSZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/eLv7gJpxqiQtbNNQUe/giphy.gif" alt="cat">
+
+	<footer>
+		Made with 🫀 and 🧠</code>
+	</footer>
 </body>
 </html>

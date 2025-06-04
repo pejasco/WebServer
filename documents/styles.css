@@ -14,11 +14,147 @@ body {
     background-color: white;
     padding: 40px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     max-width: 600px;
 }
 h1 {
     font-size: 2.5rem;
     margin-bottom: 10px;
     color: #2c3e50;
+}
+
+body {
+    background-color: #ffffff;
+    color: #00ffe7;
+    font-family: 'Fira Code', monospace;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo img {
+    width: 770px;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.typing {
+    font-size: 2.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 2px solid #30ced9;
+    width: 25ch;
+    animation: typing 2.5s steps(25), blink 1s step-end infinite;
+    margin-bottom: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+@keyframes typing {
+    from { width: 0 }
+    to { width: 25ch }
+}
+
+@keyframes blink {
+    50% { border-color: transparent }
+}
+
+.button-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    max-width: 800px;
+}
+
+.gradient-bar {
+    height: 120px;
+    width: 100%;
+    position: fixed;
+    left: 0;
+    z-index: 0;
+}
+
+.gradient-bar.top {
+    top: 0;
+    background: linear-gradient(to bottom, #42b0c1, transparent);
+}
+
+.gradient-bar.bottom {
+    bottom: 0;
+    background: linear-gradient(to top, #297bff, transparent);
+}
+
+.intro {
+    color: #727070; /* light grey */
+    max-width: 700px;
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: 40px;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+
+.card {
+    background: #111;
+    border: 1px solid #00ffe7;
+    border-radius: 12px;
+    padding: 20px;
+    width: 150px;
+    text-align: center;
+    box-shadow: 0 0 8px #00ffe744;
+    transition: transform 0.2s ease;
+    filter: drop-shadow(0 0 4px #ff009d);
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+button {
+    background-color: #003344;
+    color: #00ffe7;
+    border: 1px solid #00ffe7;
+    border-radius: 6px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #005566;
+    transform: scale(1.08);
+}
+
+footer {
+    margin-top: 60px;
+    color: #88b2b7;
+    font-size: 0.9rem;
+    padding: 20px 0;
+}
+
+.giphy {
+    display: block;
+    max-width: 30%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.cat {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    width: 242px;
+    transition: transform 0.2s ease;
+    z-index: 9999;
+    cursor: move;
+}
+
+.cat:hover {
+    transform: scale(1.1) rotate(3deg) ;
 }
