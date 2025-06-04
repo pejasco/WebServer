@@ -6,7 +6,7 @@
 #    By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/14 17:39:37 by ssottori          #+#    #+#              #
-#    Updated: 2025/05/23 18:18:29 by ssottori         ###   ########.fr        #
+#    Updated: 2025/06/04 20:27:02 by ssottori         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,12 +26,13 @@ NAME = cgi
 SRC_DIR = src
 INC_DIR = inc
 
-SRCS = main.cpp \
+SRCS = cgi_test.cpp \
 		$(SRC_DIR)/receiveRequest.cpp \
 		$(SRC_DIR)/prepEnv.cpp \
 		$(SRC_DIR)/executeScript.cpp \
 		$(SRC_DIR)/returnOutput.cpp \
 		$(SRC_DIR)/CgiHandler.cpp \
+
 
 
 OBJS = $(SRCS:.cpp=.o)
