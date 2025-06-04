@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 10:19:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/03 08:52:43 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 17:46:19 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include <string>
 #include <cctype>
 #include <vector>
+#include <set>
 #include <fstream>
 #include <iterator>
 #include <algorithm>

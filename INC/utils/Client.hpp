@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 11:54:18 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 13:38:45 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 18:25:55 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,10 @@ class Client {
 		uint16_t getClientPort();
 		struct sockaddr_storage &getClientAddr();
 		socklen_t getClientAddrLen();
+		bool getError();
 		
 	private:
+		bool error_;
 		int client_fd_;
 		struct sockaddr_storage client_addr_;
 		socklen_t client_addr_len_;
