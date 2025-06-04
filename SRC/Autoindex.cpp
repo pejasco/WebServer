@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Autoindex.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 09:19:15 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/02 12:19:52 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 11:20:32 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,10 +48,6 @@ static int addDirectories(std::ofstream &HTML, const std::string &dir_path, cons
 		return 404;
 	}
 	while ((entry = readdir(dir)) != NULL) {
-		/*NEED IT IF IT IS A SECOND CLICK TO DIRECTORY*/
-		// if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) // change for a c++ function 
-		// 	continue;
-		/*NEED IT IF IT IS A SECOND CLICK TO DIRECTORY*/
 		if (entry->d_type == DT_DIR) {
 			HTML << "\t\t<tr>\n";
 			HTML << "\t\t\t<td><a href=\"./" << entry->d_name << "/\">"<< entry->d_name << "</a></td>\n";
@@ -94,16 +90,20 @@ static int addFiles(std::ofstream &HTML, const std::string &dir_path) {
 
 // Function to prepare the HTML file
 static void setupHTML(std::ofstream &HTML, const std::string &sub_dir) {
+	std::string newSub_dir = sub_dir;
+	if (newSub_dir[newSub_dir.size() - 1] != '/') {
+		newSub_dir += "/";
+	}
 	HTML << "<!DOCTYPE html>\n";
 	HTML << "<html lang=\"en\">\n";
 	HTML << "<head>\n";
 	HTML << "\t<meta charset=\"UTF-8\">\n";
 	HTML << "\t<meta name=\"index\" content=\"width=device-width, initial-scale=1.0\">\n";
-	HTML << "\t<title>Index of " << sub_dir << "</title>\n";
-	HTML << "\t<base href=\"" << sub_dir << "\">\n";
+	HTML << "\t<title>Index of " << newSub_dir << "</title>\n";
+	HTML << "\t<base href=\"" << newSub_dir << "\">\n";
 	HTML << "</head>\n";
 	HTML << "<body>\n";
-	HTML << "\t<h1>Index of " << sub_dir << "</h1>\n";
+	HTML << "\t<h1>Index of " << newSub_dir << "</h1>\n";
 	HTML << "\t<table>\n";
 	HTML << "\t\t<tr>\n";
 	HTML << "\t\t\t<th>Name</th>\n";

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/03 21:35:05 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/04 11:23:11 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -554,9 +554,14 @@ void HTTPResponse::autoIndexRequest() {
 	int status_code = 0;
 	std::cout << "Auto_index future location: " << default_folder << std::endl;
 	status_code = structureInfo(dir_path, currentRequest.getPath(), default_folder);
-	if (status_code != 200)
-		setErrorResponse(status_code);
 	body_filename = default_folder + "/auto_index.html";
+	if (status_code != 200) {
+		if (!std::remove(body_filename.c_str())) {
+			this->setAutoIndex(false);
+		}
+		setErrorResponse(status_code);
+		return ;
+	}
 	std::cout << "Auto_index file location: " << body_filename << std::endl;
 }
 

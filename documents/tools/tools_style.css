@@ -8,7 +8,15 @@ body {
     color: white;
 }
 
-.container {
+.wrapper {
+    display: block;
+    text-align: center;
+    padding: 2rem;
+    background: transparent;
+}
+
+.title {
+    display: block;
     text-align: center;
     padding: 2rem;
     background: rgba(255, 255, 255, 0.1);
@@ -16,6 +24,29 @@ body {
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 20px;
+}
+
+.container {
+    display: block;
+    text-align: center;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 20px;
+}
+
+button {
+    align-items: center;
+    display: inline-block;
+    text-align: center;
+    padding: 0.5rem;
+    background-color: aquamarine;
+    border-radius: 2px;
+    border: 1px solid;
 }
 
 .construction-icon {
@@ -25,7 +56,7 @@ body {
 }
 
 h1 {
-    font-size: 2.5rem;
+    font-size: 4rem;
     margin-bottom: 1rem;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -35,6 +66,20 @@ p {
     margin-bottom: 2rem;
     opacity: 0.9;
 }
+
+listing {
+    background-color: #667eea;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.column {
+    flex: 1;
+    padding: 20px;
+    text-align: center;
+}
+
 
 .loading-bar {
     width: 100%;
