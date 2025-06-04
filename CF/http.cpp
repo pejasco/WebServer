@@ -114,9 +114,13 @@ void http_content::setBodyWithNoCD(std::string body){
     body_with_no_cd_ = body;
 }
 
-
 void http_content::setHttpCD(std::string body){
-    ;
+
+}
+
+void http_content::addHttpCD(){
+
+    CDs_list_.push_back(http_CD_());
 }
 
 
@@ -196,12 +200,19 @@ void http::setHost(std::string host){
 
 }
 
+
 void http::setContentType(std::string type){
-    ;
+    
 }
 
 void http::setContent(std::string content){
     ;
+}
+
+void http::setBoundary(std::string boundary){
+    boundary_ = boundary;
+    setOpenBoundary(("--" + boundary_));
+    setCloseBoundary((open_boundary_ + "--"));
 }
 
 
@@ -215,6 +226,18 @@ const std::string http::getPath() const{
 
 const std::string http::getFormat() const{
     return format_;
+}
+
+const std::string http::getBoundary() const{
+    return boundary_;
+}
+
+const std::string http::getOpenBoundary() const{
+    return open_boundary_;
+}
+
+const std::string http::getCloseBoundary() const{
+    return close_boundary_;
 }
 
 const std::map<std::string, std::string> http::getContentType() const{
@@ -241,11 +264,28 @@ void http::setHttp(std::string line_input){
 			pos_end = line_input.find(";");
             std::string cttype = line_input.substr(pos_begin, pos_end - pos_begin);
 			setContentType(cttype);
-            if 
-
-
+            if (line_input.find("boundary") != std::string::npos){
+                pos_begin = line_input.find("boundary") + 9;
+                std::string boundary = line_input.substr(pos_begin, std::string::npos); 
+                setBoundary(boundary);
+            } 
         }
     }
+    if (line_input.find("Content-Length") != std::string::npos){
+        if ((pos_begin = line_input.find(":")) != std::string::npos){
+            pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
+            std::string length = line_input.substr(pos_begin);
+            setContentLength(atoi(length.c_str()));
+        }
+    }
+    if (line_input.find(getBoundary().c_str())){
+        if B
+
+
+    }
+
+
+
 }
 
 void http::printHttp(){

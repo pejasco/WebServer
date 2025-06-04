@@ -28,6 +28,7 @@ public:
     const std::string getInnerContentType_() const;
     const std::string getContent_() const;
     const std::string getFileContent_() const;
+
     void printHttpCD();
 
 
@@ -61,6 +62,10 @@ public:
     void setCloseBoundary(std::string boundary);
     void setBodyWithNoCD(std::string body);
     void setHttpCD(std::string body);
+    void addHttpCD();
+
+
+
     //getter
     static int getGlobalIndex();
     const int getInstanceIndex() const;
@@ -69,6 +74,7 @@ public:
     const std::string getCloseBoundary() const;
     const std::string getBodyWithNoCD() const;
     std::vector<http_CD_>& getCDs_list_();
+
     void printHttpContent();
 
 private:
@@ -97,15 +103,25 @@ public:
     void setFormat(std::string format);
     void setHost(std::string host);
     void setContentType(std::string type);
+    void setBoundary(std::string boundary);
+    void setOpenBoundary(std::string boundary);
+    void setCloseBoundary(std::string boundary);
     void setContent(std::string content);
+    void setContentLength(int length);
     //getter
     const std::string getMethod() const;
     const std::string getPath() const;
     const std::string getFormat() const;
     const std::string getHost() const;
     const std::map<std::string, std::string> getContentType() const;
+    const std::string getBoundary() const;
+    const std::string getOpenBoundary() const;
+    const std::string getCloseBoundary() const;
+
+
+    int getContentLength()const;
     http_content& getContent();
-    
+
     void setHttp(std::string line_input);
     void printHttp();  
 
@@ -119,7 +135,10 @@ private:
     std::string format_;
     std::string host_;
     std::string boundary_;
+    std::string open_boundary_;
+    std::string close_boundary_;
     std::map<std::string, std::string> content_type_;
+    int content_length_;
     http_content content_;
     
 };
