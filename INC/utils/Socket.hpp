@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 14:08:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/02 09:05:00 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 14:16:06 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ hints.ai_protocol = 0;
 class Socket {
 	public:
 		Socket();
-		Socket(const std::string &serverIP, const std::string &serverPort);
+		Socket(const std::string &server_IP, const std::string &server_port);
 		~Socket();
 
 		int setSocketFd();
@@ -57,12 +57,12 @@ class Socket {
 		};
 		
 	private:
-		struct sockaddr_in add;
-		struct addrinfo hints;
-		struct addrinfo *result;
-		struct addrinfo *rp;
-		int status;
-		int socketFd;
+		struct sockaddr_in addr_;
+		struct addrinfo hints_;
+		struct addrinfo *result_;
+		struct addrinfo *rp_;
+		int status_;
+		int socket_fd_;
 		
 		
 };

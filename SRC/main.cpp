@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:48:24 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/07 16:02:40 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 14:10:57 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,22 +23,18 @@ int main(int ac, char **av) {
 		std::cerr << "ERROR\n";
 		return (-1);
 	}
-	std::string filename;
+	std::string config_file;
 	if (ac > 1) {
-		filename = av[1];
+		config_file = av[1];
 	} else
-		filename = "configuration/default.conf";
-	//Start catching signal for clean shutdown
+		config_file = "configuration/default.conf";
 	signal(SIGINT, signal_handler);
 	signal(SIGQUIT, signal_handler);
-	//Start the ServerManager Object that will handle all the HTTP connections
-	// if (g_sigStatus != SIGINT || g_sigStatus != SIGTERM)
-	ServerManager masterServer(filename);
-	masterServer.serverMonitoring();
+	ServerManager master_server(config_file);
+	master_server.serverMonitoring();
 	if (g_sigStatus)
-		masterServer.setRunning(g_sigStatus);
-	masterServer.shutdown();
-
+		master_server.setRunning(g_sigStatus);
+	master_server.shutdown();
 	return 0;
 }
 

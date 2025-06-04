@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:36:56 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/29 15:54:54 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 14:09:00 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,49 +15,47 @@
 
 #include "Webserv.hpp"
 
-
-
 class Location {
 	public:
-		Location(const std::string &inputName);
+		Location(const std::string &input_name);
 		~Location();
 
 		//SETTER//
 		/***BASIC INFO***/
-		void setRoot(const std::string &inputRoot);
-		void setMethod(const std::string &inputMethod);
-		void setIndex(const std::string &inputIndex);
-		void setAutoIndex(bool inputAIndex);
+		void setRoot(const std::string &input_root);
+		void setMethod(const std::string &input_method);
+		void setIndex(const std::string &input_index);
+		void setAutoIndex(bool input_autoindex);
 		
 		/***UPLOAD INFO***/
-		void setUpload(bool inputUpload);
-		void setUploadDir(const std::string &inputDir);
-		void setMaxBodySize(size_t inputSize);
+		void setUpload(bool input_upload);
+		void setUploadDir(const std::string &input_dir);
+		void setMaxBodySize(size_t input_size);
 
 		/***CGI INFO***/
-		void setCGI(bool inputCGI);
-		void setCGIExt(const std::string &inputExt);
+		void setCGI(bool input_CGI);
+		void setCGIExt(const std::string &input_extension);
 
 		/***REDIRECTION INFO***/		
-		void setRedirect(bool inputRedirect);
-		void setRedirectCode(int inputCode);
-		void setRedirectURL(const std::string &inputURL);
+		void setRedirect(bool input_redirect);
+		void setRedirectCode(int input_code);
+		void setRedirectURL(const std::string &input_URL);
 		
 		//GETTER//
 		/***BASIC INFO***/
 		std::string &getRoot();
 		std::vector<MET> &getMethod();
 		std::string &getIndex();
-		bool getAutoIndex();
-		std::string &getPath();
+		bool isAutoIndex();
+		std::string &getName();
 		
 		/***UPLOAD INFO***/
-		bool getUpload();
+		bool isUpload();
 		std::string &getUploadDir();
 		size_t getMaxSize();
 
 		/***CGI INFO***/
-		bool getCGI();
+		bool isCGI();
 		std::vector<std::string> &getCGIExt();
 
 		/***REDIRECTION INFO***/		
@@ -69,25 +67,25 @@ class Location {
 
 	private:
 		// Basic settings
-		std::string pathPattern; 	// name will be used to find a matching path when server receive the HTTP request
-		std::string root; 			// location of the folder
-		std::vector<MET> method; 	// methods allow for this location
-		std::string index; 			// set a default file to server when the request is for the directory
-		bool auto_index; 			// set if directory is listed or not 
+		std::string name_; 	// name will be used to find a matching path when server receive the HTTP request
+		std::string root_; 			// location of the folder
+		std::vector<MET> method_; 	// methods allow for this location
+		std::string index_file_; 			// set a default file to server when the request is for the directory
+		bool auto_index_; 			// set if directory is listed or not 
 
 		// Upload settings
-		bool upload_enable;			// Whether uploads are permitted
-		std::string upload_store; 	// Directory where uploaded files are stored
-		size_t max_body_size;		// Maximum upload size in bytes
+		bool upload_enable_;			// Whether uploads are permitted
+		std::string upload_store_folder_; 	// Directory where uploaded files are stored
+		size_t max_body_size_;		// Maximum upload size in bytes
 
 		// CGI handling
-		bool cgi_enabled; 			// Whether CGI is enabled for this location
-		std::vector<std::string> cgi_extensions; // Map file extensions to handlers (.php -> php-cgi)
+		bool cgi_enabled_; 			// Whether CGI is enabled for this location
+		std::vector<std::string> cgi_extensions_; // Map file extensions to handlers (.php -> php-cgi)
 
 		// Redirection
-		bool redirect_enable;		// Whether redirect is permitted or if automatically send an error
-		int redirect_code;			// 301 ex, to identify where to redirect in case of file not found
-		std::string redirect_url; 	// location of the redirect folder (ex Homepage)
+		bool redirect_enable_;		// Whether redirect is permitted or if automatically send an error
+		int redirect_code_;			// 301 ex, to identify where to redirect in case of file not found
+		std::string redirect_url_; 	// location of the redirect folder (ex Homepage)
 
 
 		/************************************************/

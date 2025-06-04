@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/29 11:15:42 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 14:32:36 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,134 +16,96 @@
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-Server::Server(int inputID): ID(inputID), keep_alive(false) {
-	// std::cout << BOLD YELLOW "Server is starting\nHELLO!\n" RESET;
-	(void)ID;
-	//As error page must be default if none are given in config file --> add a default error-page setup when creating server and erase if error are id
+Server::Server(int input_ID): ID_(input_ID), keep_alive_(false) {
+	(void)ID_;
+};
 
-	
-	// addlen = sizeof(this->getAddr());
-	// std::cout << "Socketfd in the server class:" << &this->getSocketfd() << ", Socket add:" << this->getAddr() << "\n";
-	
-	// launch();
-	// closeServer();
-};
-Server::~Server() {
-	// std::vector<Location*>::iterator begLo = locations.begin();
-	// std::vector<Location*>::iterator endLo = locations.end();
-	// for (; begLo != endLo; ++begLo)
-	// 	delete *begLo;
-	// std::cout << BOLD RED "Server " << host << " is closing\n" RESET;
-};
+Server::~Server() {};
 
 /********/
 /*SETTER*/
 /********/
 
-void Server::setHost(const std::string &inputHost) {
+void Server::setIP(const std::string &input_IP) {
 	size_t pos = 0;
-	if ((pos = inputHost.find("[")) != std::string::npos) {
-		std::string newLine = inputHost.substr(pos + 1);
+	if ((pos = input_IP.find("[")) != std::string::npos) {
+		std::string newLine = input_IP.substr(pos + 1);
 		newLine.erase(newLine.end() - 1);
-		host = newLine;
+		IP_ = newLine;
 	}
 	else
-		host = inputHost;
+		IP_ = input_IP;
 };
-void Server::setPort(const std::string &inputPort) {
-	std::stringstream ss(inputPort);
+void Server::setPort(const std::string &input_port) {
+	std::stringstream ss(input_port);
 	std::string token;
 
 	while (std::getline(ss, token, ' ')) {
-		port.push_back(token);
+		port_.push_back(token);
 	}
 };
-void Server::setErrorList(const std::string &inputErrorDir) {
-	std::stringstream ss(inputErrorDir);
+void Server::setErrorList(const std::string &input_error_directory) {
+	std::stringstream ss(input_error_directory);
 	std::string directory;
 	size_t pos = 0;
 	int code;
 	char space;
 	ss >> code >> space >> directory;
-	errors_list.insert(std::pair<int, std::string>(code, directory));
+	errors_list_.insert(std::pair<int, std::string>(code, directory));
 	if ((pos = directory.rfind('/')) != std::string::npos)
-		error_dir = directory.substr(0, pos + 1);
+		error_directory_ = directory.substr(0, pos + 1);
 };
 
-void Server::addServerName(const std::string &inputName) {
-	std::stringstream ss(inputName);
+void Server::addServerName(const std::string &input_names) {
+	std::stringstream ss(input_names);
 	std::string token;
 
 	while (std::getline(ss, token, ' ')) {
-		serverNames.push_back(token);
+		server_names_.push_back(token);
 	}
 };
-void Server::setMaxSize(size_t inputMaxSize) {
-	maxSize = inputMaxSize;
+void Server::setMaxSize(size_t input_max_body_size) {
+	max_body_size_ = input_max_body_size;
 };
-void Server::addLocation(std::string &inputLocation) {
-	inputLocation.erase(inputLocation.end() - 1);
-	locations.push_back(new Location(inputLocation));
+void Server::addLocation(std::string &input_location) {
+	input_location.erase(input_location.end() - 1);
+	locations_list_.push_back(new Location(input_location));
 };
-void Server::setKeepAlive(bool inputAlive) {
-	keep_alive = inputAlive;	
+void Server::setKeepAlive(bool is_alive) {
+	keep_alive_ = is_alive;	
 };
 
 /********/
 /*GETTER*/
 /********/
 
-std::string &Server::getHost() {
-	return host;
+std::string &Server::getIP() {
+	return IP_;
 };
 std::vector<std::string> &Server::getPort() {
-	return port;
+	return port_;
 };
 std::map<int,std::string> &Server::getErrorList() {
-	return errors_list;
+	return errors_list_;
 };
-std::string &Server::getErrorDir() {
-	return error_dir;
+std::string &Server::getErrorDirectory() {
+	return error_directory_;
 };
-std::vector<std::string> &Server::getServerName() {
-	return serverNames;
+std::vector<std::string> &Server::getServerNames() {
+	return server_names_;
 };
-size_t Server::getMaxSize() {
-	return maxSize;
+size_t Server::getMaxBodySize() {
+	return max_body_size_;
 };
-std::vector<Location*> &Server::getLocation() {
-	return locations;
+std::vector<Location*> &Server::getLocationsList() {
+	return locations_list_;
 };
-bool Server::getKeepAlive() {
-	return keep_alive;	
+bool Server::isKeepAlive() {
+	return keep_alive_;	
 };
-
 
 /********/
 /*METHOD*/
 /********/
 
-// void Server::launch() {
-// 	// while(true) {
-// 		// std::cout << "+++++++++ WAITING FOR CONNECTTION ++++++++++++++++++" << std::endl;
-// 		// if ((new_socket = accept(this->getSocketfd(), reinterpret_cast<sockaddr*>(this->getAddr()), &addlen)) < 0)
-// 		// {
-// 		// 	std::cout << "Error on accepting connection\n";
-// 		// 	return ;			
-// 		// }
-// 		// char buffer[30000] = {0};
-// 		// long valread = read(new_socket, buffer, 30000);
-// 		// std::cout << valread << std::endl << buffer << std::endl;
-// 		// close(new_socket);
-// 	// }
-// }
-
-// int Server::closeServer() {
-// 	close(this->getSocketfd());
-// 	return 0;
-// }
-
-// int Server::getNewSocket() const {
-// 	return new_socket;
-// }
 

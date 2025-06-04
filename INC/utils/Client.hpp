@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 11:54:18 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/06 14:21:51 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 13:38:45 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,13 +27,13 @@ class Client {
 		socklen_t getClientAddrLen();
 		
 	private:
-		int clientFd;
-		struct sockaddr_storage client_addr;
-		socklen_t client_addr_len;
-		int flags;
-		char ip_str[INET6_ADDRSTRLEN];
-		const void *ip;
-		uint16_t port;
+		int client_fd_;
+		struct sockaddr_storage client_addr_;
+		socklen_t client_addr_len_;
+		int flags_;
+		char ip_str_[INET6_ADDRSTRLEN];
+		const void *ip_;
+		uint16_t port_;
 };
 
 #endif

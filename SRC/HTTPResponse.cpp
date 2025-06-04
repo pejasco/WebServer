@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/04 11:23:11 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 15:26:05 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,20 +16,20 @@
 
 bool cgi_flag = false;
 
-HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP) : currentRequest(inputRequest), empty_line("\r\n"), is_autoindex(false), _response_ready(false) {
-	defaultServer = serverManager.getServers().front();
-	defaultLocation = defaultServer->getLocation().front();
+HTTPResponse::HTTPResponse(const HTTPRequest &input_request, ServerManager &server_manager, const std::string &server_IP) : current_request_(input_request), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
+	default_server_ = server_manager.getServers().front();
+	default_location_ = default_server_->getLocationsList().front();
 	std::cout << BOLD UNDERLINE GREEN "\n###### ENTERING SERVER//LOCATION DEBUUGING ######\n\n" RESET;
-	server = getCurrentServer(inputRequest, serverManager, serverIP);
-	location = getCurrentLocation(inputRequest, *server);
-	if (location == NULL && (inputRequest.getPath() == "/"))
-		location = defaultServer->getLocation().front();
+	server_ = getCurrentServer(current_request_, server_manager, server_IP);
+	location_ = getCurrentLocation(current_request_, *server_);
+	if (location_ == NULL && (current_request_.getPath() == "/"))
+		location_ = default_server_->getLocationsList().front();
 	std::cout << BOLD UNDERLINE GREEN "\n###### LEAVING SERVER//LOCATION DEBUUGING ######\n\n" RESET;
 	if (checkRedirection()) {
 		std::cout << "redirection was true, bye!\n";
 		return ;
 	}
-	switch (currentRequest.getMethod()) {
+	switch (current_request_.getMethod()) {
 	case GET:
 		if (checkMethod() != 200) {
 			setErrorResponse(405);
@@ -44,7 +44,7 @@ HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serve
 			return;
 		}
 		setPostResponse();
-		// SM got a array of server > setPostResponse(); // main > SM::serverMonitoring() > SM::existingClientConnection > HTTPRequest currentRequest > HTTPResponse constructor(currentRequest, *the pointer of serverManger, string serverIP)
+		// SM got a array of server > setPostResponse(); // main > SM::serverMonitoring() > SM::existingClientConnection > HTTPRequest current_request_ > HTTPResponse constructor(current_request_, *the pointer of serverManger, string serverIP)
 		cgi_flag = false;
 		break;
 	case DELETE:
@@ -59,7 +59,7 @@ HTTPResponse::HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serve
 		setErrorResponse(405);
 		break;
 	}
-	std::cout << "\nPRINTING RESPONSE\n\n" << response << std::endl;
+	std::cout << "\nPRINTING RESPONSE\n\n" << response_ << std::endl;
 };
 
 HTTPResponse::~HTTPResponse() {
@@ -68,7 +68,7 @@ HTTPResponse::~HTTPResponse() {
 
 // SETTER
 void HTTPResponse::setAutoIndex(bool newValue) {
-	is_autoindex = newValue;
+	is_autoindex_ = newValue;
 };
 
 
@@ -78,29 +78,29 @@ const std::string &HTTPResponse::getResponse() {
 	// std::cout << "header: " << header << std::endl;
 	// std::cout << "response header that is going to be sent:\n" << response;
 
-	return response;
+	return response_;
 };
 
 bool HTTPResponse::isReady() const {
-	return _response_ready;
+	return _response_ready_;
 }
 
 
 std::string &HTTPResponse::getBodyFilename() {
-	return body_filename;
+	return body_filename_;
 }
 
 bool HTTPResponse::isAutoIndex() {
-	return is_autoindex;
+	return is_autoindex_;
 }
 
 //METHOD
 
 bool HTTPResponse::checkRedirection() {
 	std::cout << "redirect debugging\n";
-	if (!location->getRedirectURL().empty()) {
+	if (!location_->getRedirectURL().empty()) {
 		std::cout << "location identify as redirection\n"; 
-		setErrorResponse(location->getRedirectCode());
+		setErrorResponse(location_->getRedirectCode());
 		return true;
 	}
 	return false;
@@ -109,15 +109,15 @@ bool HTTPResponse::checkRedirection() {
 void HTTPResponse::setGetResponse() {
 	//1st -- check if the path request by the user exist
 	//2nd -- check if the file exist and readable (not already open, with correct permission (not sure if we need to set it up)) 
-	cgi_flag = currentRequest.getCGIFlag();
+	cgi_flag = current_request_.getCGIFlag();
 	// std::cerr << "[debugging] cgi_flag = " << cgi_flag << std::endl;
-	//body_filename = "./CGI/cgi-bin/test.py"; //need to figure out how to set the correct root path for the cgi....maybe checkFile?
+	//body_filename_ = "./CGI/cgi-bin/test.py"; //need to figure out how to set the correct root path for the cgi....maybe checkFile?
 
 	//int status_code = checkFile();
 	int status_code;
 	if (cgi_flag) {
-		body_filename = "./CGI/cgi-bin/test.py";  // TEMPORARY override for testing
-		status_code = fileExists(body_filename) ? 200 : 404;
+		body_filename_ = "./CGI/cgi-bin/test.py";  // TEMPORARY override for testing
+		status_code = fileExists(body_filename_) ? 200 : 404;
 	} else {
 		status_code = checkFile();
 		std::cout << "status_code of checkFIle in GET: " << status_code << std::endl;
@@ -151,7 +151,7 @@ void HTTPResponse::setGetResponse() {
 		if (cgi_flag) {
 			CGI_Body(); // Run CGI handler, which builds full HTTP response
 			std::cerr << "[CGI] Early return after CGI_Body()\n";
-			_response_ready = true;
+			_response_ready_ = true;
 			return ;
 		} else {
 			prepareStatusLine(status_code);
@@ -237,12 +237,12 @@ void HTTPResponse::setPostResponse() {
 		std::string upload_dir;
 		int status_code;
 
-		std::cout << "<<sievdebug>>" << "yoyoyo " << location << " yoyoyo" << "\n";
-		std::cout << "<<sievdebug>>" << "xoxoxo " << currentRequest.getPath().find("upload") << " xoxoxo" << "\n";
+		std::cout << "<<sievdebug>>" << "yoyoyo " << location_ << " yoyoyo" << "\n";
+		std::cout << "<<sievdebug>>" << "xoxoxo " << current_request_.getPath().find("upload") << " xoxoxo" << "\n";
 
-		if (location && currentRequest.getPath().find("upload") != std::string::npos)
-			upload_dir = location->getUploadDir(); //upload_dir
-		const Content& content = currentRequest.getContent(); //content
+		if (location_ && current_request_.getPath().find("upload") != std::string::npos)
+			upload_dir = location_->getUploadDir(); //upload_dir
+		const Content& content = current_request_.getContent(); //content
 		std::cout << "<<sievdebug>>" << "!!!!!!!!!!!!!!!!!" << upload_dir << "!!!!!!!!!!!!!!!!!" << "\n";
 		//std::cout << "!!!!!!!!!!!!!!!!!" << << "!!!!!!!!!!!!!!!!!\'n";
 
@@ -254,13 +254,12 @@ void HTTPResponse::setPostResponse() {
 		status_code = createUploadFile(upload_dir, content);
 		if (status_code == 200) { 
 			prepareStatusLine(status_code);
-			
-			body = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
+			body_msg_ = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
 		// if (cgi_flag) -- Check with Shally if we need that
 		// 	CGI_Body();
-			content_length = body.length();
-			header = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length) + "\r\n";
-			response = status_line + header + empty_line + body;
+			content_length_ = body_msg_.length();
+			header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length_) + "\r\n";
+			response_ = status_line_ + header_ + empty_line_ + body_msg_;
 	
 		} else {
 			setErrorResponse(status_code);
@@ -272,8 +271,8 @@ void HTTPResponse::setPostResponse() {
 // 		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload		
 		
 // 		int status_code = 400; //default to be bad
-// 		std::string path = currentRequest.getPath();
-// 		Content cd = currentRequest.getContent();
+// 		std::string path = current_request_.getPath();
+// 		Content cd = current_request_.getContent();
 // 		if (!path.empty()) //for upload only && not cgi 
 // 			status_code = createUploadFile(path, cd);
 // 		if (status_code == 200) { 
@@ -294,10 +293,10 @@ void HTTPResponse::setPostResponse() {
 
 
 void HTTPResponse::setDeleteResponse() {
-	body_filename = "documents" + currentRequest.getPath();
-	if (fileExists(body_filename)) {
-		if (!std::remove(body_filename.c_str()))
-			response = currentRequest.getVersion() + " 204 No Content\r\n\r\n";
+	body_filename_ = "documents" + current_request_.getPath();
+	if (fileExists(body_filename_)) {
+		if (!std::remove(body_filename_.c_str()))
+			response_ = current_request_.getVersion() + " 204 No Content\r\n\r\n";
 		else
 			setErrorResponse(500); // file exist but not closable so internal error ?
 	} else {
@@ -305,62 +304,62 @@ void HTTPResponse::setDeleteResponse() {
 	}
 }
 
-void HTTPResponse::setErrorResponse(int errorCode) {
-	if (!server->getErrorList().empty()) {
+void HTTPResponse::setErrorResponse(int error_code) {
+	if (!server_->getErrorList().empty()) {
 		std::cout << "Error list exist inside current server\n";
-		std::map<int, std::string>::iterator begEr = server->getErrorList().begin();
-		std::map<int, std::string>::iterator endEr = server->getErrorList().end();
+		std::map<int, std::string>::iterator begEr = server_->getErrorList().begin();
+		std::map<int, std::string>::iterator endEr = server_->getErrorList().end();
 		for (; begEr != endEr; ++begEr) {
-			if (begEr->first == errorCode)
-				body_filename = begEr->second;
+			if (begEr->first == error_code)
+				body_filename_ = begEr->second;
 		}
 		if (begEr == endEr)
-			body_filename = server->getErrorDir() + convertToStr(errorCode) + ".html";
+			body_filename_ = server_->getErrorDirectory() + convertToStr(error_code) + ".html";
 	} else 
-		body_filename = defaultServer->getErrorDir() + convertToStr(errorCode) + ".html";
-	std::cout << "body_filename found via map lookup: " << body_filename << std::endl;
-	if (fileExists(body_filename)) {
-		std::cout << "error_file exist " << body_filename << std::endl;
-		prepareStatusLine(errorCode);
-		content_length = calculateFileSize(body_filename);
-		header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(content_length) + "\r\nConnection: close\r\n";
-		if (!location->getRedirectURL().empty())
-			header += "Location: " + location->getRedirectURL() + "\r\n";
-		response = status_line + header + empty_line;
+		body_filename_ = default_server_->getErrorDirectory() + convertToStr(error_code) + ".html";
+	std::cout << "body_filename_ found via map lookup: " << body_filename_ << std::endl;
+	if (fileExists(body_filename_)) {
+		std::cout << "error_file exist " << body_filename_ << std::endl;
+		prepareStatusLine(error_code);
+		content_length_ = calculateFileSize(body_filename_);
+		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(content_length_) + "\r\nConnection: close\r\n";
+		if (!location_->getRedirectURL().empty())
+			header_ += "Location: " + location_->getRedirectURL() + "\r\n";
+		response_ = status_line_ + header_ + empty_line_;
 	} else {
-		if (!location->getRedirectURL().empty())
-			draft_redirect_response();
+		if (!location_->getRedirectURL().empty())
+			draftRedirectResponse();
 		else
-			draft_error_response();
+			draftErrorResponse();
 	}
 }
 
-void HTTPResponse::draft_redirect_response() {
-	std::cout << "error: error-file " << body_filename << " doesn't exist\n";
+void HTTPResponse::draftRedirectResponse() {
+	std::cout << "error: error-file " << body_filename_ << " doesn't exist\n";
 	// body = "<!DOCTYPE html><html><head><title>301 Moved permanently</title></head><body><h1>301 Moved permanently</h1><p>This page is not available anymore. If you are not automatically redirect, please follow this <a href=" + location->getRedirectURL() +">link</a></p></body></html>";
-	status_line = currentRequest.getVersion() + " 301 Moved Permanently\r\n";
-	header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: 0\r\nConnection: close\r\nLocation: " + location->getRedirectURL() + "\r\n";
-	response = status_line + header + empty_line;
-	body_filename = "";
+	status_line_ = current_request_.getVersion() + " 301 Moved Permanently\r\n";
+	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: 0\r\nConnection: close\r\nLocation: " + location_->getRedirectURL() + "\r\n";
+	response_ = status_line_ + header_ + empty_line_;
+	body_filename_ = "";
 }
 
-void HTTPResponse::draft_error_response() {
-	std::cout << "error: error-file " << body_filename << " doesn't exist\n";
-	body = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
-	status_line = currentRequest.getVersion() + " 500 Internal server error\r\n";
-	header = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(body.size()) + "\r\nConnection: close\r\n";
-	response = status_line + header + empty_line + body;
-	body_filename = "";
+void HTTPResponse::draftErrorResponse() {
+	std::cout << "error: error-file " << body_filename_ << " doesn't exist\n";
+	body_msg_ = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
+	status_line_ = current_request_.getVersion() + " 500 Internal server error\r\n";
+	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(body_msg_.size()) + "\r\nConnection: close\r\n";
+	response_ = status_line_ + header_ + empty_line_ + body_msg_;
+	body_filename_ = "";
 }
 
 //Checking if the file requested exist and if it is possible to read it 
 int HTTPResponse::checkFile() {
-	std::string defaultPath = defaultLocation->getRoot();
-	defaultPath.erase(std::remove(defaultPath.begin(), defaultPath.end(), '/'), defaultPath.end());
-	if (currentRequest.getPath() == "/") {
-		body_filename = defaultPath + "/" + defaultLocation->getIndex();
-		std::cout << "body_filename: " << body_filename << std::endl;
-		std::ifstream body_file(body_filename.c_str(), std::ios::binary);
+	std::string default_path = default_location_->getRoot();
+	default_path.erase(std::remove(default_path.begin(), default_path.end(), '/'), default_path.end());
+	if (current_request_.getPath() == "/") {
+		body_filename_ = default_path + "/" + default_location_->getIndex();
+		std::cout << "body_filename_: " << body_filename_ << std::endl;
+		std::ifstream body_file(body_filename_.c_str(), std::ios::binary);
 		if (body_file.is_open()) {
 			body_file.close();
 			return 200;
@@ -371,23 +370,23 @@ int HTTPResponse::checkFile() {
 			return 500;
 		}
 	} else {
-		body_filename = defaultPath;
-		std::cout << BOLD YELLOW "body_filename: " << body_filename << "currentRequest: " << currentRequest.getPath() << RESET << std::endl;
-		if (currentRequest.getPath().find(".") == std::string::npos) {
-			std::cout << "XXXXXX -- " << location->getIndex() << " -- " << location->getAutoIndex() << std::endl;
-			if (location->getIndex().empty() && location->getAutoIndex() == true) {
+		body_filename_ = default_path;
+		std::cout << BOLD YELLOW "body_filename_: " << body_filename_ << "current_request_: " << current_request_.getPath() << RESET << std::endl;
+		if (current_request_.getPath().find(".") == std::string::npos) {
+			std::cout << "XXXXXX -- " << location_->getIndex() << " -- " << location_->isAutoIndex() << std::endl;
+			if (location_->getIndex().empty() && location_->isAutoIndex() == true) {
 				autoIndexRequest();
 				return 200;
 			}
-			body_filename += location->getRoot() + "/" + location->getIndex();
+			body_filename_ += location_->getRoot() + "/" + location_->getIndex();
 			std::cout << "adding the file from config\n";
 		} else {
-			body_filename += currentRequest.getPath();
+			body_filename_ += current_request_.getPath();
 			std::cout << "adding the file from request\n";
 		}
-		std::cout << BOLD YELLOW "New body_filename: " << body_filename << RESET << std::endl;
-		if (fileExists(body_filename)){
-			std::ifstream body_file(body_filename.c_str(), std::ios::binary);
+		std::cout << BOLD YELLOW "New body_filename_: " << body_filename_ << RESET << std::endl;
+		if (fileExists(body_filename_)){
+			std::ifstream body_file(body_filename_.c_str(), std::ios::binary);
 			if (body_file.is_open()) {
 				body_file.close(); 
 				return 200;
@@ -406,12 +405,12 @@ int HTTPResponse::checkFile() {
 int HTTPResponse::checkMethod() {
 	std::vector<MET>::iterator begM;
 	std::vector<MET>::iterator endM;
-	if (location->getMethod().empty()) {
-		Location &defaultLocation = *defaultServer->getLocation().front();
-		begM = defaultLocation.getMethod().begin();
-		endM = defaultLocation.getMethod().end();
+	if (location_->getMethod().empty()) {
+		Location &default_location_ = *default_server_->getLocationsList().front();
+		begM = default_location_.getMethod().begin();
+		endM = default_location_.getMethod().end();
 			for (; begM != endM; ++begM) {
-				if (*begM == currentRequest.getMethod()) {
+				if (*begM == current_request_.getMethod()) {
 					std::cout << "return value of checkMethod: 200\n";
 					return 200;
 				}
@@ -419,10 +418,10 @@ int HTTPResponse::checkMethod() {
 			std::cout << "return value of checkMethod: 405\n";
 			return 405;
 	} else {
-		begM = location->getMethod().begin();
-		endM = location->getMethod().end();
+		begM = location_->getMethod().begin();
+		endM = location_->getMethod().end();
 		for (; begM != endM; ++begM) {
-				if (*begM == currentRequest.getMethod()) {
+				if (*begM == current_request_.getMethod()) {
 					std::cout << "return value of checkMethod: 200\n";
 					return 200;
 				}
@@ -453,10 +452,10 @@ Connection: keep-alive\r\n
 */
 
 void HTTPResponse::prepareStatusLine(int status_code) {
-	status_line += currentRequest.getVersion();
-	status_line += " " + convertToStr(status_code);
-	status_line += " " + getStatusStr(status_code);
-	status_line += "\r\n";
+	status_line_ += current_request_.getVersion();
+	status_line_ += " " + convertToStr(status_code);
+	status_line_ += " " + getStatusStr(status_code);
+	status_line_ += "\r\n";
 	
 	/****DEBUGGING***/
 	// std::cout << "status_line: " << status_line << std::endl;
@@ -467,25 +466,25 @@ int HTTPResponse::prepareHeader() {
 	//Probably to adapt so it can change for POST and DELETE as the content can be different
 	std::cout << "INSIDE PREPARE HEARDER\n";
 	
-	if (currentRequest.getPath().find(".") != std::string::npos) {
+	if (current_request_.getPath().find(".") != std::string::npos) {
 		size_t pos;
-		if ((pos = currentRequest.getPath().rfind(".")) != std::string::npos)
-			content_type = "Content-Type: " + getContentType(currentRequest.getPath().substr(pos)) + "\r\n";
+		if ((pos = current_request_.getPath().rfind(".")) != std::string::npos)
+			content_type_ = "Content-Type: " + getContentType(current_request_.getPath().substr(pos)) + "\r\n";
 	}
-	std::cout << "body_filename: " << body_filename << std::endl;;
-	content_length = calculateFileSize(body_filename);
-	if (content_length < 0) {
+	std::cout << "body_filename_: " << body_filename_ << std::endl;;
+	content_length_ = calculateFileSize(body_filename_);
+	if (content_length_ < 0) {
 		std::cout << "Error: Content-Length is -1\n";
 		return 500;
 	}
-	header = content_type + "Content-Length: " + convertToStr(content_length) + "\r\n";
+	header_ = content_type_ + "Content-Length: " + convertToStr(content_length_) + "\r\n";
 	/****DEBUGGING***/
-	std::cout << "HEADER = \n" << header << std::endl;
+	std::cout << "HEADER = \n" << header_ << std::endl;
 	return 200;
 }
 
 void HTTPResponse::headerResponse() {
-	response = status_line + header + empty_line;
+	response_ = status_line_ + header_ + empty_line_;
 
 	/****DEBUGGING***/
 	// std::cout << "response: " << response << std::endl;
@@ -494,7 +493,7 @@ void HTTPResponse::headerResponse() {
 void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI and storing it in RequestData
 {
 	const std::string CGI_ROOT = "./CGI/cgi-bin";
-	std::string uri = currentRequest.getPath();  // e.G /cgi-bin/test.py
+	std::string uri = current_request_.getPath();  // e.G /cgi-bin/test.py
 	std::string prefix = "/cgi-bin";
 	std::string scriptPath;
 
@@ -508,11 +507,11 @@ void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI a
 	}
 
 	RequestData data;
-	data.setMethod(currentRequest.getMethodAsStr());
+	data.setMethod(current_request_.getMethodAsStr());
 	data.setPath(scriptPath); //for SCRIPT_FILENAME and SCRIPT_NAME
-	data.setQueryString(currentRequest.getQueryStr());
-	data.setHeaders(currentRequest.getHeaders());
-	data.setBody(currentRequest.getRawBody());
+	data.setQueryString(current_request_.getQueryStr());
+	data.setHeaders(current_request_.getHeaders());
+	data.setBody(current_request_.getRawBody());
 	std::cerr << "[CGI] method : " << data.getMethod() << std::endl;
 	std::cerr << "[CGI] - path saved: " << data.getPath() << std::endl;
 	std::cerr << "[CGI] - query str: " << data.getQueryString() << std::endl;
@@ -532,36 +531,36 @@ void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI a
 		if (headers.find("Connection:") == std::string::npos)
 			headers += "\r\nConnection: close";
 
-		response = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
-		body_filename.clear();
+		response_ = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
+		body_filename_.clear();
 	} else {
 		// fallback (not ideal, but prevents broken response)
-		response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;
+		response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;
 	}
-	_response_ready = true;
+	_response_ready_ = true;
 }
 
 void HTTPResponse::autoIndexRequest() {
 	//needed to look inside a directory
-	is_autoindex = true;
-	std::string dir_path = body_filename + currentRequest.getPath();
-	std::cout << "directory to lookup: " << body_filename + currentRequest.getPath() << std::endl;
+	is_autoindex_ = true;
+	std::string dir_path = body_filename_ + current_request_.getPath();
+	std::cout << "directory to lookup: " << body_filename_ + current_request_.getPath() << std::endl;
 	// needed to save the auto_index file in the base directory
-	std::string default_folder = defaultLocation->getRoot();
+	std::string default_folder = default_location_->getRoot();
 	size_t pos = 0;
 	if ((pos = default_folder.find("/")) != std::string::npos)
 		default_folder = default_folder.substr(pos + 1);
 	int status_code = 0;
 	std::cout << "Auto_index future location: " << default_folder << std::endl;
-	status_code = structureInfo(dir_path, currentRequest.getPath(), default_folder);
-	body_filename = default_folder + "/auto_index.html";
+	status_code = structureInfo(dir_path, current_request_.getPath(), default_folder);
+	body_filename_ = default_folder + "/auto_index.html";
 	if (status_code != 200) {
-		if (!std::remove(body_filename.c_str())) {
+		if (!std::remove(body_filename_.c_str())) {
 			this->setAutoIndex(false);
 		}
 		setErrorResponse(status_code);
 		return ;
 	}
-	std::cout << "Auto_index file location: " << body_filename << std::endl;
+	std::cout << "Auto_index file location: " << body_filename_ << std::endl;
 }
 

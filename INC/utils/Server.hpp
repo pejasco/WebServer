@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:28:29 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/29 10:37:53 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 14:32:00 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,27 +21,27 @@ class Errors;
 
 class Server {
 	public:
-		Server(int inputID);
+		Server(int input_ID);
 		~Server();
 	
 		//SETTER//
-		void setHost(const std::string &inputHost);
-		void setPort(const std::string &inputPort);
-		void setErrorList(const std::string &inputErrorInfo);
-		void addServerName(const std::string &inputName);
-		void setMaxSize(size_t inputMaxSize);
-		void addLocation(std::string &inputLocation);
-		void setKeepAlive(bool inputAlive);
+		void setIP(const std::string &input_IP);
+		void setPort(const std::string &input_port);
+		void setErrorList(const std::string &input_error_list);
+		void addServerName(const std::string &input_names);
+		void setMaxSize(size_t input_max_body_size);
+		void addLocation(std::string &input_locations);
+		void setKeepAlive(bool is_alive);
 
 		//GETTER//
-		std::string &getHost();
+		std::string &getIP();
 		std::vector<std::string> &getPort();
 		std::map<int, std::string> &getErrorList();
-		std::string &getErrorDir();
-		std::vector<std::string> &getServerName();
-		size_t getMaxSize();
-		std::vector<Location*> &getLocation();
-		bool getKeepAlive();
+		std::string &getErrorDirectory();
+		std::vector<std::string> &getServerNames();
+		size_t getMaxBodySize();
+		std::vector<Location*> &getLocationsList();
+		bool isKeepAlive();
 		
 		//METHOD//
 		// int getNewSocket() const;
@@ -51,23 +51,19 @@ class Server {
 		
 	private:
 		// Config settings
-		int ID;
-		std::string host;
-		std::vector<std::string> port;
-		std::vector<std::string> serverNames;
-		size_t maxSize;
-		bool keep_alive;
+		int ID_;
+		std::string IP_;
+		std::vector<std::string> port_;
+		std::vector<std::string> server_names_;
+		size_t max_body_size_;
+		bool keep_alive_;
 
 		// error_pages settings
-		std::map<int, std::string> errors_list;
-		std::string error_dir;
+		std::map<int, std::string> errors_list_;
+		std::string error_directory_;
 		// location settings
-		std::vector<Location*> locations;
+		std::vector<Location*> locations_list_;
 		
-		// socket settings
-		// int new_socket;
-		// socklen_t addlen;
-		// Socket mainSocket;
 };
 
 void printServer(Server &server); 
