@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 11:20:25 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 14:55:49 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,11 @@ bool server_flag = false;
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-ServerManager::ServerManager(const std::string &inputFilename) : running(true), epoll_fd(-1), num_events(-1), currentFd(-1) {
+ServerManager::ServerManager(const std::string &input_config_file) : running_(true), epoll_fd_(-1), num_events_(-1), current_fd_(-1) {
 	std::cout << BOLD RED "Starting MasterServer\n" RESET;
-	std::fstream configFile(inputFilename.c_str());
-	readFile(configFile);
+	std::fstream config_file(input_config_file.c_str());
+	if (!readFile(config_file))
+		return; 
 	setHostPort();
 	startSockets();
 	startEpoll();
@@ -91,23 +92,22 @@ ServerManager::~ServerManager() {
 
 
 void ServerManager::setHostPort() {
-	std::vector<Server*>::iterator start = servers.begin();
-	std::vector<Server*>::iterator end = servers.end();
+	std::vector<Server*>::iterator start = servers_list_.begin();
+	std::vector<Server*>::iterator end = servers_list_.end();
 	for (; start != end; ++start) {
 		if (*start != NULL) {
 			std::vector<std::string>::iterator port_beg = (*start)->getPort().begin();
 			std::vector<std::string>::iterator port_end = (*start)->getPort().end();
 			for (; port_beg != port_end; ++port_beg) {
-				host_port.insert(std::pair<std::string, std::string>(*port_beg, (*start)->getHost()));
+				IP_ports_list_.insert(std::pair<std::string, std::string>(*port_beg, (*start)->getIP()));
 			}
 		} else
 			return ;
 	}
 }
 
-void ServerManager::setRunning(int inputRunning) {
-	if (inputRunning)
-		running = false;
+void ServerManager::setRunning(int is_running) {
+	running_= is_running;
 }
 
 /********/
@@ -115,19 +115,22 @@ void ServerManager::setRunning(int inputRunning) {
 /********/
 
 std::vector<Server*> &ServerManager::getServers() {
-	return servers;
+	return servers_list_;
 };
-std::map<std::string, std::string> &ServerManager::getHostPort() {
-	return host_port;
+std::map<std::string, std::string> &ServerManager::getIPPorts() {
+	return IP_ports_list_;
 };
-std::vector<Socket*> &ServerManager::getSocket() {
-	return sockets;
+std::vector<Socket*> &ServerManager::getSockets() {
+	return sockets_list_;
 };
+std::vector<int> &ServerManager::getSocketsFD() {
+	return sockets_fd_list_;
+}
 std::map<int,Client*> &ServerManager::getClients() {
-	return clients;
+	return clients_list_;
 };
 int ServerManager::getEpollFd() {
-	return epoll_fd;
+	return epoll_fd_;
 };
 
 
@@ -136,29 +139,30 @@ int ServerManager::getEpollFd() {
 /********/
 
 /****************/
-/* READFILE purpose is to read each line of the configFile and initiate a new Server Object when needed */
+/* READFILE purpose is to read each line of the config_file and initiate a new Server Object when needed */
 /****************/
-int	ServerManager::readFile(std::fstream &configFile) {
-	Server *currentServer =  NULL;
+int	ServerManager::readFile(std::fstream &config_file) {
+	Server *current_server =  NULL;
 	std::string line;
-	int serverCount = 1000; //Set an ID for new servers (MAY NOT BE USEFUL?)
-	if (configFile.is_open()) {
-		while (std::getline(configFile, line)) {
+	int server_ID = 1000; //Set an ID for new servers (MAY NOT BE USEFUL?)
+	if (config_file.is_open()) {
+		while (std::getline(config_file, line)) {
 			// std::cout << line << std::endl;
 			if (line.find("server {") != std::string::npos || server_flag == true) {				
-				servers.push_back(new Server(serverCount++)); // newServerObj will return a pointer to a new Server object that is created
-				currentServer = servers.back();
+				servers_list_.push_back(new Server(server_ID++)); // newServerObj will return a pointer to a new Server object that is created
+				current_server = servers_list_.back();
 				server_flag = false;
 				// create a new server object that will parse each line in a sub ServerConfig object.
 			} else {
-				parseServer(line, currentServer, configFile);
+				parseServer(line, current_server, config_file);
 			}
 		}
-		configFile.close();
+		config_file.close();
 	} else {
-		std::cout << BOLD RED "file incorrect\n" RESET;
+		std::cerr << BOLD RED "Error:\n" RESET "file incorrect\n";
+		return 0;
 	}
-	return 0;
+	return 1;
 }
 
 
@@ -166,30 +170,30 @@ int	ServerManager::readFile(std::fstream &configFile) {
 /* PARSESERVER purpose is to parse information in the current server structure (like host, port, etc...)*/
 /* if a location word is found, it call parseLocation to create an fill in Location object*/
 /****************/
-void ServerManager::parseServer(std::string &line, Server *currentServer, std::fstream &configFile) {
+void ServerManager::parseServer(std::string &line, Server *current_server, std::fstream &config_file) {
 	size_t pos = 0;
 	if (line.find("host") != std::string::npos) {
 		if ((pos = line.find(":")) != std::string::npos)
-			currentServer->setHost(line.substr(pos + 2));
+			current_server->setIP(line.substr(pos + 2));
 	} else if (line.find("port") != std::string::npos) {
 		if ((pos = line.rfind(":")) != std::string::npos)
-			currentServer->setPort(line.substr(pos + 2));
+			current_server->setPort(line.substr(pos + 2));
 	} else if (line.find("server_name") != std::string::npos) {
 		if ((pos = line.rfind(":")) != std::string::npos)
-			currentServer->addServerName(line.substr(pos + 2));
+			current_server->addServerName(line.substr(pos + 2));
 	} else if (line.find("error_pages") != std::string::npos) {
-		while (std::getline(configFile, line) && line.find("}") == std::string::npos) {
-			currentServer->setErrorList(line);	
+		while (std::getline(config_file, line) && line.find("}") == std::string::npos) {
+			current_server->setErrorList(line);	
 		}
 	} else if (line.find("keep_alive") != std::string::npos) {
 		if (line.find("on") != std::string::npos)
-			currentServer->setKeepAlive(true);
+			current_server->setKeepAlive(true);
 	} else if (line.find("client_max_body_size") != std::string::npos) { // limit for the HTTP request body info
 		if ((pos = line.rfind(":")) != std::string::npos) {
-			currentServer->setMaxSize(getMaxSize(line.substr(pos + 2)));
+			current_server->setMaxSize(getMaxSize(line.substr(pos + 2)));
 		}
 	} else if (line.find("location") != std::string::npos) {
-		parseLocation(line, currentServer, configFile);
+		parseLocation(line, current_server, config_file);
 		if (line.find("server") != std::string::npos)
 			server_flag = true;
 	} else
@@ -200,61 +204,61 @@ void ServerManager::parseServer(std::string &line, Server *currentServer, std::f
 /* PARSELOCATION purpose is to initiate a new Location object in the current server object when needed or,*/
 /* if already in the location block, just parse information in the location structure (like root, index, cgi_enable, etc...)*/
 /****************/
-void ServerManager::parseLocation(std::string &line, Server *currentServer, std::fstream &configFile) {
+void ServerManager::parseLocation(std::string &line, Server *current_server, std::fstream &config_file) {
 	size_t pos;
 	std::string name;
-	Location *currentLocation = NULL;
+	Location *current_location = NULL;
 	if ((pos = line.rfind("/")) != std::string::npos)
 		name = line.substr(pos);
 	name.erase(name.end() - 1);
-	currentServer->addLocation(name);
-	currentLocation = currentServer->getLocation().back();
+	current_server->addLocation(name);
+	current_location = current_server->getLocationsList().back();
 			//////////////////////////////////
-	while (std::getline(configFile, line) && line.find("server") == std::string::npos) {
+	while (std::getline(config_file, line) && line.find("server") == std::string::npos) {
 		if (line.find("location") != std::string::npos) {
 			if ((pos = line.rfind("/")) != std::string::npos)
 				name = line.substr(pos);
-			currentServer->addLocation(name);
-			currentLocation = currentServer->getLocation().back();
+			current_server->addLocation(name);
+			current_location = current_server->getLocationsList().back();
 		} else if (line.find("method") != std::string::npos) {
 			if ((pos = line.rfind(":")) != std::string::npos)
-				currentLocation->setMethod(line.substr(pos + 2));
+				current_location->setMethod(line.substr(pos + 2));
 		} else if (line.find("root") != std::string::npos) {
 			if ((pos = line.rfind(":")) != std::string::npos)
-				currentLocation->setRoot(line.substr(pos + 2));
+				current_location->setRoot(line.substr(pos + 2));
 		} else if (line.find("autoindex") != std::string::npos) {
 			if (line.find("on") != std::string::npos)
-				currentLocation->setAutoIndex(true);
+				current_location->setAutoIndex(true);
 		} else if (line.find("index:") != std::string::npos) {
 			if ((pos = line.rfind(":")) != std::string::npos)
-				currentLocation->setIndex(line.substr(pos + 2));
+				current_location->setIndex(line.substr(pos + 2));
 		} else if (line.find("upload:") != std::string::npos) {
 			if (line.find("on") != std::string::npos)
-				currentLocation->setUpload(true);
+				current_location->setUpload(true);
 		} else if (line.find("upload_store") != std::string::npos) {
 			if ((pos = line.rfind(":")) != std::string::npos)
-				currentLocation->setUploadDir(line.substr(pos + 2));
+				current_location->setUploadDir(line.substr(pos + 2));
 		} else if (line.find("max_body_size") != std::string::npos) {
 			if ((pos = line.rfind(":")) != std::string::npos) {
-				currentLocation->setMaxBodySize(getMaxSize(line.substr(pos + 2)));
+				current_location->setMaxBodySize(getMaxSize(line.substr(pos + 2)));
 			}
 				/////////////////////////////////
 		} else if (line.find("cgi:") != std::string::npos) {
 			if (line.find("on") != std::string::npos)
-				currentLocation->setCGI(true);
+				current_location->setCGI(true);
 		} else if (line.find("cgi_extensions") != std::string::npos) {
 			if ((pos = line.rfind(":")) != std::string::npos)
-				currentLocation->setCGIExt(line.substr(pos + 2));	
+				current_location->setCGIExt(line.substr(pos + 2));	
 				/////////////////////////////////
 		} else if (line.find("redirect:") != std::string::npos) {
 			if (line.find("on") != std::string::npos)
-				currentLocation->setRedirect(true);
+				current_location->setRedirect(true);
 		} else if (line.find("redirect_code") != std::string::npos) { // do I need a redirect code or can I simply redirect to a default webpage?
 			if ((pos = line.rfind(":")) != std::string::npos)
-				currentLocation->setRedirectCode(convertToNb<int>(line.substr(pos + 2)));
+				current_location->setRedirectCode(convertToNb<int>(line.substr(pos + 2)));
 		} else if (line.find("redirect_url") != std::string::npos) {
 			if ((pos = line.find(":")) != std::string::npos)
-				currentLocation->setRedirectURL(line.substr(pos + 2));
+				current_location->setRedirectURL(line.substr(pos + 2));
 		} else if (line.find("}") != std::string::npos)
 			;
 		else
@@ -267,11 +271,11 @@ void ServerManager::parseLocation(std::string &line, Server *currentServer, std:
 /* Each of the socket_fd will start a Socket object that will test the IP address, bind it and start listening*/
 /****************/
 void ServerManager::startSockets() {
-	std::map<std::string, std::string>::iterator beg = host_port.begin();
-	std::map<std::string, std::string>::iterator end = host_port.end();
+	std::map<std::string, std::string>::iterator beg = IP_ports_list_.begin();
+	std::map<std::string, std::string>::iterator end = IP_ports_list_.end();
 	for (; beg != end; ++beg) {
-		sockets.push_back(new Socket(beg->second, beg->first));
-		socketsFdList.push_back(sockets.back()->getSocketFd());
+		sockets_list_.push_back(new Socket(beg->second, beg->first));
+		sockets_fd_list_.push_back(sockets_list_.back()->getSocketFd());
 	}
 	// Now we got a vector that has all the socket_fd active and ready to listen. We are able to start the epoll after this function
 }
@@ -281,19 +285,19 @@ void ServerManager::startSockets() {
 /****************/
 void ServerManager::startEpoll() {
 	/*STEP1 -- creation of the epoll instance*/
-	epoll_fd = epoll_create(4096); // nb of socket_fd to monitor (BUT NOT IN USE NOWADAYS -- epoll_create1())
-	if (epoll_fd == -1) {
+	epoll_fd_ = epoll_create(4096); // nb of socket_fd to monitor (BUT NOT IN USE NOWADAYS -- epoll_create1())
+	if (epoll_fd_ == -1) {
 		std::cerr << "Error pn epoll creation\n";
 		return ;
 	}
 	/*STEP2 -- add the socket_fd to monitor in the epoll*/
-	std::vector<int>::iterator begFd = socketsFdList.begin();
-	std::vector<int>::iterator endFd = socketsFdList.end();
+	std::vector<int>::iterator begFd = sockets_fd_list_.begin();
+	std::vector<int>::iterator endFd = sockets_fd_list_.end();
 	for (; begFd != endFd; ++begFd) {
 		struct epoll_event event;
 		event.events = EPOLLIN;
 		event.data.fd = *begFd;
-		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, *begFd, &event) == -1) {
+		if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, *begFd, &event) == -1) {
 			std::cerr << "Error adding socket " << *begFd << " to epoll instance\n";
 		}
 	}
@@ -304,32 +308,32 @@ void ServerManager::startEpoll() {
 /*depending on the event, it can be either a new connection that need to be add to the epoll OR an existing one that will receive the HTTP request and send HTTP respond*/
 /****************/
 void ServerManager::serverMonitoring() {
-	while (running) {
+	while (running_) {
 		/*STEP3 -- wait for an event to occur in any socket in epoll instance*/
-		num_events = epoll_wait(epoll_fd, events, MAX_EVENTS, -1); // -1 is timeout setup with -1 for infinite
-		if (num_events == -1) {
+		num_events_ = epoll_wait(epoll_fd_, events_, MAX_EVENTS, -1); // -1 is timeout setup with -1 for infinite
+		if (num_events_ == -1) {
 			if (errno != 4)
 				std::cerr << "Error epoll_wait: " << strerror(errno) << std::endl;
 			return ;
 		}
 		
 		/*STEP4 -- Process each event happening*/
-		for (int i = 0; i < num_events; i++) {
-			currentFd = events[i].data.fd;
-			if (std::find(socketsFdList.begin(), socketsFdList.end(), currentFd) != socketsFdList.end()) { //add the check to clients list ??
-				createNewClientConnection(); //is the currentFd in the epoll instance (meaning connections has been established so known client or need to be added as it is a new one)
+		for (int i = 0; i < num_events_; i++) {
+			current_fd_ = events_[i].data.fd;
+			if (std::find(sockets_fd_list_.begin(), sockets_fd_list_.end(), current_fd_) != sockets_fd_list_.end()) { //add the check to clients list ??
+				createNewClientConnection(); //is the current_fd_ in the epoll instance (meaning connections has been established so known client or need to be added as it is a new one)
 			} else {
-				Client *currentClient = clients[currentFd];
-				if (currentClient == NULL)
+				Client *current_client = clients_list_[current_fd_];
+				if (current_client == NULL)
 					std::cout << "unknown client\n";
-				existingClientConnection(currentClient);
+				existingClientConnection(current_client);
 			}
 		}
 		//running stop either when there is a huge problem with the epoll instance or when receiving a signal from the server to shutdown
 		// running become false
 		
 	}
-	this->cleanClient(currentFd);
+	this->cleanClient(current_fd_);
 	this->shutdown();
 }
 
@@ -340,26 +344,26 @@ void ServerManager::serverMonitoring() {
 void ServerManager::createNewClientConnection() {
 	/*STEP5 -- create a new socket FD for this client-server connection*/
 	/*STEP6 -- make the client socket non-blocking with flags and fcntl*/
-	temp_client_addr_len = sizeof(temp_client_addr);
-	int temp_fd = accept(currentFd, (struct sockaddr*)&temp_client_addr, &temp_client_addr_len);
+	temp_client_addr_len_ = sizeof(temp_client_addr_);
+	int temp_fd = accept(current_fd_, (struct sockaddr*)&temp_client_addr_, &temp_client_addr_len_);
 	if (temp_fd == -1) {
 		 //at this level, block so not accepting this client at all to avoid infinite loop or comment printing 
 		std::cerr << "Error accepting connection: " << strerror(errno) << std::endl;
 		return;
 	}
-	Client *newClient = new Client(temp_fd, temp_client_addr, temp_client_addr_len);
-	int newClientFd = newClient->getClientFd();
-	clients.insert(std::pair<int,Client*>(newClientFd, newClient));
+	Client *new_client = new Client(temp_fd, temp_client_addr_, temp_client_addr_len_);
+	int new_client_fd = new_client->getClientFd();
+	clients_list_.insert(std::pair<int,Client*>(new_client_fd, new_client));
 
 	
 	/*STEP7 -- add the client fd to the epoll monitoring to continue on same communication channel until closing of one fd*/
 	struct epoll_event client_event;
 	client_event.events = EPOLLIN;
-	client_event.data.fd = newClientFd;
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, newClientFd, &client_event) == -1) {
+	client_event.data.fd = new_client_fd;
+	if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, new_client_fd, &client_event) == -1) {
 		std::cerr << "error adding client_fd to epoll: " << strerror(errno) << std::endl;
 		//clean client from structure
-		close(newClientFd); 
+		close(new_client_fd); 
 		return ;
 	}
 }
@@ -368,62 +372,62 @@ void ServerManager::createNewClientConnection() {
 /* exisingClientConnection --> as the server-client connection is already in the epoll instance, */
 /* the function can receive the message request and start analysing it */
 /****************/
-void ServerManager::existingClientConnection(Client *currentClient) {
-	(void)currentClient;
+void ServerManager::existingClientConnection(Client *current_client) {
+	(void)current_client;
 	bool message_completed = false;
 	std::string request;
 	
 	// RECEIVE CURRENT CLIENT REQUEST
 	while (!message_completed) {
-		ssize_t byte_received = recv(currentFd, received, sizeof(received), MSG_WAITALL); // or MSG_DONTWAIT depending on which flag we want for receiving data
+		ssize_t byte_received = recv(current_fd_, received_, sizeof(received_), MSG_WAITALL); // or MSG_DONTWAIT depending on which flag we want for receiving data
 		if (byte_received <= 0) {
-			message_completed = cleanClient(currentFd);
+			message_completed = cleanClient(current_fd_);
 			if (byte_received == 0)
 				std::cout << "Client disconnect for server\n";
 		} else {
-			received[byte_received] = '\0';
-			request.append(received);
+			received_[byte_received] = '\0';
+			request.append(received_);
 			message_completed = isMessageCompleted(request);
 		}	
 	}
 	/**START THE HTTP READING NOW**/
-	HTTPRequest currentRequest;
+	HTTPRequest current_request;
 	if (!request.empty()) {
-		currentRequest.parseRequest(request);
-		std::string serverIP = getServerIP(currentFd);
+		current_request.parseRequest(request);
+		std::string serverIP = getServerIP(current_fd_);
 		
 		//SEND THE RESPONSE HEADER
-		HTTPResponse currentResponse(currentRequest, *this, serverIP);
-		std::string response = currentResponse.getResponse();
+		HTTPResponse current_response(current_request, *this, serverIP);
+		std::string response = current_response.getResponse();
 		std::cout << "response to send: " << response << std::endl;
-		if (currentFd < 0)
-			std::cerr << "Error, currentFD socket is already close: " << std::endl;
+		if (current_fd_ < 0)
+			std::cerr << "Error, current_fD_ socket is already close: " << std::endl;
 		if (response.empty())
 			std::cerr << "Error, response is empty" << std::endl;
-		ssize_t bytes_sent = send(currentFd, response.c_str(), strlen(response.c_str()), 0);
+		ssize_t bytes_sent = send(current_fd_, response.c_str(), strlen(response.c_str()), 0);
 		if (bytes_sent < 0) {
 			std::cerr << "Error when sending response to client: " << strerror(errno) << std::endl;
 			return ;
 		}
 
-		if (currentResponse.isReady()) {
+		if (current_response.isReady()) {
 			std::cout << "Response is already ready (e.g. from CGI), skipping body file send\n";
-			close(currentFd);
+			close(current_fd_);
 		return;
 		}
 
 		
 		// SEND THE BODY FILE IF THERE IS ONE
-		std::string bodyFilename = currentResponse.getBodyFilename();
-		if (!bodyFilename.empty()) {
-			std::cout << "check bodyFilename: " << bodyFilename << std::endl;
-			std::ifstream file(bodyFilename.c_str(), std::ios::binary);
+		std::string body_file = current_response.getBodyFilename();
+		if (!body_file.empty()) {
+			std::cout << "check body_file: " << body_file << std::endl;
+			std::ifstream file(body_file.c_str(), std::ios::binary);
 			if (file.is_open()) {
 				while (!file.eof()) {
-					file.read(buffer, sizeof(buffer));
-					std::streamsize bytesRead = file.gcount();
-					if (bytesRead > 0) {
-						bytes_sent = send(currentFd, buffer, bytesRead, 0);
+					file.read(buffer_, sizeof(buffer_));
+					std::streamsize bytes_read = file.gcount();
+					if (bytes_read > 0) {
+						bytes_sent = send(current_fd_, buffer_, bytes_read, 0);
 						if (bytes_sent <= 0) { // Check for both error and connection closed
 							if (bytes_sent < 0) {
 								std::cerr << "Error sending file data: " << strerror(errno) << std::endl;
@@ -434,31 +438,31 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 						}
 						
 						// Optional: Check for partial sends
-						if (bytes_sent < bytesRead) {
-							std::cerr << "Warning: Partial send - expected " << bytesRead 
+						if (bytes_sent < bytes_read) {
+							std::cerr << "Warning: Partial send - expected " << bytes_read 
 									<< " bytes, sent " << bytes_sent << " bytes" << std::endl;
 						}
 					}
 					
 					// Check for file read errors
 					if (file.bad()) {
-						std::cerr << "Error reading from file: " << bodyFilename << std::endl;
+						std::cerr << "Error reading from file: " << body_file << std::endl;
 						break;
 					}
 				}
 				file.close();
-				if (currentResponse.isAutoIndex()) {
-					if (!std::remove(bodyFilename.c_str())) {
-						currentResponse.setAutoIndex(false);
+				if (current_response.isAutoIndex()) {
+					if (!std::remove(body_file.c_str())) {
+						current_response.setAutoIndex(false);
 					}
 				}
-				bodyFilename = "";
+				body_file = "";
 					
 			}
 		}
 		std::cout << "SUCCESSFULLY REACH END OF RESPONSE!\n";
 	}
-	close(currentFd);
+	close(current_fd_);
 	/********DEBUGGING*********/
 	// std::cout << "\nrequest: \n" << request << std::endl;
 	/********DEBUGGING*********/
@@ -469,20 +473,20 @@ void ServerManager::existingClientConnection(Client *currentClient) {
 	
 	/********DEBUGGING*********/
 	// const char* response1 = "HTTP/1.1 200 OK\r\nContent-Length: 19\r\n\r\nYooooooooooooooooo!";
-	// ssize_t bytes_sent = send(currentFd, response1, strlen(response1), 0);
+	// ssize_t bytes_sent = send(current_fd_, response1, strlen(response1), 0);
 	// if (bytes_sent == 0)
 	// 	std::cerr << "Error when sending response to client" << std::endl;
 	/********DEBUGGING*********/
 }
 
-bool ServerManager::cleanClient(int currentFd) {
-	std::map<int,Client*>::iterator itM;
-	itM = clients.find(currentFd);
-	if (itM != clients.end()) {
-		close(currentFd);
-		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, currentFd, NULL);
-		delete itM->second;
-		clients.erase(itM);
+bool ServerManager::cleanClient(int current_fd_) {
+	std::map<int,Client*>::iterator beg;
+	beg = clients_list_.find(current_fd_);
+	if (beg != clients_list_.end()) {
+		close(current_fd_);
+		epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, current_fd_, NULL);
+		delete beg->second;
+		clients_list_.erase(beg);
 		return true;
 	} else
 		return false;

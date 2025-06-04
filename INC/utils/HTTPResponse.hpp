@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/03 09:22:59 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 14:09:50 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,37 +15,29 @@
 
 #include "HTTPRequest.hpp"
 #include "ServerManager.hpp"
-// // Construct response
-// std::string response = "HTTP/1.1 200 OK\r\n"; --> status line to send following the header following an empty blank and the reponse Body (content like HTML)
-// response += "Content-Type: text/html\r\n";
-// response += "Content-Length: " + std::to_string(body.length()) + "\r\n";
-// response += "\r\n";  // End of headers
-// response += body;    // Response body
 
-// // Send it over the socket
-// send(client_fd, response.c_str(), response.length(), 0);
 class ServerManager;
 class Location;
 class Server;
 
 class HTTPResponse {
 	public:
-		HTTPResponse(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP); //get information like the path, method and version via HTTPrequest class 
+		HTTPResponse(const HTTPRequest &input_request, ServerManager &server_manager, const std::string &server_IP); //get information like the path, method and version via HTTPrequest class 
 		~HTTPResponse();
 		
 		//SETTER
+		void setAutoIndex(bool val);
 
 		//GETTER
 		const std::string &getResponse();
 		std::string &getBodyFilename();
 		bool isAutoIndex();
-		void setAutoIndex(bool newValue);
 			
 		//METHOD
 		void setGetResponse();
 		void setPostResponse();
 		void setDeleteResponse();
-		void setErrorResponse(int errorCode);
+		void setErrorResponse(int error_code);
 		int checkFile();
 		int checkMethod() ;
 		void prepareStatusLine(int status_code);
@@ -58,32 +50,30 @@ class HTTPResponse {
 		//void makePostResponse(ContentDisposition_ &cd);
 		bool isReady() const;
 		bool checkRedirection();
-		void draft_error_response();
-		void draft_redirect_response();
-
-		
+		void draftErrorResponse();
+		void draftRedirectResponse();
 	
 	private:
 		//PREPARING RESPONSE
-		HTTPRequest currentRequest;
-		Server *server;
-		Location *location;
-		Server *defaultServer;
-		Location *defaultLocation;
+		HTTPRequest current_request_;
+		Server *server_;
+		Location *location_;
+		Server *default_server_;
+		Location *default_location_;
 		//RESPONSE CONTENT
-		std::string response;
-		std::string status_line;
-		std::string body;
-		std::string header;
-		std::string empty_line;
+		std::string response_;
+		std::string status_line_;
+		std::string body_msg_;
+		std::string header_;
+		std::string empty_line_;
 		
 		//STATUS_LINE
-		bool is_autoindex; 
+		bool is_autoindex_; 
 		
 		//HEADER_FIELDS
-		std::string content_type;
-		int content_length;
-		std::string body_filename;
+		std::string content_type_;
+		int content_length_;
+		std::string body_filename_;
 		// bool keep_alive;
 		//Adding time ?
 		
@@ -92,7 +82,7 @@ class HTTPResponse {
 	
 		// static int global_index_; //dun know if it is useful
 		// int instance_index_;
-		bool _response_ready;
+		bool _response_ready_;
 
 
 };

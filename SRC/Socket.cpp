@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:03:14 by cofische          #+#    #+#             */
-/*   Updated: 2025/05/14 17:44:45 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 14:21:17 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,64 +14,59 @@
 
 Socket::Socket() {};
 
-Socket::Socket(const std::string &serverIP, const std::string &serverPort) : status(-1), socketFd(-1) {
+Socket::Socket(const std::string &serverIP, const std::string &serverPort) : status_(-1), socket_fd_(-1) {
 	//defining the add structure with info received from constructor
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;      // Either IPv4 or IPv6
-	hints.ai_socktype = SOCK_STREAM;  // TCP
-	hints.ai_flags = 0;               // Not using AI_PASSIVE since we provide an IP
-	hints.ai_protocol = 0;
+	memset(&hints_, 0, sizeof(hints_));
+	hints_.ai_family = AF_UNSPEC;      // Either IPv4 or IPv6
+	hints_.ai_socktype = SOCK_STREAM;  // TCP
+	hints_.ai_flags = 0;               // Not using AI_PASSIVE since we provide an IP
+	hints_.ai_protocol = 0;
 	
-	status = getaddrinfo(serverIP.c_str(), serverPort.c_str(), &hints, &result);
-	if (status == 0) {
+	status_ = getaddrinfo(serverIP.c_str(), serverPort.c_str(), &hints_, &result_);
+	if (status_ == 0) {
 		if (setSocketFd())
+			//error on socket so shutdown depending on client socket or server
 			;
-	// 		std::cout << "Server listening on: " BOLD BLUE << serverIP << ":" << serverPort << RESET "\n";		
 	}
-	freeaddrinfo(result);
-	
-		
-		
-	// std::cout << "Socketfd in the socket class:" << &socketfd << ", Socket add:" << &add << "\n";
-	// std::cout << "socket listening:" << socketfd << "\n";
+	freeaddrinfo(result_);
 };
 
 Socket::~Socket() {
-	close(socketFd);
+	close(socket_fd_);
 	// std::cout << "closing the socket_fd\n";
 };
 
 int Socket::setSocketFd() {
-	for (rp = result; rp != NULL; rp = rp->ai_next) {
-		if (rp == NULL) {
+	for (rp_ = result_; rp_ != NULL; rp_ = rp_->ai_next) {
+		if (rp_ == NULL) {
 			std::cout << BOLD RED "Binding impossible" << RESET "\n";
 			// return 0;
 		}
-		socketFd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+		socket_fd_ = socket(rp_->ai_family, rp_->ai_socktype, rp_->ai_protocol);
 		/*DEBUGGING FOR IP VERSION*/
-		if (rp->ai_family == AF_INET) {
+		// if (rp_->ai_family == AF_INET) {
 			// std::cout << "Creating IPv4 socket" << std::endl;
 			// IPv4-specific code if needed
-		} else if (rp->ai_family == AF_INET6) {
+		// } else if (rp_->ai_family == AF_INET6) {
 			// std::cout << "Creating IPv6 socket" << std::endl;
 			// IPv6-specific code if needed
-		}
+		// }
 		/*DEBUGGING FOR IP VERSION*/
-		if (socketFd == -1)
+		if (socket_fd_ == -1)
 			std::cout << "socketing failed\n";
 			// return 0;
 		int opt = 1;
-		if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) > 0) {
-				close(socketFd);
+		if (setsockopt(socket_fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) > 0) {
+				close(socket_fd_);
 				std::cout << "setsockopt failed\n";
 				// return 0;
 		}
-		if (bind(socketFd, rp->ai_addr, rp->ai_addrlen) < 0) {
+		if (bind(socket_fd_, rp_->ai_addr, rp_->ai_addrlen) < 0) {
 			std::cerr << "binding failed " << strerror(errno) << "\n";
 			return 0;
 		}
-		if (listen(socketFd, 10) < 0) { // 10 is number of max connections but can be changed
-			close(socketFd);
+		if (listen(socket_fd_, 1000000) < 0) {
+			close(socket_fd_);
 			std::cout << "listening failed\n";
 			// return 0; 
 		}
@@ -80,11 +75,11 @@ int Socket::setSocketFd() {
 };
 
 int &Socket::getSocketFd(){
-	return socketFd;
+	return socket_fd_;
 }
 
 struct sockaddr_in *Socket::getAddr() {
-	return &add;
+	return &addr_;
 };
 
 Socket::SOCKERROR::SOCKERROR(const char *msg) : message(msg) {};

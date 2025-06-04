@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 11:01:22 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/04 15:14:39 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 void printLocation(Location &location) {
 	/*BASIC INFO*/
-	std::cout << BOLD MAGENTA "location Path: " RESET << location.getPath() << std::endl;
+	std::cout << BOLD MAGENTA "location Path: " RESET << location.getName() << std::endl;
 	std::cout << BOLD MAGENTA "location root: " RESET << location.getRoot() << std::endl;
 	//method display
 	std::cout << BOLD MAGENTA "location methods: " RESET;
@@ -34,15 +34,15 @@ void printLocation(Location &location) {
 	std::cout << std::endl;
 	
 	std::cout << BOLD MAGENTA "location index: " RESET << location.getIndex() << std::endl;
-	std::cout << BOLD MAGENTA "location directories listing: " RESET << location.getAutoIndex() << std::endl;
+	std::cout << BOLD MAGENTA "location directories listing: " RESET << location.isAutoIndex() << std::endl;
 	
 	/*UPLAOD INFO*/
-	std::cout << BOLD MAGENTA "location - is upload enable: " RESET << location.getUpload() << std::endl;
+	std::cout << BOLD MAGENTA "location - is upload enable: " RESET << location.isUpload() << std::endl;
 	std::cout << BOLD MAGENTA "location upload storage folder: " RESET << location.getUploadDir() << std::endl;
 	std::cout << BOLD MAGENTA "location upload Max body size: " RESET << location.getMaxSize() << std::endl;
 
 	/*CGI INFO*/
-	std::cout << BOLD MAGENTA "location - is CGI enable: " RESET << location.getCGI() << std::endl;
+	std::cout << BOLD MAGENTA "location - is CGI enable: " RESET << location.isCGI() << std::endl;
 	//cgi extension list
 	std::cout << BOLD MAGENTA "location CGI extensions: " RESET;
 	std::vector<std::string>::iterator itExt = location.getCGIExt().begin();
@@ -60,15 +60,15 @@ void printLocation(Location &location) {
 
 void printServer(Server &server) {
 	/*SERVER NAMES*/
-	std::vector<std::string>::iterator it = server.getServerName().begin();
-	std::vector<std::string>::iterator ite = server.getServerName().end();
+	std::vector<std::string>::iterator it = server.getServerNames().begin();
+	std::vector<std::string>::iterator ite = server.getServerNames().end();
 	std::cout << BOLD BLUE << "server name: " RESET;
 	for (; it != ite; ++it)
 		std::cout << *it << " ";
 	std::cout << std::endl;
 	
 	/*PORT AND HOST*/
-	std::cout << BOLD BLUE "server host: " << RESET << server.getHost() << std::endl;
+	std::cout << BOLD BLUE "server host: " << RESET << server.getIP() << std::endl;
 	std::vector<std::string>::iterator itp = server.getPort().begin();
 	std::vector<std::string>::iterator itep = server.getPort().end();
 	std::cout << BOLD BLUE << "server ports: " RESET;
@@ -84,12 +84,12 @@ void printServer(Server &server) {
 		std::cout << itr->first << " " << itr->second << std::endl;
 	
 	/*MAX BODY SIZE*/
-	std::cout << BOLD BLUE "server maxsize: " RESET << server.getMaxSize() << std::endl;
-	std::cout << BOLD BLUE "server keep alive: " RESET << server.getKeepAlive() << std::endl;
+	std::cout << BOLD BLUE "server maxsize: " RESET << server.getMaxBodySize() << std::endl;
+	std::cout << BOLD BLUE "server keep alive: " RESET << server.isKeepAlive() << std::endl;
 	
 	/*LOCATIONS BLOCKS*/
-	std::vector<Location*>::iterator itL = server.getLocation().begin();
-	std::vector<Location*>::iterator iteL = server.getLocation().end();
+	std::vector<Location*>::iterator itL = server.getLocationsList().begin();
+	std::vector<Location*>::iterator iteL = server.getLocationsList().end();
 	for (; itL != iteL; ++itL) {
 		printLocation(**itL);
 		std::cout << std::endl;
@@ -114,53 +114,53 @@ bool isMessageCompleted(const std::string &request) {
 	return true;
 }
 
-void cleanShutdown(ServerManager &masterServer) {
+void cleanShutdown(ServerManager &master_server) {
 
 	//closing socket_fd from the servers and freeing the struct
-	std::vector<Socket*>::iterator begSo = masterServer.getSocket().begin();
-	std::vector<Socket*>::iterator endSo = masterServer.getSocket().end();
+	std::vector<Socket*>::iterator begSo = master_server.getSockets().begin();
+	std::vector<Socket*>::iterator endSo = master_server.getSockets().end();
 	for (; begSo != endSo; ++begSo) {
 		delete *begSo;
 	}
 
 	//closing and deleting client info
-	std::map<int,Client*>::iterator begCl = masterServer.getClients().begin();
-	std::map<int,Client*>::iterator endCl = masterServer.getClients().end();
+	std::map<int,Client*>::iterator begCl = master_server.getClients().begin();
+	std::map<int,Client*>::iterator endCl = master_server.getClients().end();
 	for (; begCl != endCl; ++begCl) {
 		close(begCl->first);
 		delete begCl->second;
 	}
 
 	//freeing the struct server
-	std::vector<Server*>::iterator beg = masterServer.getServers().begin();
-	std::vector<Server*>::iterator end = masterServer.getServers().end();
+	std::vector<Server*>::iterator beg = master_server.getServers().begin();
+	std::vector<Server*>::iterator end = master_server.getServers().end();
 
 	for (; beg != end; ++beg) {
-		std::vector<Location*>::iterator begLo = (*beg)->getLocation().begin();
-		std::vector<Location*>::iterator endLo = (*beg)->getLocation().end();
+		std::vector<Location*>::iterator begLo = (*beg)->getLocationsList().begin();
+		std::vector<Location*>::iterator endLo = (*beg)->getLocationsList().end();
 		for (; begLo != endLo; ++begLo)
 			delete *begLo;
 		delete *beg;
 	}
 
-	close(masterServer.getEpollFd());
+	close(master_server.getEpollFd());
 }
 
 std::string getStatusStr(int status_code) {
 	//Harcode of the table for status code and status string
-	std::map<int, std::string> statusMessages;
-	statusMessages.insert(std::make_pair(200, "OK"));
-	statusMessages.insert(std::make_pair(204, "No Content"));
-	statusMessages.insert(std::make_pair(400, "Bad Request"));
-	statusMessages.insert(std::make_pair(401, "Unauthorized"));
-	statusMessages.insert(std::make_pair(404, "Not Found"));
-	statusMessages.insert(std::make_pair(405, "Method Not Allowed"));
-	statusMessages.insert(std::make_pair(415, "Unsupported Media Type"));
-	statusMessages.insert(std::make_pair(500, "Internal Server Error"));
-	statusMessages.insert(std::make_pair(502, "Bad Gateway"));
+	std::map<int, std::string> status_messages;
+	status_messages.insert(std::make_pair(200, "OK"));
+	status_messages.insert(std::make_pair(204, "No Content"));
+	status_messages.insert(std::make_pair(400, "Bad Request"));
+	status_messages.insert(std::make_pair(401, "Unauthorized"));
+	status_messages.insert(std::make_pair(404, "Not Found"));
+	status_messages.insert(std::make_pair(405, "Method Not Allowed"));
+	status_messages.insert(std::make_pair(415, "Unsupported Media Type"));
+	status_messages.insert(std::make_pair(500, "Internal Server Error"));
+	status_messages.insert(std::make_pair(502, "Bad Gateway"));
 	
-	std::map<int, std::string>::iterator beg = statusMessages.begin();
-	std::map<int, std::string>::iterator end = statusMessages.end();
+	std::map<int, std::string>::iterator beg = status_messages.begin();
+	std::map<int, std::string>::iterator end = status_messages.end();
 	for (; beg != end; ++beg) {
 		if (status_code == beg->first)
 			return beg->second;
@@ -174,69 +174,69 @@ bool fileExists(const std::string& filename) {
 	return file.good();
 }
 
-std::string getContentType(const std::string &inputExtension) {
-	std::string extension = toLowerCase(inputExtension);
-	std::map<std::string, std::string> contentType;
+std::string getContentType(const std::string &input_extension) {
+	std::string extension = toLowerCase(input_extension);
+	std::map<std::string, std::string> content_type;
    // HTML/Text files
-	contentType.insert(std::make_pair(".html", "text/html; charset=UTF-8"));
-	contentType.insert(std::make_pair(".htm", "text/html; charset=UTF-8"));
-	contentType.insert(std::make_pair(".css", "text/css"));
-	contentType.insert(std::make_pair(".js", "application/javascript"));
-	contentType.insert(std::make_pair(".txt", "text/plain; charset=UTF-8"));
-	contentType.insert(std::make_pair(".csv", "text/csv"));
-	contentType.insert(std::make_pair(".xml", "application/xml"));
-	contentType.insert(std::make_pair(".json", "application/json"));
+	content_type.insert(std::make_pair(".html", "text/html; charset=UTF-8"));
+	content_type.insert(std::make_pair(".htm", "text/html; charset=UTF-8"));
+	content_type.insert(std::make_pair(".css", "text/css"));
+	content_type.insert(std::make_pair(".js", "application/javascript"));
+	content_type.insert(std::make_pair(".txt", "text/plain; charset=UTF-8"));
+	content_type.insert(std::make_pair(".csv", "text/csv"));
+	content_type.insert(std::make_pair(".xml", "application/xml"));
+	content_type.insert(std::make_pair(".json", "application/json"));
 	
 	// Image files
-	contentType.insert(std::make_pair(".jpg", "image/jpeg"));
-	contentType.insert(std::make_pair(".jpeg", "image/jpeg"));
-	contentType.insert(std::make_pair(".png", "image/png"));
-	contentType.insert(std::make_pair(".gif", "image/gif"));
-	contentType.insert(std::make_pair(".svg", "image/svg+xml"));
-	contentType.insert(std::make_pair(".ico", "image/x-icon"));
-	contentType.insert(std::make_pair(".webp", "image/webp"));
-	contentType.insert(std::make_pair(".bmp", "image/bmp"));
-	contentType.insert(std::make_pair(".tiff", "image/tiff"));
-	contentType.insert(std::make_pair(".tif", "image/tiff"));
+	content_type.insert(std::make_pair(".jpg", "image/jpeg"));
+	content_type.insert(std::make_pair(".jpeg", "image/jpeg"));
+	content_type.insert(std::make_pair(".png", "image/png"));
+	content_type.insert(std::make_pair(".gif", "image/gif"));
+	content_type.insert(std::make_pair(".svg", "image/svg+xml"));
+	content_type.insert(std::make_pair(".ico", "image/x-icon"));
+	content_type.insert(std::make_pair(".webp", "image/webp"));
+	content_type.insert(std::make_pair(".bmp", "image/bmp"));
+	content_type.insert(std::make_pair(".tiff", "image/tiff"));
+	content_type.insert(std::make_pair(".tif", "image/tiff"));
 	
 	// Audio/Video files
-	contentType.insert(std::make_pair(".mp3", "audio/mpeg"));
-	contentType.insert(std::make_pair(".wav", "audio/wav"));
-	contentType.insert(std::make_pair(".ogg", "audio/ogg"));
-	contentType.insert(std::make_pair(".mp4", "video/mp4"));
-	contentType.insert(std::make_pair(".webm", "video/webm"));
-	contentType.insert(std::make_pair(".mpeg", "video/mpeg"));
-	contentType.insert(std::make_pair(".mpg", "video/mpeg"));
+	content_type.insert(std::make_pair(".mp3", "audio/mpeg"));
+	content_type.insert(std::make_pair(".wav", "audio/wav"));
+	content_type.insert(std::make_pair(".ogg", "audio/ogg"));
+	content_type.insert(std::make_pair(".mp4", "video/mp4"));
+	content_type.insert(std::make_pair(".webm", "video/webm"));
+	content_type.insert(std::make_pair(".mpeg", "video/mpeg"));
+	content_type.insert(std::make_pair(".mpg", "video/mpeg"));
 	
 	// Document files
-	contentType.insert(std::make_pair(".pdf", "application/pdf"));
-	contentType.insert(std::make_pair(".doc", "application/msword"));
-	contentType.insert(std::make_pair(".docx", "application/msword"));
-	contentType.insert(std::make_pair(".xls", "application/vnd.ms-excel"));
-	contentType.insert(std::make_pair(".xlsx", "application/vnd.ms-excel"));
-	contentType.insert(std::make_pair(".ppt", "application/vnd.ms-powerpoint"));
-	contentType.insert(std::make_pair(".pptx", "application/vnd.ms-powerpoint"));
-	contentType.insert(std::make_pair(".odt", "application/vnd.oasis.opendocument.text"));
+	content_type.insert(std::make_pair(".pdf", "application/pdf"));
+	content_type.insert(std::make_pair(".doc", "application/msword"));
+	content_type.insert(std::make_pair(".docx", "application/msword"));
+	content_type.insert(std::make_pair(".xls", "application/vnd.ms-excel"));
+	content_type.insert(std::make_pair(".xlsx", "application/vnd.ms-excel"));
+	content_type.insert(std::make_pair(".ppt", "application/vnd.ms-powerpoint"));
+	content_type.insert(std::make_pair(".pptx", "application/vnd.ms-powerpoint"));
+	content_type.insert(std::make_pair(".odt", "application/vnd.oasis.opendocument.text"));
 	
 	// Archive files
-	contentType.insert(std::make_pair(".zip", "application/zip"));
-	contentType.insert(std::make_pair(".gz", "application/gzip"));
-	contentType.insert(std::make_pair(".tar", "application/x-tar"));
-	contentType.insert(std::make_pair(".rar", "application/vnd.rar"));
-	contentType.insert(std::make_pair(".7z", "application/x-7z-compressed"));
+	content_type.insert(std::make_pair(".zip", "application/zip"));
+	content_type.insert(std::make_pair(".gz", "application/gzip"));
+	content_type.insert(std::make_pair(".tar", "application/x-tar"));
+	content_type.insert(std::make_pair(".rar", "application/vnd.rar"));
+	content_type.insert(std::make_pair(".7z", "application/x-7z-compressed"));
 	
 	// Font files
-	contentType.insert(std::make_pair(".ttf", "font/ttf"));
-	contentType.insert(std::make_pair(".otf", "font/otf"));
-	contentType.insert(std::make_pair(".woff", "font/woff"));
-	contentType.insert(std::make_pair(".woff2", "font/woff2"));
+	content_type.insert(std::make_pair(".ttf", "font/ttf"));
+	content_type.insert(std::make_pair(".otf", "font/otf"));
+	content_type.insert(std::make_pair(".woff", "font/woff"));
+	content_type.insert(std::make_pair(".woff2", "font/woff2"));
 
 	//CGI
-	contentType.insert(std::make_pair(".py", "text/plain"));
-	contentType.insert(std::make_pair(".sh", "text/plain"));
+	content_type.insert(std::make_pair(".py", "text/plain"));
+	content_type.insert(std::make_pair(".sh", "text/plain"));
 	
-	std::map<std::string, std::string>::iterator beg = contentType.begin();
-	std::map<std::string, std::string>::iterator end = contentType.end();
+	std::map<std::string, std::string>::iterator beg = content_type.begin();
+	std::map<std::string, std::string>::iterator end = content_type.end();
 	for (; beg != end; ++beg) {
 		if (extension == beg->first) {
 			return beg->second;
@@ -246,18 +246,17 @@ std::string getContentType(const std::string &inputExtension) {
 	return "application/octet-stream";
 }
 
-std::string getServerIP(int socketFd) {
-	struct sockaddr_in serverAddr;
-	socklen_t serverAddrLen = sizeof(serverAddr);
+std::string getServerIP(int socket_fd) {
+	struct sockaddr_in server_addr;
+	socklen_t server_addr_len = sizeof(server_addr);
 	
 	// Get the server socket's address information
-	if (getsockname(socketFd, (struct sockaddr*)&serverAddr, &serverAddrLen) == 0) {
+	if (getsockname(socket_fd, (struct sockaddr*)&server_addr, &server_addr_len) == 0) {
 		char ipStr[INET_ADDRSTRLEN];
-		if (inet_ntop(AF_INET, &serverAddr.sin_addr, ipStr, INET_ADDRSTRLEN)) {
+		if (inet_ntop(AF_INET, &server_addr.sin_addr, ipStr, INET_ADDRSTRLEN)) {
 			return std::string(ipStr);
 		}
 	}
-	
 	return "unknown";
 }
 
@@ -284,39 +283,35 @@ int calculateFileSize(std::string &filename) { //auto_index.html
 	return length;
 }
 
-size_t getMaxSize(const std::string &inputSize) {
-	//B -> size
-	//KB -> size * 1024
-	//MB -> size * 1024 * 1024
-	//GB -> size * 1024 * 1024 * 1024
+size_t getMaxSize(const std::string &input_size) {
 	size_t size = 0;
-	if (inputSize.find("B") != std::string::npos || inputSize.find("b") != std::string::npos)
-		return size = convertToNb<size_t>(inputSize);
-	else if (inputSize.find("K") != std::string::npos || inputSize.find("k") != std::string::npos)
-		return size = (convertToNb<size_t>(inputSize)) * 1024;
-	else if (inputSize.find("M") != std::string::npos || inputSize.find("m") != std::string::npos)
-		return size = (convertToNb<size_t>(inputSize)) * 1024 * 1024;
-	else if (inputSize.find("G") != std::string::npos || inputSize.find("g") != std::string::npos)
-		return size = (convertToNb<size_t>(inputSize)) * 1024 * 1024 * 1024;
+	if (input_size.find("B") != std::string::npos || input_size.find("b") != std::string::npos)
+		return size = convertToNb<size_t>(input_size);
+	else if (input_size.find("K") != std::string::npos || input_size.find("k") != std::string::npos)
+		return size = (convertToNb<size_t>(input_size)) * 1024;
+	else if (input_size.find("M") != std::string::npos || input_size.find("m") != std::string::npos)
+		return size = (convertToNb<size_t>(input_size)) * 1024 * 1024;
+	else if (input_size.find("G") != std::string::npos || input_size.find("g") != std::string::npos)
+		return size = (convertToNb<size_t>(input_size)) * 1024 * 1024 * 1024;
 	else {
 		return 0; 
 	}
 		
 }
 
-Server *getCurrentServer(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP) {
-	std::vector<Server*>::iterator begSe = serverManager.getServers().begin();
-	std::vector<Server*>::iterator endSe = serverManager.getServers().end();
+Server *getCurrentServer(const HTTPRequest &input_request, ServerManager &server_manager, const std::string &server_IP) {
+	std::vector<Server*>::iterator begSe = server_manager.getServers().begin();
+	std::vector<Server*>::iterator endSe = server_manager.getServers().end();
 	
 	for (; begSe != endSe; ++begSe) {
-		if ((*begSe)->getHost() == serverIP) {
-			std::cout << "current server: " << (*begSe)->getHost() << ", request host: " << serverIP << std::endl;
+		if ((*begSe)->getIP() == server_IP) {
+			std::cout << "current server: " << (*begSe)->getIP() << ", request host: " << server_IP << std::endl;
 			std::vector<std::string> tempPort = (*begSe)->getPort();
 			std::vector<std::string>::iterator begPo = tempPort.begin();
 			std::vector<std::string>::iterator endPo = tempPort.end();
 			for (; begPo != endPo; ++ begPo) {
-				std::cout << "current port " << *begPo << ", request port: " << inputRequest.getHost() << std::endl;
-				if (inputRequest.getHost() == *begPo) {
+				std::cout << "current port " << *begPo << ", request port: " << input_request.getHost() << std::endl;
+				if (input_request.getHost() == *begPo) {
 					std::cout << "found the matching port, bye\n";
 					return *begSe; 
 				}
@@ -324,145 +319,74 @@ Server *getCurrentServer(const HTTPRequest &inputRequest, ServerManager &serverM
 			}
 		}
 	}
-	return serverManager.getServers().front();
+	return server_manager.getServers().front();
 }
 
-Location *getCurrentLocation(const HTTPRequest &inputRequest, Server &currentServer) {
-    if (currentServer.getLocation().empty())
-        return NULL;
-    
-    std::string requestPath = inputRequest.getPath();
-    
-    // Handle root request specially if needed
-    if (requestPath == "/") {
-        // Look for exact root location match first
-        std::vector<Location*>::iterator begLo = currentServer.getLocation().begin();
-        std::vector<Location*>::iterator endLo = currentServer.getLocation().end();
-        for (; begLo != endLo; ++begLo) {
-            if ((*begLo)->getPath() == "/") {
-                return *begLo;
-            }
-        }
-        return NULL; // or return default location if you prefer
-    }
-    
-    Location *bestMatch = NULL;
-    size_t longestMatchLength = 0;
-    
-    std::vector<Location*>::iterator begLo = currentServer.getLocation().begin();
-    std::vector<Location*>::iterator endLo = currentServer.getLocation().end();
-    
-    for (; begLo != endLo; ++begLo) {
-        std::string locationPath = (*begLo)->getPath();
-        std::cout << "Request: " << requestPath << ", server location: " << locationPath << std::endl;
-
-        // Check if request path starts with location path (prefix matching)
-        if (requestPath.length() >= locationPath.length() && 
-            requestPath.substr(0, locationPath.length()) == locationPath) {
-            
-            std::cout << "Prefix match found: " << requestPath.substr(0, locationPath.length()) << std::endl;
-            
-            // Additional check: ensure we match complete path segments
-            // /kapouet should match /kapouet/file but not /kapouetfile
-            bool isValidMatch = false;
-            
-            if (locationPath.length() == requestPath.length()) {
-                // Exact match
-                isValidMatch = true;
-            } else if (locationPath[-1] == '/') {
-                std::cout << "is seg fault there\n";
-                isValidMatch = true;
-            } else if (requestPath[locationPath.length()] == '/') {
-                // Next character in request is '/', valid path segment boundary
-                isValidMatch = true;
-            }
-            
-            if (isValidMatch) {
-                // Keep track of longest matching location (most specific)
-                if (locationPath.length() > longestMatchLength) {
-                    bestMatch = *begLo;
-                    longestMatchLength = locationPath.length();
-                    std::cout << "New best match: " << bestMatch->getPath() << " -> " << bestMatch->getRoot() << std::endl;
-                }
-            }
-        }
-    }
-    
-    // Check if we found a match before accessing it
-    if (bestMatch != NULL) {
-        std::cout << "Final best match: " << bestMatch->getPath() << " -> " << bestMatch->getRoot() << std::endl;
-        return bestMatch;
-    }
-    
-    // If no specific location matched, return default (first location or NULL)
-    std::cout << "No location match found, using default" << std::endl;
-    return currentServer.getLocation().empty() ? NULL : currentServer.getLocation().front();
+Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_server) {
+	if (current_server.getLocationsList().empty())
+		return NULL;  
+	std::string request_path = input_request.getPath();
+	// Handle root request specially if needed
+	if (request_path == "/") {
+		// Look for exact root location match first
+		std::vector<Location*>::iterator begLo = current_server.getLocationsList().begin();
+		std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
+		for (; begLo != endLo; ++begLo) {
+			if ((*begLo)->getName() == "/") {
+				return *begLo;
+			}
+		}
+		return NULL; // or return default location if you prefer
+	}
+	Location *best_location_name = NULL;
+	size_t name_length_track = 0;
+	std::vector<Location*>::iterator begLo = current_server.getLocationsList().begin();
+	std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
+	for (; begLo != endLo; ++begLo) {
+		std::string location_name = (*begLo)->getName();
+		std::cout << "Request: " << request_path << ", server location: " << location_name << std::endl;
+		// Check if request path starts with location path (prefix matching)
+		if (request_path.length() >= location_name.length() && 
+			request_path.substr(0, location_name.length()) == location_name) {
+			std::cout << "Prefix match found: " << request_path.substr(0, location_name.length()) << std::endl;
+			// Additional check: ensure we match complete path segments
+			// /kapouet should match /kapouet/file but not /kapouetfile
+			bool isValidMatch = false;
+			if (location_name.length() == request_path.length()) {
+				// Exact match
+				isValidMatch = true;
+			} else if (location_name[-1] == '/') {
+				std::cout << "is seg fault there\n";
+				isValidMatch = true;
+			} else if (request_path[location_name.length()] == '/') {
+				// Next character in request is '/', valid path segment boundary
+				isValidMatch = true;
+			}
+			if (isValidMatch) {
+				// Keep track of longest matching location (most specific)
+				if (location_name.length() > name_length_track) {
+					best_location_name = *begLo;
+					name_length_track = location_name.length();
+					std::cout << "New best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot() << std::endl;
+				}
+			}
+		}
+	}
+	// Check if we found a match before accessing it
+	if (best_location_name != NULL) {
+		std::cout << "Final best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot() << std::endl;
+		return best_location_name;
+	}
+	// If no specific location matched, return default (first location or NULL)
+	std::cout << "No location match found, using default" << std::endl;
+	return current_server.getLocationsList().empty() ? NULL : current_server.getLocationsList().front();
 }
-
-
-// Location *getCurrentLocation(const HTTPRequest &inputRequest, Server &currentServer) {
-// 	if (currentServer.getLocation().empty())
-// 		return NULL;
-// 	else {
-// 		std::vector<Location*>::iterator begLo = currentServer.getLocation().begin();
-// 		std::vector<Location*>::iterator endLo = currentServer.getLocation().end();
-// 		for (; begLo != endLo; ++begLo) {
-// 			std::string requestPath = formatURL(inputRequest.getPath());
-// 			std::cout << "Request: " << requestPath << ", request size: " << requestPath << ", server location: " << (*begLo)->getPath() << ", size: " << (*begLo)->getPath().size() << std::endl;
-// 			if (requestPath == (*begLo)->getPath()) {
-// 				std::cout << "found the matching location, bye\n";
-// 				return *begLo;
-// 			}		
-// 		}
-// 		if (inputRequest.getPath() == "/")
-// 			return NULL;
-// 		else 
-// 			return currentServer.getLocation().front();
-// 	}
-// }
-
-// std::string formatURL(const std::string &input) {
-// 	std::cout << "input before processing: " << input << std::endl;
-// 	if (input.empty() || input[0] != '/') {
-// 		return input;
-// 	}
-// 	std::string::size_type secondSlashPos = input.find('/', 1);
-// 	if (secondSlashPos != std::string::npos) {
-// 		return input.substr(0, secondSlashPos);
-// 	} else {
-// 		return input;
-// 	}
-// }
 
 std::string getFilenameFromPath(const std::string& path) {
-	std::string::size_type slashPos = path.rfind('/');
-	if (slashPos != std::string::npos) {
-		return path.substr(slashPos + 1);
+	std::string::size_type slash_pos = path.rfind('/');
+	if (slash_pos != std::string::npos) {
+		return path.substr(slash_pos + 1);
 	} else {
 		return path;
 	}
 }
-
-/*
-///
-/// Get me my file size in bytes (long long to support any file size supported by your OS.
-///
-long long Logger::getFileSize()
-{
-	std::streampos fsize = 0;
-
-	std::ifstream myfile ("myfile.txt", ios::in);  // File is of type const char*
-
-	fsize = myfile.tellg();         // The file pointer is currently at the beginning
-	myfile.seekg(0, ios::end);      // Place the file pointer at the end of file
-
-	fsize = myfile.tellg() - fsize;
-	myfile.close();
-
-	static_assert(sizeof(fsize) >= sizeof(long long), "Oops.");
-
-	cout << "size is: " << fsize << " bytes.\n";
-	return fsize;
-}
-
-*/
