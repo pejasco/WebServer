@@ -117,9 +117,8 @@ public:
     const std::string getBoundary() const;
     const std::string getOpenBoundary() const;
     const std::string getCloseBoundary() const;
-
-
     int getContentLength()const;
+    
     http_content& getContent();
 
     void setHttp(std::string line_input);
@@ -140,5 +139,5 @@ private:
     std::map<std::string, std::string> content_type_;
     int content_length_;
     http_content content_;
-    
+    bool end_of_request_flag_;
 };

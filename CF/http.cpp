@@ -8,12 +8,12 @@ int http::global_index_ = 0;
 //######### http_CD_ ###########//
 
 http_CD_::http_CD_() : instance_index_(global_index_++) {
-	// Constructor body
-	std::cout << "http_CD_ instance created with index: " << instance_index_ << std::endl;
+    // Constructor body
+    std::cout << "http_CD_ instance created with index: " << instance_index_ << std::endl;
 }
 
 http_CD_::~http_CD_() {
-	// Destructor body
+    // Destructor body
 }
 
 void http_CD_::setCDType_(std::string type){
@@ -90,8 +90,8 @@ void http_CD_::printHttpCD(){
 //############# http_content #############
 
 http_content::http_content(): instance_index_(global_index_++) {
-	// Constructor body
-	std::cout << "http_content_ instance created with index: " << instance_index_ << std::endl;
+    // Constructor body
+    std::cout << "http_content instance created with index: " << instance_index_ << std::endl;
 }
 
 http_content::~http_content(){
@@ -172,9 +172,9 @@ void http_content::printHttpContent(){
 
 //############# http #############
 
-http::http(): instance_index_(global_index_++) {
-	// Constructor body
-	std::cout << "http instance created with index: " << instance_index_ << std::endl;
+http::http(): instance_index_(global_index_++), end_of_request_flag_(false) {
+    // Constructor body
+    std::cout << "http instance created with index: " << instance_index_ << std::endl;
 }
 
 http::~http(){
@@ -196,11 +196,17 @@ void http::setFormat(std::string format){
 
 void http::setHost(std::string host){
     host_ = host;
-
 }
 
 
-void http::setContentType(std::string type){
+void http::setContentType(std::string contentType){
+    std::istringstream ss(contentType);
+    std::string type;
+    std::string value;
+
+    std::getline(ss, type, '/');
+    std::getline(ss, value);
+    content_type_[type] = value;
     
 }
 
@@ -212,6 +218,18 @@ void http::setBoundary(std::string boundary){
     boundary_ = boundary;
     setOpenBoundary(("--" + boundary_));
     setCloseBoundary((open_boundary_ + "--"));
+}
+
+void http::setOpenBoundary(std::string open_boundary){
+    open_boundary_ = open_boundary;
+}
+
+void http::setCloseBoundary(std::string close_boundary){
+    close_boundary_ = close_boundary;
+}
+
+void http::setContentLength(int length){
+    content_length_ = length;
 }
 
 
@@ -227,6 +245,14 @@ const std::string http::getFormat() const{
     return format_;
 }
 
+const std::string http::getHost() const{
+    return host_;
+}
+
+const std::map<std::string, std::string> http::getContentType() const{
+    return content_type_;
+}
+
 const std::string http::getBoundary() const{
     return boundary_;
 }
@@ -239,30 +265,32 @@ const std::string http::getCloseBoundary() const{
     return close_boundary_;
 }
 
-const std::map<std::string, std::string> http::getContentType() const{
-    return content_type_;
-}
-
 http_content& http::getContent(){
     return content_;
+}
+
+int http::getContentLength() const {
+    return content_length_;
 }
 
 void http::setHttp(std::string line_input){
     size_t pos_begin;
     size_t pos_end;
 
-    if (line_input.find("Host") != std::string::npos){
+    if (end_of_request_flag_ == true)
+        return;
+    else if (line_input.find("Host") != std::string::npos){
         if ((pos_begin = line_input.rfind(":")) != std::string::npos)
         pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
-		std::string host = line_input.substr(pos_begin, std::string::npos);
+        std::string host = line_input.substr(pos_begin, std::string::npos);
         setHost(host);
     }
     else if (line_input.find("Content-Type") != std::string::npos){
-		if ((pos_begin = line_input.rfind(":")) != std::string::npos){
-			pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
-			pos_end = line_input.find(";");
+        if ((pos_begin = line_input.rfind(":")) != std::string::npos){
+            pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
+            pos_end = line_input.find(";");
             std::string cttype = line_input.substr(pos_begin, pos_end - pos_begin);
-			setContentType(cttype);
+            setContentType(cttype);
             if (line_input.find("boundary") != std::string::npos){
                 pos_begin = line_input.find("boundary") + 9;
                 std::string boundary = line_input.substr(pos_begin, std::string::npos); 
@@ -278,14 +306,12 @@ void http::setHttp(std::string line_input){
         }
     }
     //if able to find the boundary 
-    else if (line_input.find(getBoundary().c_str())){
-        
-
-
+    else if (line_input.find(boundary_.c_str()) != std::string::npos){
+        if (line_input.find(close_boundary_)){
+            content_.addHttpCD();
+            end_of_request_flag_ = true;
+        }
     }
-
-
-
 }
 
 void http::printHttp(){
@@ -302,5 +328,4 @@ void http::printHttp(){
         std::cout << "first: " << it->first << "\n";
         std::cout << "second: " << it->second << "\n";
     }
-
 }
