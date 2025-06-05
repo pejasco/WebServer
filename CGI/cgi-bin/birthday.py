@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 import cgi
+import cgitb
 from datetime import datetime, date
+
+cgitb.enable()  # For debugging
 
 print("Content-Type: text/html\n")
 
@@ -25,16 +28,52 @@ print("""
 <head>
 	<meta charset="UTF-8">
 	<title>Birthday Countdown</title>
-	<link rel="stylesheet" href="cgi-bin.css">
+	<style>
+		body {
+			background-color: #0c0f1a;
+			color: #7fffd4;
+			font-family: 'Segoe UI', sans-serif;
+			text-align: center;
+			padding: 40px;
+		}
+		input, button {
+			padding: 10px;
+			margin: 10px;
+			border-radius: 6px;
+			border: 1px solid #7fffd4;
+			background-color: #003366;
+			color: #7fffd4;
+		}
+		button:hover {
+			background-color: #005580;
+		}
+		.confetti {
+			width: 250px;
+			margin-top: 0px;
+		}
+		.shaq {
+			position: absolute;
+			right: 10px;
+			bottom: 10px;
+			width: 420px;
+		}
+	</style>
 </head>
 <body>
+	<br><br><br><br><br><br><br><br><br>
 	<h1>🎂 Birthday Countdown 🎉</h1>
 """)
 
 if day and month:
 	try:
 		days_left = calculate_days_left(month, day)
-		print(f"<p>Your birthday is in <strong>{days_left} day(s)</strong>!</p>")
+		print("""<br>""")
+		print(f"<h3>Your birthday is in <strong>{days_left} day(s)</strong>!</h3>")
+		print("""
+		<img src="https://media2.giphy.com/media/RkN33Se0a99r6pMiZi/giphy.gif" class="confetti" alt="Celebration" />
+		</div>
+		<img src="https://media.giphy.com/media/l0IyaxKjZqenpMIQ8/giphy.gif" class="shaq" alt="Floating cake" />
+		""")
 	except ValueError:
 		print("<p style='color: red;'>Invalid date. Please try again.</p>")
 else:

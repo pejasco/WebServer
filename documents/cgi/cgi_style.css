@@ -110,3 +110,55 @@ footer {
 .cat:hover {
 	transform: scale(1.1) rotate(3deg) ;
 }
+
+.method-GET {
+	font-size: 0.7rem;
+	color: #00ff66;
+	margin-top: -4px;
+	line-height: 0.6;
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+}
+
+.card:hover .method-GET {
+	opacity: 1;
+}
+
+.method-POST {
+	font-size: 0.7rem;
+	color: #ffae00;
+	margin-top: -4px;
+	line-height: 0.6;
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+}
+
+.card:hover .method-POST {
+	opacity: 1;
+}
+
+.method-RO {
+	font-size: 0.7rem;
+	color: #aaaaaa;
+	margin-top: -4px;
+	line-height: 0.6;
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+}
+
+.card:hover .method-RO{
+	opacity: 1;
+}
+
+.method-ERR {
+	font-size: 0.7rem;
+	color: #ff4848;
+	margin-top: -4px;
+	line-height: 0.6;
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+}
+
+.card:hover .method-ERR{
+	opacity: 1;
+}
