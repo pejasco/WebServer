@@ -1,2 +1,2 @@
-c++ test.cpp -o test
-./test yes.txt
+c++ test.cpp http.cpp -o test
+./test go.txt

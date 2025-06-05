@@ -30,7 +30,8 @@ int main(int ac, char **av){
         h.setHttp(line);
     
     }
-    h.print_  
+    h.printHttp();
+    (h.getContent()).printHttpContent();
 
 
     file.close(); // Close the file

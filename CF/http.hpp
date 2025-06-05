@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <sstream>
 #include <map>
 
 
@@ -26,8 +27,8 @@ public:
     const std::string getName_() const;
     const std::string getFilename_() const;
     const std::string getInnerContentType_() const;
-    const std::string getContent_() const;
-    const std::string getFileContent_() const;
+    std::string& getContent_();
+    std::string& getFileContent_();
 
     void printHttpCD();
 
@@ -41,6 +42,7 @@ private:
     std::string inner_content_type_;
     std::string content_;
     std::string file_content_;
+
 };
 
 enum http_CD_header{
@@ -72,7 +74,7 @@ public:
     const std::string getBoundary() const;
     const std::string getOpenBoundary() const;
     const std::string getCloseBoundary() const;
-    const std::string getBodyWithNoCD() const;
+    std::string& getBodyWithNoCD();
     std::vector<http_CD_>& getCDs_list_();
 
     void printHttpContent();
@@ -139,5 +141,8 @@ private:
     std::map<std::string, std::string> content_type_;
     int content_length_;
     http_content content_;
-    bool end_of_request_flag_;
+
+    //bool end_of_request_flag_;
+    bool within_the_cd_flag_;
+    bool with_file_flag_;
 };

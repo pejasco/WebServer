@@ -1,9 +1,9 @@
 #include "http.hpp"
 #include <iostream>
 
-int http_CD_::global_index_ = 0;
-int http_content::global_index_ = 0;
-int http::global_index_ = 0;
+int http_CD_::global_index_ = -1;
+int http_content::global_index_ = -1;
+int http::global_index_ = -1;
 
 //######### http_CD_ ###########//
 
@@ -65,16 +65,16 @@ const std::string http_CD_::getInnerContentType_() const{
     return inner_content_type_;
 }
 
-const std::string http_CD_::getContent_() const{
+std::string& http_CD_::getContent_(){
     return content_;
 }
 
-const std::string http_CD_::getFileContent_() const{
+std::string& http_CD_::getFileContent_(){
     return file_content_;
 }
 
 void http_CD_::printHttpCD(){
-    std::cout << "xxxxxxxxxxxx" << global_index_ <<"xxxxxxxxxxxxx" << "\n";
+    std::cout << "xxxxxxxxxxxx <global_index: " << global_index_ <<"> xxxxxxxxxxxxx" << "\n";
     std::cout << "global index: " << global_index_ << "\n";
     std::cout << "instance index: " << instance_index_ << "\n";
     std::cout << "CD_type: " << CD_type_ << "\n";
@@ -83,7 +83,7 @@ void http_CD_::printHttpCD(){
     std::cout << "inner_content_type: " << inner_content_type_ << "\n";
     std::cout << "content: " << content_ << "\n";
     std::cout << "file_content: " << file_content_ << "\n";
-    std::cout << "xxxxxxxxxxxxxxxxxxxxxxxxx" << "\n";
+    std::cout << "xxxxxxxxxx <END> xxxxxxxxxxx" << "\n";
 }
 
 
@@ -144,7 +144,7 @@ const std::string http_content::getCloseBoundary() const{
     return close_boundary_;
 }
 
-const std::string http_content::getBodyWithNoCD() const{
+std::string& http_content::getBodyWithNoCD(){
     return body_with_no_cd_;
 }
 
@@ -172,7 +172,8 @@ void http_content::printHttpContent(){
 
 //############# http #############
 
-http::http(): instance_index_(global_index_++), end_of_request_flag_(false) {
+http::http(): instance_index_(global_index_++), within_the_cd_flag_(false), with_file_flag_(false), 
+                open_boundary_("open_boundary_"), close_boundary_("close_boundary_"){
     // Constructor body
     std::cout << "http instance created with index: " << instance_index_ << std::endl;
 }
@@ -277,8 +278,17 @@ void http::setHttp(std::string line_input){
     size_t pos_begin;
     size_t pos_end;
 
-    if (end_of_request_flag_ == true)
+    if (line_input.empty())
         return;
+    else if (line_input == close_boundary_){
+        within_the_cd_flag_ = false;
+        with_file_flag_ = false;
+        return;
+    }
+    else if (line_input == open_boundary_){
+        within_the_cd_flag_ = !within_the_cd_flag_;
+        with_file_flag_ = false;
+    }
     else if (line_input.find("Host") != std::string::npos){
         if ((pos_begin = line_input.rfind(":")) != std::string::npos)
         pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
@@ -286,16 +296,50 @@ void http::setHttp(std::string line_input){
         setHost(host);
     }
     else if (line_input.find("Content-Type") != std::string::npos){
-        if ((pos_begin = line_input.rfind(":")) != std::string::npos){
-            pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
-            pos_end = line_input.find(";");
-            std::string cttype = line_input.substr(pos_begin, pos_end - pos_begin);
-            setContentType(cttype);
-            if (line_input.find("boundary") != std::string::npos){
-                pos_begin = line_input.find("boundary") + 9;
-                std::string boundary = line_input.substr(pos_begin, std::string::npos); 
-                setBoundary(boundary);
-            } 
+        if (!within_the_cd_flag_){
+            if ((pos_begin = line_input.rfind(":")) != std::string::npos){
+                pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
+                pos_end = line_input.find(";");
+                std::string cttype = line_input.substr(pos_begin, pos_end - pos_begin);
+                setContentType(cttype);
+                if (line_input.find("boundary") != std::string::npos){
+                    pos_begin = line_input.find("boundary") + 8; // Position after "boundary"
+                    pos_begin = line_input.find_first_of("=", pos_begin); // Find equals sign
+                    if (pos_begin != std::string::npos) {
+                        pos_begin++; // Move past equals sign
+                        pos_begin = line_input.find_first_not_of(" \t", pos_begin); // Skip spaces
+                        
+                        std::string boundary = line_input.substr(pos_begin, std::string::npos);
+                        
+                        // Remove quotes if present
+                        if (!boundary.empty() && (boundary[0] == '"' || boundary[0] == '\'')) {
+                            size_t quote_end = boundary.find_first_of("\"'", 1);
+                            if (quote_end != std::string::npos) {
+                                boundary = boundary.substr(1, quote_end - 1);
+                            } else {
+                                boundary = boundary.substr(1);
+                            }
+                        }
+                        
+                        // Remove trailing spaces or semicolons
+                        size_t end_pos = boundary.find_last_not_of(" \t;");
+                        if (end_pos != std::string::npos) {
+                            boundary = boundary.substr(0, end_pos + 1);
+                        }
+                        
+                        setBoundary(boundary);
+                    }
+                }
+            }
+        }
+        else if(within_the_cd_flag_){
+            if ((pos_begin = line_input.rfind(":")) != std::string::npos){
+                pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
+                pos_end = line_input.find(";");
+                std::string inner_cttype = line_input.substr(pos_begin, pos_end - pos_begin);
+                http_CD_ & lastest_cd = content_.getCDs_list_().back();
+                lastest_cd.setInnerContentType_(inner_cttype);
+            }
         }
     }
     else if (line_input.find("Content-Length") != std::string::npos){
@@ -305,11 +349,54 @@ void http::setHttp(std::string line_input){
             setContentLength(atoi(length.c_str()));
         }
     }
-    //if able to find the boundary 
-    else if (line_input.find(boundary_.c_str()) != std::string::npos){
-        if (line_input.find(close_boundary_)){
-            content_.addHttpCD();
-            end_of_request_flag_ = true;
+    else if (line_input.find("Content-Disposition") != std::string::npos){
+        content_.addHttpCD();
+        within_the_cd_flag_ = true;
+        //##<the content obj being created>##
+        http_CD_ & lastest_cd = content_.getCDs_list_().back();
+        //--Content-Type (finding the first )
+        if ((pos_begin = line_input.find(":")) != std::string::npos){
+        pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
+        pos_end = line_input.find(";", pos_begin);
+        std::string type = line_input.substr(pos_begin, pos_end - pos_begin);
+        lastest_cd.setCDType_(type);}
+        //--name
+        if (line_input.find("name") != std::string::npos){
+            if ((pos_begin = line_input.find("name")) != std::string::npos){
+                pos_begin = (line_input.find("\"", pos_begin)) + 1;
+                pos_end = (line_input.find("\"", pos_begin));
+                std::string name = line_input.substr(pos_begin, pos_end - pos_begin);
+                lastest_cd.setName_(name);
+            }
+        }
+        //--filename
+        if (line_input.find("filename") != std::string::npos){
+            if ((pos_begin = line_input.find("filename")) != std::string::npos){
+                pos_begin = (line_input.find("\"", pos_begin)) + 1;
+                pos_end = (line_input.find("\"", pos_begin));
+                std::string filename = line_input.substr(pos_begin, pos_end - pos_begin);
+                lastest_cd.setFilename_(filename);
+            }
+            with_file_flag_ = true;
+        }
+    }
+    else
+    {
+        if (within_the_cd_flag_){
+            if(with_file_flag_){
+                http_CD_ & lastest_cd = content_.getCDs_list_().back();
+                std::string& file_content_of_cd = lastest_cd.getFileContent_();
+                file_content_of_cd += line_input;
+            }
+            else if(!with_file_flag_){
+                http_CD_ & lastest_cd = content_.getCDs_list_().back();
+                std::string& content_of_cd = lastest_cd.getContent_();
+                content_of_cd += line_input;
+            }
+        }
+        else if (!within_the_cd_flag_){
+            std::string& body = content_.getBodyWithNoCD();
+            body += line_input;
         }
     }
 }
