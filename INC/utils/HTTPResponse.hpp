@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/04 14:09:50 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/05 14:59:35 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ class Server;
 
 class HTTPResponse {
 	public:
-		HTTPResponse(const HTTPRequest &input_request, ServerManager &server_manager, const std::string &server_IP); //get information like the path, method and version via HTTPrequest class 
+		HTTPResponse(const HTTPRequest &input_request, Server *default_server, Server *server_requested, Location *location_requested, int error_flag); //get information like the path, method and version via HTTPrequest class 
 		~HTTPResponse();
 		
 		//SETTER

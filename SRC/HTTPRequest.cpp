@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/04 21:35:25 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/05 12:32:46 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -486,7 +486,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream){
 			}
 		} else if (content_flag_ == true) {
 			// std::cout << BOLD YELLOW "Checker\n" RESET;  
-			HTTPRequest::parseContent(line);
+			this->parseContent(line);
 		} else
 			return;
 	}

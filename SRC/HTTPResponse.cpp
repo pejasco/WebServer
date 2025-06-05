@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/04 21:12:23 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/05 15:01:50 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,15 +16,13 @@
 
 bool cgi_flag = false;
 
-HTTPResponse::HTTPResponse(const HTTPRequest &input_request, ServerManager &server_manager, const std::string &server_IP) : current_request_(input_request), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
-	default_server_ = server_manager.getServers().front();
-	default_location_ = default_server_->getLocationsList().front();
-	std::cout << BOLD UNDERLINE GREEN "\n###### ENTERING SERVER//LOCATION DEBUUGING ######\n\n" RESET;
-	server_ = getCurrentServer(current_request_, server_manager, server_IP);
-	location_ = getCurrentLocation(current_request_, *server_);
-	if (location_ == NULL && (current_request_.getPath() == "/"))
-		location_ = default_server_->getLocationsList().front();
-	std::cout << BOLD UNDERLINE GREEN "\n###### LEAVING SERVER//LOCATION DEBUUGING ######\n\n" RESET;
+HTTPResponse::HTTPResponse(const HTTPRequest &input_request, Server *default_server, Server *server_requested, Location *location_requested, int error_flag) : 
+current_request_(input_request), server_(server_requested), location_(location_requested), default_server_(default_server), default_location_(default_server->getLocationsList().front()), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
+	std::cout << "here the error code is: " << error_flag << std::endl;;
+	if (error_flag > 0) {
+		setErrorResponse(error_flag);
+		return ;
+	}
 	if (checkRedirection()) {
 		std::cout << "redirection was true, bye!\n";
 		return ;
@@ -356,19 +354,22 @@ void HTTPResponse::draftErrorResponse() {
 int HTTPResponse::checkFile() {
 	std::string default_path = default_location_->getRoot();
 	default_path.erase(std::remove(default_path.begin(), default_path.end(), '/'), default_path.end());
+	std::cout << "check2\n";
 	if (current_request_.getPath() == "/") {
 		body_filename_ = default_path + "/" + default_location_->getIndex();
+		std::cout << "check3\n";
 		std::cout << "body_filename_: " << body_filename_ << std::endl;
 		std::ifstream body_file(body_filename_.c_str(), std::ios::binary);
+		std::cout << "check4\n";
 		if (body_file.is_open()) {
 			body_file.close();
 			return 200;
-		}
-		else {
+		} else {
 			body_file.close();
 			std::cout << "Error: " << strerror(errno) << std::endl;
 			return 500;
 		}
+		std::cout << "check5\n";
 	} else {
 		body_filename_ = default_path;
 		std::cout << BOLD YELLOW "body_filename_: " << body_filename_ << "current_request_: " << current_request_.getPath() << RESET << std::endl;

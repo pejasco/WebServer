@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 18:34:53 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/05 14:58:12 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,15 +17,19 @@
 #include "Socket.hpp"
 #include "Client.hpp"
 #include "HTTPResponse.hpp"
+#include "HTTPRequest.hpp"
 
 
 #define MAX_EVENTS 42
+#define MAX_HEADER_SIZE 8192
 
 // typedef typename std::vector<Server*>::iterator Iterator;
 class Server;
 class Location;
 class Client;
 class Socket;
+class HTTPRequest;
+class HTTPResponse;
 
 class ServerManager {
 	public:
@@ -49,10 +53,16 @@ class ServerManager {
 		int startEpoll();
 		void serverMonitoring();
 		void createNewClientConnection();
-		void existingClientConnection(Client *current_client);
+		void existingClientConnection();
 		bool cleanClient(int current_fd);
 		void shutdown();
 		bool isBlocked(const void *IP);
+		bool readClientHeaders(std::string& headers);
+		bool parseHeadersAndCheckBodySize(const std::string& headers, HTTPRequest& current_request);
+		bool readRequestBody(HTTPRequest& current_request, size_t content_length, size_t max_body_size);
+		void processAndSendResponse(HTTPRequest& current_request, Server *server_requested, Location *location_requested);
+		void sendResponseBodyFile(HTTPResponse& current_response);
+		
 
 		
 	private:
@@ -61,6 +71,7 @@ class ServerManager {
 		std::vector<Socket*> sockets_list_;
 		std::vector<int> sockets_fd_list_;
 		bool running_;
+		Server *default_server_;
 
 		/*EPOLL INSTANCE ATTRIBUTES*/
 		int epoll_fd_;
@@ -76,7 +87,10 @@ class ServerManager {
 
 		char received_[4096];
 		char buffer_[8192];
+		int error_code_;
 
 };
+
+size_t maxBodySizeLocation(Server *default_server, Server *server_requested, Location *location_requested);
 
 #endif

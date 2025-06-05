@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 18:49:00 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/05 15:04:09 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ bool server_flag = false;
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-ServerManager::ServerManager(std::string &input_config_file) : running_(true), epoll_fd_(-1), num_events_(-1), current_fd_(-1) {
+ServerManager::ServerManager(std::string &input_config_file) : running_(true), default_server_(NULL), epoll_fd_(-1), num_events_(-1), current_fd_(-1), error_code_(-1) {
 	std::cout << BOLD RED "Starting MasterServer\n" RESET;
 	if (is_file_empty(input_config_file))
 		input_config_file = "configuration/default.conf";
@@ -337,7 +337,7 @@ void ServerManager::serverMonitoring() {
 				Client *current_client = clients_list_[current_fd_];
 				if (current_client == NULL)
 					std::cout << "unknown client\n";
-				existingClientConnection(current_client);
+				existingClientConnection();
 			}
 		}
 	}
@@ -387,114 +387,189 @@ void ServerManager::createNewClientConnection() {
 /* exisingClientConnection --> as the server-client connection is already in the epoll instance, */
 /* the function can receive the message request and start analysing it */
 /****************/
-void ServerManager::existingClientConnection(Client *current_client) {
-	(void)current_client;
-	bool message_completed = false;
-	std::string request;
+
+void ServerManager::existingClientConnection() {
+	// PHASE 1: Read and validate headers
+	std::string headers;
+	HTTPRequest current_request;
 	
-	// RECEIVE CURRENT CLIENT REQUEST
-	while (!message_completed) {
-		ssize_t byte_received = recv(current_fd_, received_, sizeof(received_), MSG_WAITALL); // or MSG_DONTWAIT depending on which flag we want for receiving data
-		// ADD A part to determine the HTTPRequest header that will give info on location and server block to check.
-		// Get the max_body_size from correct location, check and then ensure the last bytes receive added to total doesn't cross the limit, otherwise, send a error file (limit reach)
+	if (!readClientHeaders(headers))
+		return; // Connection closed or error
+	
+	// PHASE 2: Parse headers and check body size limit
+	if (!parseHeadersAndCheckBodySize(headers, current_request))
+		return; // Size limit exceeded or parse error
+	if (current_fd_ > 0)
+		close(current_fd_);
+	cleanClient(current_fd_);
+}
+
+bool ServerManager::readClientHeaders(std::string& headers) {
+	std::string request;
+	bool headers_complete = false;
+	
+	while (!headers_complete) {
+		ssize_t byte_received = recv(current_fd_, received_, sizeof(received_) - 1, 0);
 		
 		if (byte_received <= 0) {
-			message_completed = cleanClient(current_fd_);
-			if (byte_received == 0)
-				std::cout << "Client disconnect for server\n";
-		} else {
-			received_[byte_received] = '\0';
-			request.append(received_);
-			message_completed = isMessageCompleted(request);
-		}	
-	}
-	/**START THE HTTP READING NOW**/
-	HTTPRequest current_request;
-	if (!request.empty()) {
-		current_request.parseRequest(request);
-		std::string serverIP = getServerIP(current_fd_);
+			if (byte_received == 0) {
+				std::cout << "Client disconnect during header reading\n";
+			} else {
+				std::cerr << "Error reading headers: " << strerror(errno) << std::endl;
+			}
+			return false;
+		}
 		
-		//SEND THE RESPONSE HEADER
-		HTTPResponse current_response(current_request, *this, serverIP);
-		std::string response = current_response.getResponse();
-		std::cout << "response to send: " << response << std::endl;
-		if (current_fd_ < 0)
-			std::cerr << "Error, current_fD_ socket is already close: " << std::endl;
-		if (response.empty())
-			std::cerr << "Error, response is empty" << std::endl;
-		ssize_t bytes_sent = send(current_fd_, response.c_str(), strlen(response.c_str()), 0);
-		if (bytes_sent < 0) {
-			std::cerr << "Error when sending response to client: " << strerror(errno) << std::endl;
+		received_[byte_received] = '\0';
+		request.append(received_, byte_received);
+		
+		// Check for end of headers
+		size_t header_end = request.find("\r\n\r\n");
+		if (header_end != std::string::npos) {
+			headers = request.substr(0, header_end + 4);
+			headers_complete = true;
+		}
+		
+		// Prevent header overflow
+		if (request.size() > MAX_HEADER_SIZE) {
+			error_code_ = 400;
+		}
+	}
+	return true;
+}
+
+
+bool ServerManager::parseHeadersAndCheckBodySize(const std::string& headers, HTTPRequest& current_request) {
+	// Parse headers only (not body)
+	current_request.parseRequest(headers);
+	std::cout << BOLD MAGENTA "\n#######HEADER RECEIVED##########\n\n" RESET << headers << BOLD MAGENTA "\n#######END OF HEADER##########\n" RESET << std::endl; 
+
+	std::cout << BOLD UNDERLINE GREEN "\n###### ENTERING SERVER//LOCATION DEBUGGING ######\n\n" RESET;
+	std::string server_IP = getServerIP(current_fd_);
+	default_server_ = servers_list_.front();
+	Server *server_requested = getCurrentServer(current_request, *this, server_IP);
+	Location *location_requested = getCurrentLocation(current_request, *server_requested);
+	if (location_requested == NULL && (current_request.getPath() == "/"))
+		location_requested = servers_list_.front()->getLocationsList().front();
+	std::cout << BOLD UNDERLINE GREEN "\n###### LEAVING SERVER//LOCATION DEBUGGING ######\n\n" RESET;
+	
+	// Get server IP for location matching
+	size_t max_body_size = maxBodySizeLocation(servers_list_.front(), server_requested, location_requested);
+	// Check Content-Length header if present
+	Content temp = current_request.getContent();
+	size_t content_length = temp.getContentLength();
+	if (content_length > 0) {
+		if (max_body_size > 0 && content_length > max_body_size) {
+			std::cout << "Request body size " << content_length 
+						<< " exceeds limit " << max_body_size << std::endl;
+			error_code_ = 413;
+		} else {
+			if (!readRequestBody(current_request, content_length, max_body_size))
+				return false;
+		}
+	}
+	processAndSendResponse(current_request, server_requested, location_requested);
+	return true;
+}
+
+bool ServerManager::readRequestBody(HTTPRequest& current_request, size_t content_length, size_t max_body_size) {
+	std::string request_body;
+	size_t total_read = 0;
+	
+	request_body.reserve(content_length);
+	
+	while (total_read < content_length) {
+		size_t to_read = std::min(sizeof(received_) - 1, content_length - total_read);
+		ssize_t byte_received = recv(current_fd_, received_, to_read, 0);
+		
+		if (byte_received <= 0) {
+			if (byte_received == 0) {
+				std::cout << "Client disconnect during body reading\n";
+			} else {
+				std::cerr << "Error reading body: " << strerror(errno) << std::endl;
+			}
+			return false;
+		}
+		
+		total_read += byte_received;
+		
+		// Double-check size limit (defense in depth)
+		if (max_body_size > 0 && total_read > max_body_size) {
+			std::cerr << "Body size exceeded during reading\n";
+			error_code_ = 413;
+		}
+		
+		received_[byte_received] = '\0';
+		request_body.append(received_, byte_received);
+	}
+	current_request.parseContent(request_body);
+	return true;
+}
+
+
+void ServerManager::processAndSendResponse(HTTPRequest& current_request, Server *server_requested, Location *location_requested) {
+	// SEND THE RESPONSE HEADER
+	
+	HTTPResponse current_response(current_request, default_server_, server_requested, location_requested, error_code_);
+	std::string response = current_response.getResponse();
+	std::cout << "response to send: " << response << std::endl;
+	
+	if (current_fd_ < 0) {
+		std::cerr << "Error, current_fd_ socket is already close" << std::endl;
+		return;
+	}
+	if (response.empty()) {
+		std::cerr << "Error, response is empty" << std::endl;
+		return;
+	}
+	
+	ssize_t bytes_sent = send(current_fd_, response.c_str(), response.length(), 0);
+	if (bytes_sent < 0) {
+		std::cerr << "Error when sending response to client: " << strerror(errno) << std::endl;
+		return;
+	}
+
+	if (current_response.isReady()) {
+		std::cout << "Response is already ready (e.g. from CGI), skipping body file send\n";
+		return;
+	}
+	
+	if (!current_response.getBodyFilename().empty())
+		sendResponseBodyFile(current_response);
+	
+	std::cout << "SUCCESSFULLY REACH END OF RESPONSE!\n";
+}
+
+void ServerManager::sendResponseBodyFile(HTTPResponse& current_response) {
+	std::string body_file = current_response.getBodyFilename();	
+	std::cout << "check body_file: " << body_file << std::endl;
+	std::ifstream file(body_file.c_str(), std::ios::binary);
+	if (!file.is_open()) {
+		std::cerr << "Failed to open body file: " << body_file << std::endl;
+		// internal error 500 (either error code or manual)
+		return ;
+	}
+	
+	while (!file.eof()) {
+		file.read(buffer_, sizeof(buffer_));
+		std::streamsize bytes_read = file.gcount();
+		if (bytes_read > 0) {
+			ssize_t bytes_sent = send(current_fd_, buffer_, bytes_read, 0);
+			if (bytes_sent < 0) {
+				std::cerr << "Error sending file data: " << strerror(errno) << std::endl;
+				file.close();
+			}
+		} if (file.bad()) {
+			std::cerr << "Error reading from file: " << body_file << std::endl;
 			return ;
 		}
-
-		if (current_response.isReady()) {
-			std::cout << "Response is already ready (e.g. from CGI), skipping body file send\n";
-			close(current_fd_);
-		return;
-		}
-
-		
-		// SEND THE BODY FILE IF THERE IS ONE
-		std::string body_file = current_response.getBodyFilename();
-		if (!body_file.empty()) {
-			std::cout << "check body_file: " << body_file << std::endl;
-			std::ifstream file(body_file.c_str(), std::ios::binary);
-			if (file.is_open()) {
-				while (!file.eof()) {
-					file.read(buffer_, sizeof(buffer_));
-					std::streamsize bytes_read = file.gcount();
-					if (bytes_read > 0) {
-						bytes_sent = send(current_fd_, buffer_, bytes_read, 0);
-						if (bytes_sent <= 0) { // Check for both error and connection closed
-							if (bytes_sent < 0) {
-								std::cerr << "Error sending file data: " << strerror(errno) << std::endl;
-							} else {
-								std::cerr << "Connection closed by client" << std::endl;
-							}
-							break; // Exit the loop on error
-						}
-						
-						// Optional: Check for partial sends
-						if (bytes_sent < bytes_read) {
-							std::cerr << "Warning: Partial send - expected " << bytes_read 
-									<< " bytes, sent " << bytes_sent << " bytes" << std::endl;
-						}
-					}
-					
-					// Check for file read errors
-					if (file.bad()) {
-						std::cerr << "Error reading from file: " << body_file << std::endl;
-						break;
-					}
-				}
-				file.close();
-				if (current_response.isAutoIndex()) {
-					if (!std::remove(body_file.c_str())) {
-						current_response.setAutoIndex(false);
-					}
-				}
-				body_file = "";
-					
-			}
-		}
-		std::cout << "SUCCESSFULLY REACH END OF RESPONSE!\n";
 	}
-	close(current_fd_);
-	/********DEBUGGING*********/
-	// std::cout << "\nrequest: \n" << request << std::endl;
-	/********DEBUGGING*********/
-	
-	/**SEND THE RESPOND TO THE CLIENT**/
-	
-
-	
-	/********DEBUGGING*********/
-	// const char* response1 = "HTTP/1.1 200 OK\r\nContent-Length: 19\r\n\r\nYooooooooooooooooo!";
-	// ssize_t bytes_sent = send(current_fd_, response1, strlen(response1), 0);
-	// if (bytes_sent == 0)
-	// 	std::cerr << "Error when sending response to client" << std::endl;
-	/********DEBUGGING*********/
+	file.close();
+	if (current_response.isAutoIndex()) {
+		if (!std::remove(body_file.c_str())) {
+			current_response.setAutoIndex(false);
+		}
+	}
 }
 
 bool ServerManager::cleanClient(int current_fd_) {
