@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: cofische <cofische@student.42london.com    +#+  +:+       +#+         #
+#    By: cofische <cofische@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/24 01:20:10 by ssottori          #+#    #+#              #
-#    Updated: 2025/06/03 08:55:02 by cofische         ###   ########.fr        #
+#    Updated: 2025/06/05 14:09:56 by cofische         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,7 +31,7 @@ CGI_INC = CGI/inc
 CGI_SRC = CGI/src
 
 SRC = $(SRC_DIR)/Server.cpp \
-	$(SRC_DIR)/Autoindex.cpp \
+	  $(SRC_DIR)/Autoindex.cpp \
 	  $(SRC_DIR)/Socket.cpp \
 	  $(SRC_DIR)/Location.cpp \
 	  $(SRC_DIR)/ServerManager.cpp \

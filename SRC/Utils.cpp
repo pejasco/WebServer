@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 16:23:31 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/05 14:35:57 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,6 +175,7 @@ std::string getStatusStr(int status_code) {
 
 bool fileExists(const std::string& filename) {
 	std::cout << BOLD UNDERLINE RED "\n###### ENTERING URL REFORMAT DEBUUGING ######\n" RESET;
+	std::cout << "Here\n";
 	std::ifstream file(filename.c_str());
 	return file.good();
 }
@@ -328,19 +329,27 @@ Server *getCurrentServer(const HTTPRequest &input_request, ServerManager &server
 }
 
 Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_server) {
-	if (current_server.getLocationsList().empty())
-		return NULL;  
+	if (current_server.getLocationsList().empty()) {
+		std::cout << "is NULL\n";
+		return NULL; 
+	} else 
+		std::cout << "is not null\n";
+		 
 	std::string request_path = input_request.getPath();
+	std::cout << "URL to look for: " << request_path << std::endl;
 	// Handle root request specially if needed
 	if (request_path == "/") {
 		// Look for exact root location match first
+		std::cout << "it is a default location\n";
 		std::vector<Location*>::iterator begLo = current_server.getLocationsList().begin();
 		std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
 		for (; begLo != endLo; ++begLo) {
 			if ((*begLo)->getName() == "/") {
+				std::cout << "found begLo: " << (*begLo)->getName() << std::endl;
 				return *begLo;
 			}
 		}
+		std::cout << "is returning the default location\n";
 		return NULL; // or return default location if you prefer
 	}
 	Location *best_location_name = NULL;
@@ -394,4 +403,17 @@ std::string getFilenameFromPath(const std::string& path) {
 	} else {
 		return path;
 	}
+}
+
+size_t maxBodySizeLocation(Server *default_server, Server *server_requested, Location *location_requested) {
+	if (location_requested) {
+		if (location_requested->getMaxSize())
+			return location_requested->getMaxSize();
+	} else {
+		if (server_requested->getMaxBodySize())
+			return server_requested->getMaxBodySize();
+		else if (default_server->getMaxBodySize())
+			return default_server->getMaxBodySize();
+	}
+	return 0;
 }

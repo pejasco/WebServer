@@ -203,7 +203,7 @@ chmod +x www/cgi-bin/script.py
 **High memory usage:**
 ```bash
 # Run with Valgrind to check for leaks
-valgrind --leak-check=full ./webserver
+valgrind --leak-check=full ./webserv
 ```
 
 ## 📝 License

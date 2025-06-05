@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/03 12:25:06 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/05 11:48:36 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ ContentDisposition_::ContentDisposition_() : instance_index_(global_index_++) {}
 ContentDisposition_::~ContentDisposition_() {}
 
 //<<Conetent>>
-Content::Content() : instance_index_(global_index_++) {}
+Content::Content() : instance_index_(global_index_++), content_length_(0) {}
 
 Content::~Content() {}
 

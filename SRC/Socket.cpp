@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:03:14 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 16:49:32 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/05 14:33:55 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 Socket::Socket() {};
 
-Socket::Socket(const std::string &serverIP, const std::string &serverPort) : status_(-1), socket_fd_(-1) {
+Socket::Socket(const std::string &serverIP, const std::string &serverPort) : status_(-1), socket_fd_(-1), error_(1) {
 	//defining the add structure with info received from constructor
 	memset(&hints_, 0, sizeof(hints_));
 	hints_.ai_family = AF_UNSPEC;      // Either IPv4 or IPv6
@@ -24,8 +24,11 @@ Socket::Socket(const std::string &serverIP, const std::string &serverPort) : sta
 	
 	status_ = getaddrinfo(serverIP.c_str(), serverPort.c_str(), &hints_, &result_);
 	if (status_ == 0) {
-		if (!setSocketFd())
+		if (!setSocketFd()) {
+			std::cout << strerror(errno) << std::endl;
 			error_ = 0;
+		}
+			
 	}
 	freeaddrinfo(result_);
 };
