@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/05 12:32:46 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/06 22:19:08 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,6 +241,39 @@ void HTTPRequest::setUnknown(const std::string& buffer){
 	
 }
 
+void HTTPRequest::setOpenBoundary(const std::string& open_boundary){
+	open_boundary_ = open_boundary;
+
+}
+
+void HTTPRequest::setCloseBoundary(const std::string& close_boundary){
+	close_boundary_ = close_boundary;
+}
+
+void HTTPRequest::setBoundary(const std::string& boundary){
+	boundary_ = boundary;
+    setOpenBoundary(("--" + boundary_));
+    setCloseBoundary((open_boundary_ + "--"));
+
+    content_.setBoundary(boundary_);
+    content_.setOpenBoundary(open_boundary_);
+    content_.setCloseBoundary(close_boundary_);
+
+}
+
+
+void HTTPRequest::setContentType(std::string contentType){
+    std::istringstream ss(contentType);
+    std::string type;
+    std::string value;
+
+    std::getline(ss, type, '/');
+    std::getline(ss, value);
+    content_type_[type] = value;
+    
+}
+
+
 MET HTTPRequest::getMethod() {
 	return method_;
 };
@@ -298,32 +331,19 @@ bool HTTPRequest::getIsInTheBody() {
 	return is_in_the_body_flag_;
 }
 
-//Parser
-
-void HTTPRequest::parseRequestLine(const std::string& request_line){
-	std::string method, path_with_query, version;
-	
-	std::istringstream stream(request_line);
-	stream >> method >> path_with_query >> version;
-
-	// Split path and query
-	size_t pos = path_with_query.find('?');
-	if (pos != std::string::npos) {
-		std::string path = path_with_query.substr(0, pos);
-		std::string query = path_with_query.substr(pos + 1);
-		setPath(path);
-		setQueryStr(query);
-	} else {
-		setPath(path_with_query);
-		setQueryStr("");
-	}
-
-	setMet(method);
-	setVersion(version);
+const std::string HTTPRequest::getBoundary() const{
+    return boundary_;
 }
 
+const std::string HTTPRequest::getOpenBoundary() const{
+    return open_boundary_;
+}
 
+const std::string HTTPRequest::getCloseBoundary() const{
+    return close_boundary_;
+}
 
+//Parser
 
 void HTTPRequest::parseContent(const std::string& body_line){
 	size_t pos_begin;
@@ -391,106 +411,144 @@ void HTTPRequest::parseContent(const std::string& body_line){
 		
 	}
 }
-//if (!(content_.getContentType()->first).empty() && content_.getContentLength() >= 0
+//if (!(content_.getContentType()->first).empty() && content_.getContentLength() >= 0;
 
-void HTTPRequest::parseRequestHeader(std::istringstream& stream){
-	std::string line;
-	size_t pos_begin;
-	// size_t pos_end;
+void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
+    std::string line;
+    size_t pos_begin;
+    size_t pos_end;
+    // size_t pos_end;
 
-	while (std::getline(stream, line))
-	{
-		size_t colon = line.find(":"); //setting headers to _headers
-		if (colon != std::string::npos) {
-			std::string key = line.substr(0, colon);
-			std::string val = line.substr(colon + 1);
-
-			// Trim leading space
-			val.erase(0, val.find_first_not_of(" \t"));
-
-			headers_[key] = val;
-		}
-		// std::cout << "ParseRequest: " << line << std::endl;
-		//GET
-		if (line.empty()){
-			if (!(content_.getContentType().first).empty() && content_.getContentLength() >= 0 && is_in_the_body_flag_) {
-				// std::cout << BOLD MAGENTA "check content to fill\n" RESET;
-				parseContent(line);
-			}
-			else
-				continue;
-		} else if (line.find("Host") != std::string::npos){
-			if ((pos_begin = line.rfind(":")) != std::string::npos){
-				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-				std::string host = line.substr(pos_begin, std::string::npos);
-				setHost(host);
-				// std::cout << "Host: " << host << std::endl;
-			}
-		} else if (line.find("Connection") != std::string::npos){
-			if ((pos_begin = line.rfind(":")) != std::string::npos){
-				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-				std::string connection = line.substr(pos_begin, std::string::npos);
-				setConnection(connection);
-				// std::cout << "connection: " << connection << std::endl;
-			}
-		} else if (line.find("User-Agent") != std::string::npos){   
-			if ((pos_begin = line.rfind(":")) != std::string::npos){
-				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-				std::string agents = line.substr(pos_begin, std::string::npos);
-				setUserAgent(agents);
-				// std::cout << "agents: " << agents << std::endl;
-			}
-		} else if (line.find("Accept") != std::string::npos){
-			if ((pos_begin = line.rfind(":")) != std::string::npos){
-				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-				std::string accept = line.substr(pos_begin, std::string::npos);
-				setAccept(accept);
-				// std::cout << "accept: " << accept << std::endl;
-			}
-		} else if (line.find("Referer") != std::string::npos){
-			if ((pos_begin = line.rfind(":")) != std::string::npos){
-				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-				std::string referer = line.substr(pos_begin, std::string::npos);
-				setReferer(referer);
-				// std::cout << "referer: " << referer << std::endl;
-			}
-		} else if (line.find("Accept-Encoding") != std::string::npos){
-			if ((pos_begin = line.rfind(":")) != std::string::npos){
-				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-				std::string encoding = line.substr(pos_begin, std::string::npos);
-				setAcceptEncoding(encoding);
-				// std::cout << "encoding: " << encoding << std::endl;
-			}
-		} else if (line.find("Accept-Language") != std::string::npos){
-			if ((pos_begin = line.rfind(":")) != std::string::npos){
-				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-				std::string languages = line.substr(pos_begin, std::string::npos);
-				setAcceptLanguage(languages);
-				// std::cout << "languages: " << languages << std::endl;
-			}
-		} 
-		// content related (only applicable to POST and DEL)
-		else if (line.find("Content-Type") != std::string::npos){
-			if ((pos_begin = line.rfind(":")) != std::string::npos){
-				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-				std::string cttype = line.substr(pos_begin, std::string::npos);
-				content_.setContentType(cttype);
-				// std::cout << "Content-Type: " << cttype << std::endl;
-			}
-		} else if (line.find("Content-Length") != std::string::npos){
-			if ((pos_begin = line.rfind(":")) != std::string::npos){
-				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-				std::string ctlength = line.substr(pos_begin, std::string::npos);
-				content_.setContentLength(ctlength);
-				// std::cout << "Content-Length: " << ctlength << std::endl;
-			}
-		} else if (content_flag_ == true) {
-			// std::cout << BOLD YELLOW "Checker\n" RESET;  
-			this->parseContent(line);
-		} else
-			return;
-	}
+    while (std::getline(stream, line)) {
+        if (line.empty()) {
+            continue;        
+        } else if (line.find("Host") != std::string::npos) {
+            if ((pos_begin = line.rfind(":")) != std::string::npos) {
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string host = line.substr(pos_begin, std::string::npos);
+                setHost(host);
+                // std::cout << "Host: " << host << std::endl;
+            }
+        } else if (line.find("Connection") != std::string::npos) {
+            if ((pos_begin = line.rfind(":")) != std::string::npos) {
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string connection = line.substr(pos_begin, std::string::npos);
+                setConnection(connection);
+                // std::cout << "connection: " << connection << std::endl;
+            }
+        } else if (line.find("User-Agent") != std::string::npos) {   
+            if ((pos_begin = line.rfind(":")) != std::string::npos) {
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string agents = line.substr(pos_begin, std::string::npos);
+                setUserAgent(agents);
+                // std::cout << "agents: " << agents << std::endl;
+            }
+        } else if (line.find("Accept") != std::string::npos) {
+            if ((pos_begin = line.rfind(":")) != std::string::npos) {
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string accept = line.substr(pos_begin, std::string::npos);
+                setAccept(accept);
+                // std::cout << "accept: " << accept << std::endl;
+            }
+        } else if (line.find("Referer") != std::string::npos) {
+            if ((pos_begin = line.rfind(":")) != std::string::npos) {
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string referer = line.substr(pos_begin, std::string::npos);
+                setReferer(referer);
+                // std::cout << "referer: " << referer << std::endl;
+            }
+        } else if (line.find("Accept-Encoding") != std::string::npos) {
+            if ((pos_begin = line.rfind(":")) != std::string::npos) {
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string encoding = line.substr(pos_begin, std::string::npos);
+                setAcceptEncoding(encoding);
+                // std::cout << "encoding: " << encoding << std::endl;
+            }
+        } else if (line.find("Accept-Language") != std::string::npos) {
+            if ((pos_begin = line.rfind(":")) != std::string::npos) {
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string languages = line.substr(pos_begin, std::string::npos);
+                setAcceptLanguage(languages);
+                // std::cout << "languages: " << languages << std::endl;
+            }
+        } 
+        // content related (only applicable to POST and DEL)
+        else if (line.find("Content-Type") != std::string::npos) {
+            if ((pos_begin = line.rfind(":")) != std::string::npos) {
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                pos_end = line.find(";");
+                std::string cttype = trimString(line.substr(pos_begin, pos_end - pos_begin));
+                setContentType(cttype);
+                if (line.find("boundary") != std::string::npos) {
+                    pos_begin = line.find("boundary") + 8;
+                    pos_begin = line.find_first_of("=", pos_begin);
+                    if (pos_begin != std::string::npos) {
+                        pos_begin++;
+                        pos_begin = line.find_first_not_of(" \t", pos_begin); 
+                        
+                        std::string boundary = trimString(line.substr(pos_begin, std::string::npos));
+                        
+                        if (!boundary.empty() && (boundary[0] == '"' || boundary[0] == '\'')) {
+                            size_t quote_end = boundary.find_first_of("\"'", 1);
+                            if (quote_end != std::string::npos) {
+                                boundary = trimString(boundary.substr(1, quote_end - 1));
+                            } else {
+                                boundary = trimString(boundary.substr(1));
+                            }
+                        }
+                        
+                        size_t end_pos = boundary.find_last_not_of(" \t;");
+                        if (end_pos != std::string::npos) {
+                            boundary = trimString(boundary.substr(0, end_pos + 1));
+                        }
+                        setBoundary(boundary);
+    
+                    }
+                }
+            }
+        } 
+		else if (line.find("Content-Length") != std::string::npos) {
+            if ((pos_begin = line.rfind(":")) != std::string::npos) {
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                std::string length = trimString(line.substr(pos_begin));
+                setContentLength(atoi(length.c_str()));
+                // std::cout << "Content-Length: " << ctlength << std::endl;
+            }
+            //only POST will set content_flag as true
+        } 
+		else if (content_flag_ == true) {
+            parseContent(line);
+        } 
+		else {
+            return;
+        }
+    }
 }
+
+// Ensure the function is defined outside the class scope
+void parseRequestLine(const std::string& request_line) {
+	std::string method, request_uri, version;
+	
+	std::istringstream stream(request_line);
+	stream >> method >> request_uri >> version;
+
+	// Split path and query
+	size_t pos = request_uri.find('?');
+	if (pos != std::string::npos) {
+		std::string path = request_uri.substr(0, pos);
+		std::string query = request_uri.substr(pos + 1);
+		setPath(path);
+		setQueryStr(query);
+	} else {
+		setPath(request_uri);
+		setQueryStr("");
+	}
+	setMet(method);
+	setVersion(version);
+}
+
+
+
 
 void HTTPRequest::parseRequest(const std::string& request){
 
@@ -499,7 +557,10 @@ void HTTPRequest::parseRequest(const std::string& request){
 
 	std::getline(stream, request_line);
 	parseRequestLine(request_line);
-	parseRequestHeader(stream);
+	parseRequestHeader(stream); 
+	// should modify it 
+	//-note: the ServerManger::readRequestBody already 
+	//calling parseContent, but it do again in parseRequestHeader
 
 	
 
@@ -532,10 +593,7 @@ std::string HTTPRequest::getQueryStr() const { return query_string_; }
 
 std::map<std::string, std::string> HTTPRequest::getHeaders() const { return headers_; }
 
-std::string HTTPRequest::getRawBody() const
-{
-	return content_.getBodyWithNoCD();
-}
+
 
 void HTTPRequest::setQueryStr(const std::string& query) { query_string_ = query; }
 //std::string HTTPRequest::getcgiPath() { return path_; }

@@ -63,7 +63,7 @@ public:
     void setOpenBoundary(std::string boundary);
     void setCloseBoundary(std::string boundary);
     void setBodyWithNoCD(std::string body);
-    void setHttpCD(std::string body);
+    void setHttpCD(std::string body); //not used
     void addHttpCD();
 
 
@@ -142,8 +142,8 @@ private:
     http_content content_;
 
     //bool end_of_request_flag_;
-    bool within_the_cd_flag_; //created
-    bool with_file_flag_;
+    bool within_the_cd_flag_; //created in HTTPRequest
+    bool with_file_flag_; //created in HTTPRequest
 };
 
 std::string trimString(const std::string& s);

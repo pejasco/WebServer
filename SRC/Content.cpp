@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/05 11:48:36 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/06 21:59:24 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,17 +28,26 @@ Content::~Content() {}
 
 // setters
 
-void Content::setBounday(const std::string &boundary)
-{
-    size_t pos;
-    std::string tmp;
 
-    if ((pos = boundary.find("boundary=")) != std::string::npos)
-    {
-        tmp = boundary.substr(pos + 9);
-    }
-    boundary_ = "--" + tmp;
+void Content::setOpenBoundary(const std::string& boundary)
+{
+    open_boundary_ = boundary;
 }
+
+
+void Content::setCloseBoundary(const std::string& boundary)
+{
+    close_boundary_ = boundary;
+    
+}
+
+
+void Content::setBoundary(const std::string &boundary)
+{
+    boundary_ = boundary;
+}
+
+
 
 void Content::setContentType(const std::string &buffer)
 {
@@ -212,6 +221,17 @@ const std::string &Content::getBoundary()
     return boundary_;
 }
 
+const std::string &Content::getOpenBoundary()
+{
+    return open_boundary_;
+}
+
+const std::string &Content::getCloseBoundary()
+{
+    return close_boundary_;
+}
+
+
 int Content::getContentLength()
 {
     return content_length_;
@@ -222,12 +242,12 @@ int Content::getContentLength()
 //     return body_;
 // }
 
-const std::vector<ContentDisposition_> &Content::getCDs() const
+std::vector<ContentDisposition_> &Content::getCDs()
 {
     return CDs_list_;
 }
 
-std::string Content::getBodyWithNoCD() const 
+std::string& Content::getBodyWithNoCD()
 { 
     return body_with_no_cd_;
 }

@@ -34,7 +34,7 @@ int main(int ac, char **av){
     (h.getContent()).printHttpContent();
 
 
-    file.close(); // Close the file
+    file.close();
     return 0;
 }
 

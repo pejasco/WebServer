@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/03 08:51:46 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/06 21:54:26 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,13 +44,13 @@
 
 
 
-
-
-
 struct ContentDisposition_
 {
         ContentDisposition_();
         ~ContentDisposition_();
+
+        void printHttpCD(); //new
+        
 
         //variables (public by default)
         static int global_index_;
@@ -77,22 +77,28 @@ class Content {
 
                 //setters
                 void setContentType(const std::string& buffer);
-                void setBounday(const std::string& buffer);
+                void setBoundary(const std::string& buffer);
+                void setOpenBoundary(const std::string& boundary);
+                void setCloseBoundary(const std::string& boundary);
+
                 void setContentLength(const std::string& buffer);
                 void setBodyWithNoCD(const std::string& buffer);
                 void setCDs(const std::string& buffer, CD_header header, int index);
-                // void addCDs();
+                void addContentDisposition(const ContentDisposition_& cd); //need to take a look
+                void addCDs(); //new 
 
                 //getters
                 const std::pair<std::string, std::string>& getContentType();
                 const std::string& getBoundary();
+                const std::string& getOpenBoundary();
+                const std::string& getCloseBoundary();
                 int getContentLength();
-                const std::map<std::string, std::string> getBody();
-                const std::vector<ContentDisposition_> &getCDs() const;
-                std::string getBodyWithNoCD() const;
+                const std::map<std::string, std::string> getBody(); //no use
+                std::vector<ContentDisposition_>& getCDs(); //modified
+                std::string& getBodyWithNoCD(); //modified
                 //const std::map<std::string, std::string> getBodyconst() const;
-                void addContentDisposition(const ContentDisposition_& cd);
                 void printCDsList() const;
+
 
         private:
 
@@ -125,6 +131,9 @@ class Content {
                 int content_length_; //Content-Length: 13
                 std::string boundary_; //Content-Type: multipart/form-dat; boundary=--WebKitFormBoundaryXYZ
                 // std::map<std::string, std::string> body_;
+                std::string open_boundary_; //new http_content
+                std::string close_boundary_;//new http_content
+
                 std::string body_with_no_cd_;
                 std::vector<ContentDisposition_> CDs_list_;
 };

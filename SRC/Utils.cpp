@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/05 14:35:57 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/06 13:35:23 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -417,3 +417,10 @@ size_t maxBodySizeLocation(Server *default_server, Server *server_requested, Loc
 	}
 	return 0;
 }
+
+std::string trimString(const std::string& s){
+	size_t start = s.find_first_not_of(" \t\r\n");
+	size_t end = s.find_last_not_of(" \t\r\n");
+	return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);	
+}
+

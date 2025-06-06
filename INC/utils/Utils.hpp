@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 16:23:56 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/06 13:28:17 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,5 +53,6 @@ Server *getCurrentServer(const HTTPRequest &inputRequest, ServerManager &serverM
 Location *getCurrentLocation(const HTTPRequest &inputRequest, Server &currentServer);
 // std::string formatURL(const std::string &input);
 std::string getFilenameFromPath(const std::string& path);
+std::string trimString(const std::string& s);
 
 #endif

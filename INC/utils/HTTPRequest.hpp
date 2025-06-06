@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/06 13:12:49 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/06 21:44:55 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,12 @@ class HTTPRequest {
 		void setContent(const std::string& content);
 		void setUnknown(const std::string& buffer);
 
+		void setContentType(std::string contentType); //new from http
+		void setOpenBoundary(const std::string& open_boundary);
+		void setCloseBoundary(const std::string& close_boundary);		
+		void setBoundary(const std::string& boundary);
+		void setContentLength(int length);
+
 		//Getters
 		MET getMethod();
 		bool getIsInTheBody();
@@ -91,6 +97,11 @@ class HTTPRequest {
 		const std::map <std::string, std::string>& getUnknown();
 		bool getCGIFlag();
 
+		const std::string getBoundary() const;
+		const std::string getOpenBoundary() const;
+		const std::string getCloseBoundary() const;
+
+
 		//Parser
 		void parseContent(const std::string& body_line);
 		void parseRequestHeader(std::istringstream& stream);
@@ -100,7 +111,7 @@ class HTTPRequest {
 		//CGI
 		std::string getMethodAsStr() const;
 		std::string getQueryStr() const;
-		std::string getRawBody() const;
+		//std::string getRawBody() const;
 		//std::string getcgiPath();
 		std::map<std::string, std::string> getHeaders() const;
 		void setQueryStr(const std::string& query);
@@ -111,6 +122,8 @@ class HTTPRequest {
 		static int global_index_; //dun know if it is useful
 		int instance_index_;
 		MET method_;
+		; //new only in Http request
+
 
 	// Common (GET, DELETE)
 		std::string path_; // / //path/file.html
@@ -141,7 +154,6 @@ class HTTPRequest {
 		std::map <std::string, std::string> unknown_; //scrap?!?
 
 		std::string boundary_; //new http
-		std::string open_boundary_; //new http
 		std::string open_boundary_; //new http
     	std::string close_boundary_; //new http
 		std::map<std::string, std::string> content_type_; //new http
