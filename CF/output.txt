@@ -1,0 +1,46 @@
+http_content instance created with index: 0
+http instance created with index: 0
+http_CD_ instance created with index: 0
+http_CD_ instance created with index: 1
+@@@@ HTTP @@@@
+xxxxxxxxxxxx <instance_index: 0> xxxxxxxxxxxxx
+instance index: 0
+method: POST
+path: /upload
+format: HTTP/1.1
+host: example.com
+boundary: ----WebKitFormBoundary7MA4YWxkTrZu0gW
+open_boundary: [------WebKitFormBoundary7MA4YWxkTrZu0gW]
+close_boundary: [------WebKitFormBoundary7MA4YWxkTrZu0gW--]
+first: multipart
+second: form-data
+@@@@ HTTPContent @@@@
+xxxxxxxxxxxx <instance_index: 0> xxxxxxxxxxxxx
+instance index: 0
+method: ----WebKitFormBoundary7MA4YWxkTrZu0gW
+path: ------WebKitFormBoundary7MA4YWxkTrZu0gW
+format: ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+host: 
+boundary: ----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+Content Dispositions List:
+@@@@ HTTPCD @@@@
+xxxxxxxxxxxx <instance_index: 0> xxxxxxxxxxxxx
+instance index: 0
+CD_type: form-data
+name: description
+filename: 
+inner_content_type: 
+content: This is a sample text file.
+file_content: 
+xxxxxxxxxx <END> xxxxxxxxxxx
+@@@@ HTTPCD @@@@
+xxxxxxxxxxxx <instance_index: 1> xxxxxxxxxxxxx
+instance index: 1
+CD_type: form-data
+name: file
+filename: example.txt
+inner_content_type: text/plain
+content: 
+file_content: Hello, this is the content of the text file.
+xxxxxxxxxx <END> xxxxxxxxxxx

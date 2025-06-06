@@ -124,8 +124,7 @@ public:
     http_content& getContent();
 
     void setHttp(std::string line_input);
-    void printHttp();  
-
+    void printHttp();
 
 
 private:
@@ -146,3 +145,5 @@ private:
     bool within_the_cd_flag_;
     bool with_file_flag_;
 };
+
+std::string trimString(const std::string& s);

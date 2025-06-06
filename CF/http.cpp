@@ -1,9 +1,9 @@
 #include "http.hpp"
 #include <iostream>
 
-int http_CD_::global_index_ = -1;
-int http_content::global_index_ = -1;
-int http::global_index_ = -1;
+int http_CD_::global_index_ = 0;
+int http_content::global_index_ = 0;
+int http::global_index_ = 0;
 
 //######### http_CD_ ###########//
 
@@ -74,8 +74,9 @@ std::string& http_CD_::getFileContent_(){
 }
 
 void http_CD_::printHttpCD(){
-    std::cout << "xxxxxxxxxxxx <global_index: " << global_index_ <<"> xxxxxxxxxxxxx" << "\n";
-    std::cout << "global index: " << global_index_ << "\n";
+    std::cout << "@@@@ HTTPCD @@@@\n";
+    std::cout << "xxxxxxxxxxxx <instance_index: " << instance_index_ <<"> xxxxxxxxxxxxx" << "\n";
+    //std::cout << "global index: " << global_index_ << "\n";
     std::cout << "instance index: " << instance_index_ << "\n";
     std::cout << "CD_type: " << CD_type_ << "\n";
     std::cout << "name: " << name_ << "\n";
@@ -153,13 +154,14 @@ std::vector<http_CD_>& http_content::getCDs_list_(){
 }
 
 void http_content::printHttpContent(){
-    std::cout << "global index: " << global_index_ << "\n";
+    std::cout << "@@@@ HTTPContent @@@@\n";
+    std::cout << "xxxxxxxxxxxx <instance_index: " << instance_index_ <<"> xxxxxxxxxxxxx" << "\n";
+    //std::cout << "global index: " << global_index_ << "\n";
     std::cout << "instance index: " << instance_index_ << "\n";
     std::cout << "method: " << boundary_ << "\n";
-    std::cout << "path: " << open_boundary_ << "\n";
-    std::cout << "format: " << close_boundary_ << "\n";
-    std::cout << "host: " << body_with_no_cd_ << "\n";
-    std::cout << "boundary" << boundary_ << "\n";
+    std::cout << "open_boundary: " << open_boundary_ << "\n";
+    std::cout << "close_boundary: " << close_boundary_ << "\n";
+    std::cout << "body_with_no_cd: " << body_with_no_cd_ << "\n";
 
     std::cout << "\nContent Dispositions List:\n";
     for(std::vector<http_CD_>::iterator it = CDs_list_.begin();
@@ -219,6 +221,10 @@ void http::setBoundary(std::string boundary){
     boundary_ = boundary;
     setOpenBoundary(("--" + boundary_));
     setCloseBoundary((open_boundary_ + "--"));
+
+    content_.setBoundary(boundary_);
+    content_.setOpenBoundary(open_boundary_);
+    content_.setCloseBoundary(close_boundary_);
 }
 
 void http::setOpenBoundary(std::string open_boundary){
@@ -280,19 +286,20 @@ void http::setHttp(std::string line_input){
 
     if (line_input.empty())
         return;
-    else if (line_input == close_boundary_){
+    else if (line_input.find(close_boundary_) != std::string::npos){
         within_the_cd_flag_ = false;
         with_file_flag_ = false;
         return;
     }
-    else if (line_input == open_boundary_){
-        within_the_cd_flag_ = !within_the_cd_flag_;
+    else if (line_input.find(open_boundary_) != std::string::npos &&
+            line_input.find(close_boundary_) == std::string::npos){
+        within_the_cd_flag_ = true;
         with_file_flag_ = false;
     }
     else if (line_input.find("Host") != std::string::npos){
         if ((pos_begin = line_input.rfind(":")) != std::string::npos)
         pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
-        std::string host = line_input.substr(pos_begin, std::string::npos);
+        std::string host = trimString(line_input.substr(pos_begin, std::string::npos));
         setHost(host);
     }
     else if (line_input.find("Content-Type") != std::string::npos){
@@ -300,31 +307,29 @@ void http::setHttp(std::string line_input){
             if ((pos_begin = line_input.rfind(":")) != std::string::npos){
                 pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
                 pos_end = line_input.find(";");
-                std::string cttype = line_input.substr(pos_begin, pos_end - pos_begin);
+                std::string cttype = trimString(line_input.substr(pos_begin, pos_end - pos_begin));
                 setContentType(cttype);
                 if (line_input.find("boundary") != std::string::npos){
-                    pos_begin = line_input.find("boundary") + 8; // Position after "boundary"
-                    pos_begin = line_input.find_first_of("=", pos_begin); // Find equals sign
+                    pos_begin = line_input.find("boundary") + 8;
+                    pos_begin = line_input.find_first_of("=", pos_begin);
                     if (pos_begin != std::string::npos) {
-                        pos_begin++; // Move past equals sign
-                        pos_begin = line_input.find_first_not_of(" \t", pos_begin); // Skip spaces
+                        pos_begin++;
+                        pos_begin = line_input.find_first_not_of(" \t", pos_begin); 
                         
-                        std::string boundary = line_input.substr(pos_begin, std::string::npos);
+                        std::string boundary = trimString(line_input.substr(pos_begin, std::string::npos));
                         
-                        // Remove quotes if present
                         if (!boundary.empty() && (boundary[0] == '"' || boundary[0] == '\'')) {
                             size_t quote_end = boundary.find_first_of("\"'", 1);
                             if (quote_end != std::string::npos) {
-                                boundary = boundary.substr(1, quote_end - 1);
+                                boundary = trimString(boundary.substr(1, quote_end - 1));
                             } else {
-                                boundary = boundary.substr(1);
+                                boundary = trimString(boundary.substr(1));
                             }
                         }
                         
-                        // Remove trailing spaces or semicolons
                         size_t end_pos = boundary.find_last_not_of(" \t;");
                         if (end_pos != std::string::npos) {
-                            boundary = boundary.substr(0, end_pos + 1);
+                            boundary = trimString(boundary.substr(0, end_pos + 1));
                         }
                         
                         setBoundary(boundary);
@@ -336,7 +341,7 @@ void http::setHttp(std::string line_input){
             if ((pos_begin = line_input.rfind(":")) != std::string::npos){
                 pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
                 pos_end = line_input.find(";");
-                std::string inner_cttype = line_input.substr(pos_begin, pos_end - pos_begin);
+                std::string inner_cttype = trimString(line_input.substr(pos_begin, pos_end - pos_begin));
                 http_CD_ & lastest_cd = content_.getCDs_list_().back();
                 lastest_cd.setInnerContentType_(inner_cttype);
             }
@@ -345,7 +350,7 @@ void http::setHttp(std::string line_input){
     else if (line_input.find("Content-Length") != std::string::npos){
         if ((pos_begin = line_input.find(":")) != std::string::npos){
             pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
-            std::string length = line_input.substr(pos_begin);
+            std::string length = trimString(line_input.substr(pos_begin));
             setContentLength(atoi(length.c_str()));
         }
     }
@@ -358,14 +363,14 @@ void http::setHttp(std::string line_input){
         if ((pos_begin = line_input.find(":")) != std::string::npos){
         pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
         pos_end = line_input.find(";", pos_begin);
-        std::string type = line_input.substr(pos_begin, pos_end - pos_begin);
+        std::string type = trimString(line_input.substr(pos_begin, pos_end - pos_begin));
         lastest_cd.setCDType_(type);}
         //--name
         if (line_input.find("name") != std::string::npos){
             if ((pos_begin = line_input.find("name")) != std::string::npos){
                 pos_begin = (line_input.find("\"", pos_begin)) + 1;
                 pos_end = (line_input.find("\"", pos_begin));
-                std::string name = line_input.substr(pos_begin, pos_end - pos_begin);
+                std::string name = trimString(line_input.substr(pos_begin, pos_end - pos_begin));
                 lastest_cd.setName_(name);
             }
         }
@@ -374,7 +379,7 @@ void http::setHttp(std::string line_input){
             if ((pos_begin = line_input.find("filename")) != std::string::npos){
                 pos_begin = (line_input.find("\"", pos_begin)) + 1;
                 pos_end = (line_input.find("\"", pos_begin));
-                std::string filename = line_input.substr(pos_begin, pos_end - pos_begin);
+                std::string filename = trimString(line_input.substr(pos_begin, pos_end - pos_begin));
                 lastest_cd.setFilename_(filename);
             }
             with_file_flag_ = true;
@@ -386,33 +391,51 @@ void http::setHttp(std::string line_input){
             if(with_file_flag_){
                 http_CD_ & lastest_cd = content_.getCDs_list_().back();
                 std::string& file_content_of_cd = lastest_cd.getFileContent_();
-                file_content_of_cd += line_input;
+                file_content_of_cd += trimString(line_input);
             }
             else if(!with_file_flag_){
                 http_CD_ & lastest_cd = content_.getCDs_list_().back();
                 std::string& content_of_cd = lastest_cd.getContent_();
-                content_of_cd += line_input;
+                content_of_cd += trimString(line_input);
             }
         }
         else if (!within_the_cd_flag_){
             std::string& body = content_.getBodyWithNoCD();
-            body += line_input;
+            body += trimString(line_input);
         }
     }
 }
 
 void http::printHttp(){
-    std::cout << "global index: " << global_index_ << "\n";
+    std::cout << "@@@@ HTTP @@@@\n";
+    std::cout << "xxxxxxxxxxxx <instance_index: " << instance_index_ <<"> xxxxxxxxxxxxx" << "\n";
+    //std::cout << "global index: " << global_index_ << "\n";
     std::cout << "instance index: " << instance_index_ << "\n";
     std::cout << "method: " << method_ << "\n";
     std::cout << "path: " << path_ << "\n";
     std::cout << "format: " << format_ << "\n";
     std::cout << "host: " << host_ << "\n";
-    std::cout << "boundary" << boundary_ << "\n";
+    std::cout << "boundary: " << boundary_ << "\n";
+    
+    // Add this debug code here
+    for (size_t i = 0; i < open_boundary_.size(); ++i) {
+        if (open_boundary_[i] == '\n') std::cout << "open_boundary_ has newline at " << i << "\n";
+        if (open_boundary_[i] == '\r') std::cout << "open_boundary_ has carriage return at " << i << "\n";
+    }
+    
+    
+    std::cout << "open_boundary: [" << open_boundary_ << "]\n";
+    std::cout << "close_boundary: [" << close_boundary_ << "]\n";
     for(std::map<std::string, std::string>::iterator it = content_type_.begin();
          it != content_type_.end(); ++it)
     {
         std::cout << "first: " << it->first << "\n";
         std::cout << "second: " << it->second << "\n";
     }
+}
+
+std::string trimString(const std::string& s){
+    size_t start = s.find_first_not_of(" \t\r\n");
+    size_t end = s.find_last_not_of(" \t\r\n");
+    return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
 }
