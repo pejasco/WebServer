@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/05 12:32:54 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/06 13:12:49 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,17 +129,31 @@ class HTTPRequest {
 		std::pair<std::string, std::string> authorisation_; //Authorization: Bearer p@sswoRd
 
 	// POST
-		bool content_flag_;
-		bool is_in_the_body_flag_;
-		int boundary_index_;
-		std::string cgi_type_;
-		bool cgi_flag_;
-		Content content_;
-		std::map <std::string, std::string> unknown_; 
+		bool content_flag_; //scrap?
+		bool is_in_the_body_flag_; //scrap?
+
+
+
+		int boundary_index_; //scrap?
+		std::string cgi_type_; //scrap?
+		bool cgi_flag_; //scrap?
+		Content content_; //http http_content
+		std::map <std::string, std::string> unknown_; //scrap?!?
+
+		std::string boundary_; //new http
+		std::string open_boundary_; //new http
+		std::string open_boundary_; //new http
+    	std::string close_boundary_; //new http
+		std::map<std::string, std::string> content_type_; //new http
+		int content_length_; //new http
+		bool within_the_cd_flag_; //new http
+		bool with_file_flag_; //new http
+
+
 
 	// CGI
-		std::string query_string_;
-		std::map<std::string, std::string> headers_;  //map to store headers for cgi
+		std::string query_string_; //scrap?
+		std::map<std::string, std::string> headers_;  //map to store headers for cgi //scrap?
 	
 
 };

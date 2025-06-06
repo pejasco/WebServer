@@ -130,19 +130,19 @@ public:
 private:
     static int global_index_;
     int instance_index_;
-    std::string method_;
-    std::string path_;
-    std::string format_;
-    std::string host_;
-    std::string boundary_;
-    std::string open_boundary_;
-    std::string close_boundary_;
-    std::map<std::string, std::string> content_type_;
-    int content_length_;
+    std::string method_; //HTTPRequest host_
+    std::string path_; //HTTPRequest version_
+    std::string format_; //HTTPRequest version_
+    std::string host_; //HTTPRequest host_
+    std::string boundary_; //created in HTTPRequest
+    std::string open_boundary_; //created in HTTPRequest
+    std::string close_boundary_; //created in HTTPRequest
+    std::map<std::string, std::string> content_type_; //created in HTTPRequest
+    int content_length_; //created in HTTPRequest
     http_content content_;
 
     //bool end_of_request_flag_;
-    bool within_the_cd_flag_;
+    bool within_the_cd_flag_; //created
     bool with_file_flag_;
 };
 
