@@ -158,7 +158,7 @@ void http_content::printHttpContent(){
     std::cout << "xxxxxxxxxxxx <instance_index: " << instance_index_ <<"> xxxxxxxxxxxxx" << "\n";
     //std::cout << "global index: " << global_index_ << "\n";
     std::cout << "instance index: " << instance_index_ << "\n";
-    std::cout << "method: " << boundary_ << "\n";
+    std::cout << "boundary: " << boundary_ << "\n";
     std::cout << "open_boundary: " << open_boundary_ << "\n";
     std::cout << "close_boundary: " << close_boundary_ << "\n";
     std::cout << "body_with_no_cd: " << body_with_no_cd_ << "\n";
