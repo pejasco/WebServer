@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/06 22:19:08 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/06 22:56:49 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -422,49 +422,56 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
     while (std::getline(stream, line)) {
         if (line.empty()) {
             continue;        
-        } else if (line.find("Host") != std::string::npos) {
+        } 
+		else if (line.find("Host") != std::string::npos) {
             if ((pos_begin = line.rfind(":")) != std::string::npos) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string host = line.substr(pos_begin, std::string::npos);
                 setHost(host);
                 // std::cout << "Host: " << host << std::endl;
             }
-        } else if (line.find("Connection") != std::string::npos) {
+        } 
+		else if (line.find("Connection") != std::string::npos) {
             if ((pos_begin = line.rfind(":")) != std::string::npos) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string connection = line.substr(pos_begin, std::string::npos);
                 setConnection(connection);
                 // std::cout << "connection: " << connection << std::endl;
             }
-        } else if (line.find("User-Agent") != std::string::npos) {   
+        } 
+		else if (line.find("User-Agent") != std::string::npos) {   
             if ((pos_begin = line.rfind(":")) != std::string::npos) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string agents = line.substr(pos_begin, std::string::npos);
                 setUserAgent(agents);
                 // std::cout << "agents: " << agents << std::endl;
             }
-        } else if (line.find("Accept") != std::string::npos) {
+        } 
+		else if (line.find("Accept") != std::string::npos) {
             if ((pos_begin = line.rfind(":")) != std::string::npos) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string accept = line.substr(pos_begin, std::string::npos);
                 setAccept(accept);
                 // std::cout << "accept: " << accept << std::endl;
             }
-        } else if (line.find("Referer") != std::string::npos) {
+        } 
+		else if (line.find("Referer") != std::string::npos) {
             if ((pos_begin = line.rfind(":")) != std::string::npos) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string referer = line.substr(pos_begin, std::string::npos);
                 setReferer(referer);
                 // std::cout << "referer: " << referer << std::endl;
             }
-        } else if (line.find("Accept-Encoding") != std::string::npos) {
+        } 
+		else if (line.find("Accept-Encoding") != std::string::npos) {
             if ((pos_begin = line.rfind(":")) != std::string::npos) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string encoding = line.substr(pos_begin, std::string::npos);
                 setAcceptEncoding(encoding);
                 // std::cout << "encoding: " << encoding << std::endl;
             }
-        } else if (line.find("Accept-Language") != std::string::npos) {
+        } 
+		else if (line.find("Accept-Language") != std::string::npos) {
             if ((pos_begin = line.rfind(":")) != std::string::npos) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string languages = line.substr(pos_begin, std::string::npos);
@@ -526,7 +533,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
 }
 
 // Ensure the function is defined outside the class scope
-void parseRequestLine(const std::string& request_line) {
+void HTTPRequest::parseRequestLine(const std::string& request_line) {
 	std::string method, request_uri, version;
 	
 	std::istringstream stream(request_line);
@@ -556,7 +563,7 @@ void HTTPRequest::parseRequest(const std::string& request){
 	std::string request_line;
 
 	std::getline(stream, request_line);
-	parseRequestLine(request_line);
+	parseRequestLine(request_line); //dry method, uri, ver
 	parseRequestHeader(stream); 
 	// should modify it 
 	//-note: the ServerManger::readRequestBody already 
