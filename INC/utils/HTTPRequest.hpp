@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/07 04:33:16 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/07 20:14:14 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,8 +158,8 @@ class HTTPRequest {
     	std::string close_boundary_; //new http
 		std::map<std::string, std::string> content_type_; //new http
 		int content_length_; //new http
-		bool within_the_cd_flag_; //new http
-		bool with_file_flag_; //new http
+		//bool within_the_cd_flag_; //new http for content actually; not useful
+		bool with_file_flag_; //new http for content actually
 
 
 

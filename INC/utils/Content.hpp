@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/07 04:32:20 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/07 20:14:34 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,16 +83,15 @@ class Content {
 
                 void setContentLength(const std::string& buffer);
                 void setBodyWithNoCD(const std::string& buffer);
-                void setCDs(const std::string& buffer, CD_header header, int index);
-                void addContentDisposition(const ContentDisposition_& cd); //need to take a look
-                void addCDs(); //new 
+                void setCDs(const std::string& buffer, CD_header header, int index); //scap! no need! rubbish! 
+                void addContentDisposition(); //need to take a look
 
                 //getters
                 const std::pair<std::string, std::string>& getContentType();
                 const std::string& getBoundary();
                 const std::string& getOpenBoundary();
                 const std::string& getCloseBoundary();
-                int getContentLength();
+                int getContentLength();//no use?
                 const std::map<std::string, std::string> getBody(); //no use
                 std::vector<ContentDisposition_>& getCDs(); //modified
                 std::string& getBodyWithNoCD(); //modified
@@ -128,6 +127,8 @@ class Content {
         *       */
                 // bool body_flag_;
                 // bool cd_flag_;
+
+
                 int content_length_; //Content-Length: 13
                 std::string boundary_; //Content-Type: multipart/form-dat; boundary=--WebKitFormBoundaryXYZ
                 // std::map<std::string, std::string> body_;

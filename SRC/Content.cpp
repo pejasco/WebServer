@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/07 04:25:30 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/07 20:13:35 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,9 +252,9 @@ std::string& Content::getBodyWithNoCD()
     return body_with_no_cd_;
 }
 
-void Content::addContentDisposition(const ContentDisposition_& cd)
+void Content::addContentDisposition()
 {
-    CDs_list_.push_back(cd);
+    CDs_list_.push_back(ContentDisposition_());
 }
 
 

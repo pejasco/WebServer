@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/06 22:56:49 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/07 20:06:16 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ Accept::~Accept(){}
 
 
 //<<HTTPRequest>>
-HTTPRequest::HTTPRequest() : instance_index_(global_index_++), content_flag_(false),
-	is_in_the_body_flag_(false), boundary_index_(-1), cgi_flag_(false){}
+HTTPRequest::HTTPRequest() : instance_index_(global_index_++),
+	cgi_flag_(false), with_file_flag(false){}
 
 HTTPRequest::~HTTPRequest(){}
 
@@ -345,72 +345,164 @@ const std::string HTTPRequest::getCloseBoundary() const{
 
 //Parser
 
+// void HTTPRequest::parseContent(const std::string& body_line){
+// 	size_t pos_begin;
+// 	size_t pos_end;
+// 	std::string line;
+// 	(void)pos_end;
+	
+// 	// std::cout << BOLD MAGENTA "I got the body_line, time to parse content\n" RESET;
+// 	if (body_line == content_.getBoundary()){
+// 		// std::cout << "check1\n";
+// 		setIsInTheBodyFlag(true);
+// 		if (boundary_index_ == -1)
+// 			boundary_index_ = 0;
+// 		else
+// 			boundary_index_ += 1;
+// 		// multipart/form-data
+// 	} else if (body_line == content_.getBoundary() + "--"){
+// 		// std::cout << "check1bis\n";
+// 		setContentFlag(false);
+// 		setCGIFlag(false);
+// 		setIsInTheBodyFlag(false);
+// 		setBoundaryIndex(-1);
+
+// 	} else if (cgi_flag_ == 0 && content_.getContentLength() >= 0 
+// 		&& !content_.getBoundary().empty() && is_in_the_body_flag_){
+// 		// std::cout << "check2\n";
+// 		if (cgi_flag_ == true){
+// 			// std::cout << "check2bis\n";
+// 			size_t pos_begin = path_.rfind(".");
+// 			cgi_type_ = path_.substr(pos_begin + 1);
+// 		}
+		
+// 		if (body_line.find("Content-Disposition:") != std::string::npos){
+// 			// std::cout << "check3\n";
+// 			content_.addContentDisposition(ContentDisposition_());
+// 			// std::cout << "is it working here\n";
+// 			if((pos_begin = body_line.find(':')) != std::string::npos){
+// 				pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);
+// 				line = body_line.substr(pos_begin);
+// 				content_.setCDs(line, ContentDisposition, boundary_index_);
+// 			}
+// 		} else if (body_line.find("Content-Type:") != std::string::npos){
+// 			// std::cout << "check4\n";
+// 			if((pos_begin = body_line.find(':')) != std::string::npos){
+// 				pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);
+// 				line = body_line.substr(pos_begin);
+// 				content_.setCDs(line, InterContentType, boundary_index_);}
+		
+// 		} else if (!body_line.empty()
+// 			&& (content_.getCDs()[boundary_index_].filename_.empty())){
+// 				// std::cout << "check4\n";
+// 				content_.setCDs(body_line, Cont, boundary_index_);
+				
+// 		} else if (!body_line.empty()
+// 			&& !(content_.getCDs()[boundary_index_].filename_.empty())){
+// 				// std::cout << "check5\n";
+// 				content_.setCDs(body_line, FileContent, boundary_index_);
+	
+// 		}
+			
+// 	} else {
+// 		// Handle
+// 		// std::cout << "check6\n";
+// 		content_.setBodyWithNoCD(body_line); 
+		
+// 	}
+// }
+
+
 void HTTPRequest::parseContent(const std::string& body_line){
 	size_t pos_begin;
 	size_t pos_end;
 	std::string line;
-	(void)pos_end;
 	
-	// std::cout << BOLD MAGENTA "I got the body_line, time to parse content\n" RESET;
-	if (body_line == content_.getBoundary()){
-		// std::cout << "check1\n";
-		setIsInTheBodyFlag(true);
-		if (boundary_index_ == -1)
-			boundary_index_ = 0;
-		else
-			boundary_index_ += 1;
-		// multipart/form-data
-	} else if (body_line == content_.getBoundary() + "--"){
-		// std::cout << "check1bis\n";
-		setContentFlag(false);
-		setCGIFlag(false);
-		setIsInTheBodyFlag(false);
-		setBoundaryIndex(-1);
-
-	} else if (cgi_flag_ == 0 && content_.getContentLength() >= 0 
-		&& !content_.getBoundary().empty() && is_in_the_body_flag_){
-		// std::cout << "check2\n";
-		if (cgi_flag_ == true){
-			// std::cout << "check2bis\n";
-			size_t pos_begin = path_.rfind(".");
-			cgi_type_ = path_.substr(pos_begin + 1);
-		}
-		
-		if (body_line.find("Content-Disposition:") != std::string::npos){
+	std::isstringstrm stream(body_line);
+	while (std::getline(stream, line)){
+		// std::cout << BOLD MAGENTA "I got the body_line, time to parse content\n" RESET;
+		trimString(line);
+		if (line.empty()) {
+			continue;
+		} 
+		else if (line.find(close_boundary_) != std::string::npos){
+			// std::cout << "check1\n";
+			with_file_flag_ = false;
+			//cgi_flag_ = false; //need to review further?!?!
+			return;
+			// multipart/form-data
+		} 
+		else if (line.find(open_boundary_) != std::string::npos &&
+            line.find(close_boundary_) == std::string::npos){
+			// std::cout << "check1bis\n";
+			with_file_flag_ = false;
+		} 
+		else if  (line.find("Content-Disposition:") != std::string::npos){
 			// std::cout << "check3\n";
-			content_.addContentDisposition(ContentDisposition_());
+			content_.addContentDisposition();
+			within_the_cd_flag_ = true;
 			// std::cout << "is it working here\n";
-			if((pos_begin = body_line.find(':')) != std::string::npos){
-				pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);
+			ContentDisposition_ & last_cd = content_.getCDs().back();
+			//--CD Type
+			if((pos_begin = line.find(':')) != std::string::npos){
+				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+				pos_end = line.find(";", pos_begin);
 				line = body_line.substr(pos_begin);
-				content_.setCDs(line, ContentDisposition, boundary_index_);
+				std::string type = trimString(line_input.substr(pos_begin, pos_end - pos_begin));
+				last_cd.CD_type_ = type;
 			}
-		} else if (body_line.find("Content-Type:") != std::string::npos){
+			//--name
+			if (line.find("name") != std::string::npos){
+				if ((pos_begin = line.find("name")) != std::string::npos){
+                	pos_begin = (line.find("\"", pos_begin)) + 1;
+                	pos_end = (line.find("\"", pos_begin));
+                	std::string name = trimString(line.substr(pos_begin, pos_end - pos_begin));
+                	last_cd.name_ = name;
+            	}
+			}
+
+			if (line.find("filename") != std::string::npos){
+				if ((pos_begin = line.find("filename")) != std::string::npos){
+					pos_begin = (line.find("\"", pos_begin)) + 1;
+					pos_end = (line.find("\"", pos_begin));
+					std::string filename = trimString(line_input.substr(pos_begin, pos_end - pos_begin));
+					last_cd.filename_ = filename;
+				}
+				with_file_flag_ = true;
+			}
+		} 
+		else if (body_line.find("Content-Type:") != std::string::npos){
 			// std::cout << "check4\n";
-			if((pos_begin = body_line.find(':')) != std::string::npos){
-				pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);
-				line = body_line.substr(pos_begin);
-				content_.setCDs(line, InterContentType, boundary_index_);}
-		
-		} else if (!body_line.empty()
-			&& (content_.getCDs()[boundary_index_].filename_.empty())){
-				// std::cout << "check4\n";
-				content_.setCDs(body_line, Cont, boundary_index_);
-				
-		} else if (!body_line.empty()
-			&& !(content_.getCDs()[boundary_index_].filename_.empty())){
-				// std::cout << "check5\n";
-				content_.setCDs(body_line, FileContent, boundary_index_);
-	
+			if ((pos_begin = line_input.rfind(":")) != std::string::npos){
+                pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
+                pos_end = line_input.find(";");
+                std::string inner_cttype = trimString(line_input.substr(pos_begin, pos_end - pos_begin));
+                http_CD_ & lastest_cd = content_.getCDs_list_().back();
+                last_cd.setInnerContentType_(inner_cttype);
+            }
 		}
+
+
+		else if (!body_line.empty()
+				&& (content_.getCDs()[boundary_index_].filename_.empty())){
+					// std::cout << "check4\n";
+					content_.setCDs(body_line, Cont, boundary_index_);			
+		} 
+		else if (!body_line.empty()
+				&& !(content_.getCDs()[boundary_index_].filename_.empty())){
+					// std::cout << "check5\n";
+					content_.setCDs(body_line, FileContent, boundary_index_);
+			}
+				
+		} else {
+			// Handle
+			// std::cout << "check6\n";
+			content_.setBodyWithNoCD(body_line); 
 			
-	} else {
-		// Handle
-		// std::cout << "check6\n";
-		content_.setBodyWithNoCD(body_line); 
-		
-	}
+		}
 }
+
+
 //if (!(content_.getContentType()->first).empty() && content_.getContentLength() >= 0;
 
 void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
@@ -420,8 +512,9 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
     // size_t pos_end;
 
     while (std::getline(stream, line)) {
+		trimString(line);
         if (line.empty()) {
-            continue;        
+            return;        
         } 
 		else if (line.find("Host") != std::string::npos) {
             if ((pos_begin = line.rfind(":")) != std::string::npos) {
@@ -521,14 +614,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                 setContentLength(atoi(length.c_str()));
                 // std::cout << "Content-Length: " << ctlength << std::endl;
             }
-            //only POST will set content_flag as true
         } 
-		else if (content_flag_ == true) {
-            parseContent(line);
-        } 
-		else {
-            return;
-        }
     }
 }
 
