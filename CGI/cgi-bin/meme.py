@@ -19,8 +19,8 @@ memes = [
 	"https://plaky.com/blog/wp-content/uploads/2023/08/Code-doesnt-work.jpg",
 	"https://i.pinimg.com/736x/c8/2e/23/c82e23d3b4d7feb64e9ac2175f7fa07f.jpg",
 	"https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2tqdHgwcW51dTVlZ20zbmtyazN4bDR0bjlkcjA1M2llZ3JoNzlnYyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/pUVOeIagS1rrqsYQJe/giphy.gif",
-    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2tqdHgwcW51dTVlZ20zbmtyazN4bDR0bjlkcjA1M2llZ3JoNzlnYyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/oaDcc0LTCuIAiGYrzn/giphy.gif",
-    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXVlMnBrbDZ5eXNsb2Y1NXcyaGtsa3VscjhrN25ubXE5ZWEwOWIwdSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/lgcUUCXgC8mEo/giphy.gif"
+	"https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2tqdHgwcW51dTVlZ20zbmtyazN4bDR0bjlkcjA1M2llZ3JoNzlnYyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/oaDcc0LTCuIAiGYrzn/giphy.gif",
+	"https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXVlMnBrbDZ5eXNsb2Y1NXcyaGtsa3VscjhrN25ubXE5ZWEwOWIwdSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/lgcUUCXgC8mEo/giphy.gif"
 ]
 
 chosen_meme = random.choice(memes)
@@ -34,7 +34,7 @@ print(f"""
 	<style>
 		body {{
 			background-color: #0c0f1a;
-			color: #00ffe7;
+			color: #7fffd4;
 			font-family: monospace;
 			display: flex;
 			flex-direction: column;
@@ -65,6 +65,18 @@ print(f"""
 			color: limegreen;
 			margin-top: 6px;
 		}}
+		.back {{
+			position: absolute;
+			top: 10px;
+			left: 10px; /* Or use right: 10px; for right side */
+			padding: 10px 16px;
+			background-color: #003344;
+			color: #00ffe7;
+			border: 1px solid #00ffe7;
+			border-radius: 8px;
+			font-size: 1rem;
+			cursor: pointer;
+		}}
 	</style>
 </head>
 <body>
@@ -73,6 +85,7 @@ print(f"""
 		<button type="submit">🎲 Give me a meme!</button>
 	</form>
 	<div class="method">GET</div>
+	<button class="back" onclick="history.back()">⬅️ Back</button>
 </body>
 </html>
 """)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/06 21:59:24 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/07 04:25:30 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ void Content::setContentType(const std::string &buffer)
             if ((pos = buffer.find("boundary=", pos)) != std::string::npos)
             {
                 boundary = buffer.substr(pos);
-                setBounday(boundary);
+                setBoundary(boundary);
             }
         }
         else

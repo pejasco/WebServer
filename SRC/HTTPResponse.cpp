@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/05 15:01:50 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/07 04:35:29 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,31 +120,6 @@ void HTTPResponse::setGetResponse() {
 		status_code = checkFile();
 		std::cout << "status_code of checkFIle in GET: " << status_code << std::endl;
 	}
-
-	// if (status_code == 200) {
-	// 	std::cout << "GET requested an existing file --> proceed to response pre\n";
-	// 	prepareStatusLine(status_code);
-	// 	prepareHeader();
-	// 	if (cgi_flag)
-	// 		CGI_Body();
-	// 	headerResponse();
-	// } else {
-	// 	std::cout << "GET requested a file that doesn't exist --> proceed to error response pre\n";
-	// 	setErrorResponse(status_code);
-	// }
-	// if (cgi_flag) {
-	// 	CGI_Body(); // <- run the actual CGI handler
-	// 	return; // <- do NOT check or open the file
-	// }
-
-	// int status_code = checkFile(); //fallback for static files
-	// if (status_code == 200) {
-	// 	prepareStatusLine(status_code);
-	// 	prepareHeader();
-	// 	headerResponse();
-	// } else {
-	// 	setErrorResponse(status_code);
-	// }
 	if (status_code == 200) {
 		if (cgi_flag) {
 			CGI_Body(); // Run CGI handler, which builds full HTTP response
@@ -155,21 +130,28 @@ void HTTPResponse::setGetResponse() {
 			prepareStatusLine(status_code);
 			prepareHeader();
 			headerResponse();
+			//_response_ready_ = true;
 		}
+	}
+	else
+	{
+		std::cerr << "[ERRODEBUGG] Non-200 GET status. Calling setErrorResponse(" << status_code << ")\n";
+		setErrorResponse(status_code);
+		_response_ready_ = true;
 	}
 }
 
 int HTTPResponse::checkDirectory(std::string& location){
 	struct stat st;
 
-	 if (stat(location.c_str(), &st) == 0){
+	if (stat(location.c_str(), &st) == 0){
 		if (S_ISDIR(st.st_mode)){
 			return 200;
 		} else {
 			std::cout << "Error: Path exits but is not a directory" << '\n';
 			return 500; //conflict
 		}
-	 } else {
+	} else {
 		if (errno == ENOENT) {
 			std::cout << "Error: Directory does not exist" << std::endl;
 			return 500; //not found
@@ -177,7 +159,7 @@ int HTTPResponse::checkDirectory(std::string& location){
 			std::cout << "Error: " << strerror(errno) << std::endl;
 			return 500; //internal error
 		}
-	 }
+	}
 }
 
 
@@ -316,38 +298,49 @@ void HTTPResponse::setErrorResponse(int error_code) {
 	} else 
 		body_filename_ = default_server_->getErrorDirectory() + convertToStr(error_code) + ".html";
 	std::cout << "body_filename_ found via map lookup: " << body_filename_ << std::endl;
+	std::cerr << "[DEBUG hellooo] setErrorResponse: using body_filename_ = " << body_filename_ << std::endl;
 	if (fileExists(body_filename_)) {
 		std::cout << "error_file exist " << body_filename_ << std::endl;
 		prepareStatusLine(error_code);
 		content_length_ = calculateFileSize(body_filename_);
-		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(content_length_) + "\r\nConnection: close\r\n";
+		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length_) + "\r\nConnection: close\r\n";
 		if (!location_->getRedirectURL().empty())
 			header_ += "Location: " + location_->getRedirectURL() + "\r\n";
 		response_ = status_line_ + header_ + empty_line_;
+		std::ifstream file(body_filename_.c_str());
+		if (file) {
+			std::stringstream buffer;
+			buffer << file.rdbuf();
+			response_ += buffer.str();
+			file.close();
+		} else {
+			std::cerr << "[DEBUG STILL TRYING TO FIX ERROR] setErrorResponse: could not open " << body_filename_ << " for reading\n";
+		}
 	} else {
 		if (!location_->getRedirectURL().empty())
 			draftRedirectResponse();
 		else
 			draftErrorResponse();
 	}
+	std::cerr << "[DEBUG draftErrorResponse whyyyys it ot working] response_ built = \n" << response_ << "\n";
 }
 
 void HTTPResponse::draftRedirectResponse() {
 	std::cout << "error: error-file " << body_filename_ << " doesn't exist\n";
 	// body = "<!DOCTYPE html><html><head><title>301 Moved permanently</title></head><body><h1>301 Moved permanently</h1><p>This page is not available anymore. If you are not automatically redirect, please follow this <a href=" + location->getRedirectURL() +">link</a></p></body></html>";
 	status_line_ = current_request_.getVersion() + " 301 Moved Permanently\r\n";
-	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: 0\r\nConnection: close\r\nLocation: " + location_->getRedirectURL() + "\r\n";
+	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: 0\r\nConnection: close\r\nLocation: " + location_->getRedirectURL() + "\r\n";
 	response_ = status_line_ + header_ + empty_line_;
 	body_filename_ = "";
 }
 
 void HTTPResponse::draftErrorResponse() {
 	std::cout << "error: error-file " << body_filename_ << " doesn't exist\n";
-	body_msg_ = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
-	status_line_ = current_request_.getVersion() + " 500 Internal server error\r\n";
-	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(body_msg_.size()) + "\r\nConnection: close\r\n";
-	response_ = status_line_ + header_ + empty_line_ + body_msg_;
-	body_filename_ = "";
+	// body_msg_ = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
+	// status_line_ = current_request_.getVersion() + " 500 Internal server error\r\n";
+	// header_ = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(body_msg_.size()) + "\r\nConnection: close\r\n";
+	// response_ = status_line_ + header_ + empty_line_ + body_msg_;
+	// body_filename_ = "";
 }
 
 //Checking if the file requested exist and if it is possible to read it 
@@ -491,63 +484,6 @@ void HTTPResponse::headerResponse() {
 	// std::cout << "response: " << response << std::endl;
 }
 
-// void HTTPResponse::CGI_Body() //getting httpRequest data and sending it to CGI and storing it in RequestData
-// {
-// 	const std::string CGI_ROOT = "./CGI/cgi-bin";
-// 	std::string uri = current_request_.getPath();  // e.G /cgi-bin/test.py
-// 	std::string prefix = "/cgi-bin";
-// 	std::string scriptPath;
-
-// 	if (uri.find(prefix) == 0) {
-// 		std::string relativePath = uri.substr(prefix.size());     // e.g. "/test.py"
-// 		scriptPath = CGI_ROOT + relativePath;         // e.g. "./CGI/cgi-bin/test.py"
-// 		std::cerr << "[CGI DEBUG] full path to script: " << scriptPath << std::endl;
-// 	} else {
-// 		setErrorResponse(404);  // unexpected URI
-// 		return;
-// 	}
-// 	std::cerr << "[CGI DEBUG] Raw POST body (from HTTPRequest): [" << current_request_.getRawBody() << "]" << std::endl;
-
-
-// 	RequestData data;
-// 	data.setMethod(current_request_.getMethodAsStr());
-// 	data.setPath(scriptPath); //for SCRIPT_FILENAME and SCRIPT_NAME
-// 	data.setQueryString(current_request_.getQueryStr());
-// 	data.setHeaders(current_request_.getHeaders());
-// 	data.setBody(current_request_.getRawBody());
-// 	std::cerr << "[CGI] method : " << data.getMethod() << std::endl;
-// 	std::cerr << "[CGI] - path saved: " << data.getPath() << std::endl;
-// 	std::cerr << "[CGI] - query str: " << data.getQueryString() << std::endl;
-// 	std::cerr << "[CGI] - body saved: " << data.getBody() << std::endl;
-
-// 	if (data.getMethod() == "POST" && data.getBody().empty()) {
-// 		std::cerr << "[CGI ERROR] POST method but body is empty!" << std::endl;
-// 	}
-
-
-// 	CgiHandler handler(data, scriptPath); //new object
-// 	std::string cgiOutput = handler.run();
-
-// 	size_t headerEnd = cgiOutput.find("\r\n\r\n");
-// 	if (headerEnd != std::string::npos) {
-// 		std::string headers = cgiOutput.substr(0, headerEnd);
-// 		std::string body = cgiOutput.substr(headerEnd + 4);
-
-// 		if (headers.find("Content-Type:") == std::string::npos)
-// 			headers = "Content-Type: text/html\r\n" + headers;
-
-// 		if (headers.find("Connection:") == std::string::npos)
-// 			headers += "\r\nConnection: close";
-
-// 		response_ = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
-// 		body_filename_.clear();
-// 	} else {
-// 		// fallback (not ideal, but prevents broken response)
-// 		response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;
-// 	}
-// 	_response_ready_ = true;
-// }
-
 void HTTPResponse::CGI_Body() {
 	const std::string CGI_ROOT = "./CGI/cgi-bin";
 	std::string uri = current_request_.getPath();  // e.g. /cgi-bin/birthday.py?day=13&month=11
@@ -565,6 +501,17 @@ void HTTPResponse::CGI_Body() {
 		std::cerr << "[CGI DEBUG] full path to script: " << scriptPath << std::endl;
 	} else {
 		setErrorResponse(404);  // unexpected URI
+		return;
+	}
+
+	if (access(scriptPath.c_str(), F_OK) != 0) {
+		std::cerr << "[CGI ERROR] Script not found?? whyyyyy?: " << scriptPath << std::endl;
+		setErrorResponse(404);
+		return;
+	}
+	if (access(scriptPath.c_str(), X_OK) != 0) {
+		std::cerr << "[CGI ERROR] Script not executable :((( : " << scriptPath << std::endl;
+		setErrorResponse(403);
 		return;
 	}
 

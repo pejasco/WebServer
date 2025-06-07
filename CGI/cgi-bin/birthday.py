@@ -47,9 +47,18 @@ print("""
 		button:hover {
 			background-color: #005580;
 		}
-		.confetti {
-			width: 250px;
-			margin-top: 0px;
+		.confettil {
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			width: 520px;
+		}
+		.confettir {
+			position: absolute;
+			right: 0px;
+			top: 0px;
+			width: 520px;
+			transform: scaleX(-1);
 		}
 		.shaq {
 			position: absolute;
@@ -57,20 +66,35 @@ print("""
 			bottom: 10px;
 			width: 420px;
 		}
+		.method {
+			font-size: 0.8rem;
+			color: limegreen;
+			margin-top: 6px;
+		}
 	</style>
 </head>
 <body>
 	<br><br><br><br><br><br><br><br><br>
 	<h1>🎂 Birthday Countdown 🎉</h1>
+	<div class="method">GET</div>
+	<button onclick="window.location.href='http://localhost:8080/'">Homepage</button>
+	<br><br><br>
 """)
 
 if day and month:
 	try:
 		days_left = calculate_days_left(month, day)
-		print("""<br>""")
-		print(f"<h3>Your birthday is in <strong>{days_left} day(s)</strong>!</h3>")
+		print("""<br><br><br><br>""")
+		print(f"<h2>Your birthday is in <strong>{days_left} day(s)</strong>!</h2>")
+		if days_left == 0:
+			print("""
+			<img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjQ0enJxYmp3ZnBvMWFlcG4wMzlxeW1oM242azNqM3k2djJ1bTBqeSZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/afYMsbuUWN2W1fM5S7/giphy.gif" width="300"/>
+			""")
+			print("""<br>""")
+			print(f"<h3>Here, have some cake!</h3>")
 		print("""
-		<img src="https://media2.giphy.com/media/RkN33Se0a99r6pMiZi/giphy.gif" class="confetti" alt="Celebration" />
+		<img src="https://media2.giphy.com/media/RkN33Se0a99r6pMiZi/giphy.gif" class="confettil" alt="Celebration" />
+		<img src="https://media2.giphy.com/media/RkN33Se0a99r6pMiZi/giphy.gif" class="confettir" alt="Celebration" />
 		</div>
 		<img src="https://media.giphy.com/media/l0IyaxKjZqenpMIQ8/giphy.gif" class="shaq" alt="Floating cake" />
 		""")

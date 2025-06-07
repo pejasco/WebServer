@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/06 21:44:55 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/07 04:33:16 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,7 +111,7 @@ class HTTPRequest {
 		//CGI
 		std::string getMethodAsStr() const;
 		std::string getQueryStr() const;
-		//std::string getRawBody() const;
+		std::string getRawBody() const;
 		//std::string getcgiPath();
 		std::map<std::string, std::string> getHeaders() const;
 		void setQueryStr(const std::string& query);
