@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/08 00:38:50 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/08 02:57:11 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,7 +171,9 @@ int HTTPResponse::createUploadFile(std::string& upload_dir, Content& content){
 
 	//<<sievdebug>>
 	content.printCDsList();
-	for(; it != allCDs.end() && !((it->filename_).empty()); ++it){
+	for(; it != allCDs.end(); ++it){
+		if (!(it->filename_).empty())
+			break;
 	}
 	
 	if (it == allCDs.end()){
@@ -184,7 +186,7 @@ int HTTPResponse::createUploadFile(std::string& upload_dir, Content& content){
 	std::cout << "<<sievdebug>> " << "filename:" << filename << "\n";
 	std::cout << "<<sievdebug>> " << "after filename\n";
 
-	std::string file_content = it->content_;
+	std::string file_content = it->file_content_;
 	
 	std::string filepath = upload_dir + "/" + filename;
 	std::cout << "Trying to create file: " << filepath << std::endl;
