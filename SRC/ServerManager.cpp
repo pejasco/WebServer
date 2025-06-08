@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/08 01:10:05 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/08 02:10:13 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -438,6 +438,39 @@ bool ServerManager::readClientHeaders(std::string& headers) {
 	return true;
 }
 
+//original
+// bool ServerManager::parseHeadersAndCheckBodySize(const std::string& headers, HTTPRequest& current_request) {
+// 	// Parse headers only (not body)
+// 	current_request.parseRequest(headers);
+// 	std::cout << BOLD MAGENTA "\n#######HEADER RECEIVED##########\n\n" RESET << headers << BOLD MAGENTA "\n#######END OF HEADER##########\n" RESET << std::endl; 
+
+// 	std::cout << BOLD UNDERLINE GREEN "\n###### ENTERING SERVER//LOCATION DEBUGGING ######\n\n" RESET;
+// 	std::string server_IP = getServerIP(current_fd_);
+// 	default_server_ = servers_list_.front();
+// 	Server *server_requested = getCurrentServer(current_request, *this, server_IP);
+// 	Location *location_requested = getCurrentLocation(current_request, *server_requested);
+// 	if (location_requested == NULL && (current_request.getPath() == "/"))
+// 		location_requested = servers_list_.front()->getLocationsList().front();
+// 	std::cout << BOLD UNDERLINE GREEN "\n###### LEAVING SERVER//LOCATION DEBUGGING ######\n\n" RESET;
+	
+// 	// Get server IP for location matching
+// 	size_t max_body_size = maxBodySizeLocation(servers_list_.front(), server_requested, location_requested);
+// 	// Check Content-Length header if present
+// 	Content temp = current_request.getContent();
+// 	size_t content_length = temp.getContentLength();
+// 	if (content_length > 0) {
+// 		if (max_body_size > 0 && content_length > max_body_size) {
+// 			std::cout << "Request body size " << content_length 
+// 						<< " exceeds limit " << max_body_size << std::endl;
+// 			error_code_ = 413;
+// 		} else {
+// 			if (!readRequestBody(current_request, content_length, max_body_size))
+// 				return false;
+// 		}
+// 	}
+// 	processAndSendResponse(current_request, server_requested, location_requested);
+// 	return true;
+// }
 
 bool ServerManager::parseHeadersAndCheckBodySize(const std::string& headers, HTTPRequest& current_request) {
 	// Parse headers only (not body)
@@ -463,53 +496,109 @@ bool ServerManager::parseHeadersAndCheckBodySize(const std::string& headers, HTT
 			std::cout << "Request body size " << content_length 
 						<< " exceeds limit " << max_body_size << std::endl;
 			error_code_ = 413;
+			processAndSendResponse(current_request, server_requested, location_requested);
+			return true;
 		} else {
 			if (!readRequestBody(current_request, content_length, max_body_size))
-				return false;
+				return false; // only process when body is fully read
 		}
 	}
 	processAndSendResponse(current_request, server_requested, location_requested);
 	return true;
 }
 
+//original
+// bool ServerManager::readRequestBody(HTTPRequest& current_request, size_t content_length, size_t max_body_size) {
+// 	std::string request_body;
+// 	size_t total_read = 0;
+	
+// 	request_body.reserve(content_length);
+	
+// 	while (total_read < content_length) {
+// 		size_t to_read = std::min(sizeof(received_) - 1, content_length - total_read);
+// 		ssize_t byte_received = recv(current_fd_, received_, to_read, 0);
+		
+// 		if (byte_received <= 0) {
+// 			// if (byte_received == 0) {
+// 			// 	std::cout << "Client disconnect during body reading\n";
+//     		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+//         	// No data available yet, try again later
+//         		return false;
+
+// 			} else {
+// 				std::cerr << "Error reading body: " << strerror(errno) << std::endl;
+// 			}
+// 			return false;
+// 		}
+		
+// 		total_read += byte_received;
+		
+// 		// Double-check size limit (defense in depth)
+// 		if (max_body_size > 0 && total_read > max_body_size) {
+// 			std::cerr << "Body size exceeded during reading\n";
+// 			error_code_ = 413;
+// 		}
+		
+// 		received_[byte_received] = '\0';
+// 		request_body.append(received_, byte_received);
+// 	}
+// 	std::cout << "<<sievdebug>> request_body received (" << request_body.size() << " bytes):\n";
+// 	std::cout << "<<sievdebug>>" << request_body << "\n";
+// 	std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
+// 	current_request.parseContent(request_body);
+// 	return true;
+// }
+
 bool ServerManager::readRequestBody(HTTPRequest& current_request, size_t content_length, size_t max_body_size) {
-	std::string request_body;
-	size_t total_read = 0;
-	
-	request_body.reserve(content_length);
-	
-	while (total_read < content_length) {
-		size_t to_read = std::min(sizeof(received_) - 1, content_length - total_read);
-		ssize_t byte_received = recv(current_fd_, received_, to_read, 0);
-		
-		if (byte_received <= 0) {
-			if (byte_received == 0) {
-				std::cout << "Client disconnect during body reading\n";
-			} else {
-				std::cerr << "Error reading body: " << strerror(errno) << std::endl;
-			}
-			return false;
-		}
-		
-		total_read += byte_received;
-		
-		// Double-check size limit (defense in depth)
-		if (max_body_size > 0 && total_read > max_body_size) {
-			std::cerr << "Body size exceeded during reading\n";
-			error_code_ = 413;
-		}
-		
-		received_[byte_received] = '\0';
-		request_body.append(received_, byte_received);
-	}
-	std::cout << "<<sievdebug>> request_body received (" << request_body.size() << " bytes):\n";
-	std::cout << "<<sievdebug>>" << request_body << "\n";
-	std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
-	current_request.parseContent(request_body);
-	return true;
+    Client* client = clients_list_[current_fd_];
+    if (!client) return false;
+
+    // per-client buffer
+    std::string& request_body = client->body_buffer;
+    size_t& total_read = client->body_bytes_read;
+
+    request_body.reserve(content_length);
+
+    while (total_read < content_length) {
+        size_t to_read = std::min(sizeof(received_) - 1, content_length - total_read);
+        ssize_t byte_received = recv(current_fd_, received_, to_read, 0);
+
+        if (byte_received < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                return false;
+            } else {
+                std::cerr << "Error reading body: " << strerror(errno) << std::endl;
+                return false;
+            }
+        } else if (byte_received == 0) {
+            std::cout << "Client disconnect during body reading\n";
+            return false;
+        }
+
+        total_read += byte_received;
+
+        if (max_body_size > 0 && total_read > max_body_size) {
+            std::cerr << "Body size exceeded during reading\n";
+            error_code_ = 413;
+            return false;
+        }
+
+        received_[byte_received] = '\0';
+        request_body.append(received_, byte_received);
+    }
+
+    // only parse when the full body is received
+    std::cout << "<<sievdebug>> request_body received (" << request_body.size() << " bytes):\n";
+    std::cout << "<<sievdebug>>" << request_body << "\n";
+    std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
+    current_request.parseContent(request_body);
+
+    // reset for next request
+    request_body.clear();
+    total_read = 0;
+
+    return true;
 }
-
-
 void ServerManager::processAndSendResponse(HTTPRequest& current_request, Server *server_requested, Location *location_requested) {
 	// SEND THE RESPONSE HEADER
 	

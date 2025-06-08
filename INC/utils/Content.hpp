@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/08 00:33:30 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/08 01:25:25 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ class Content {
                 void setOpenBoundary(const std::string& boundary);
                 void setCloseBoundary(const std::string& boundary);
 
-                void setContentLength(const std::string& buffer);
+                void setContentLength(int len);
                 void setBodyWithNoCD(const std::string& buffer);
                 void setCDs(const std::string& buffer, CD_header header, int index); //scap! no need! rubbish! 
                 void addContentDisposition(); //need to take a look

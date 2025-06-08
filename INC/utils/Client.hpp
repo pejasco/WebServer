@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 11:54:18 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 18:25:55 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/08 01:54:46 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,10 @@ class Client {
 		socklen_t getClientAddrLen();
 		bool getError();
 		
+		//siev:
+		std::string body_buffer;
+		size_t body_bytes_read;
+
 	private:
 		bool error_;
 		int client_fd_;
@@ -36,6 +40,7 @@ class Client {
 		char ip_str_[INET6_ADDRSTRLEN];
 		const void *ip_;
 		uint16_t port_;
+
 };
 
 #endif

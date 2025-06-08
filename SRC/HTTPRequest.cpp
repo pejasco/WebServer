@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/08 01:00:10 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/08 02:14:58 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -465,13 +465,26 @@ void HTTPRequest::parseContent(const std::string& body_line) {
             // std::cout << "is it working here\n";
             ContentDisposition_ & last_cd = content_.getCDs().back();
             //--CD Type
-            if ((pos_begin = line.find(':')) != std::string::npos) {
-                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                pos_end = line.find(";", pos_begin);
-                line = line.substr(pos_begin);
-                std::string type = trimString(line.substr(pos_begin, pos_end - pos_begin));
-                last_cd.CD_type_ = type;
-            }
+            // if ((pos_begin = line.find(':')) != std::string::npos) {
+            //     pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+            //     pos_end = line.find(";", pos_begin);
+            //     line = line.substr(pos_begin);
+            //     std::string type = trimString(line.substr(pos_begin, pos_end - pos_begin));
+            //     last_cd.CD_type_ = type;
+            // }
+			if ((pos_begin = line.find(':')) != std::string::npos) {
+    			pos_begin++; // move past ':'
+   				 pos_begin = line.find_first_not_of(" \t", pos_begin);
+				if (pos_begin != std::string::npos) {
+					pos_end = line.find(";", pos_begin);
+					std::string type;
+					if (pos_end != std::string::npos)
+						type = trimString(line.substr(pos_begin, pos_end - pos_begin));
+					else
+						type = trimString(line.substr(pos_begin));
+					last_cd.CD_type_ = type;
+				}
+			}
             //--name
             if (line.find("name") != std::string::npos) {
                 if ((pos_begin = line.find("name")) != std::string::npos) {
@@ -505,14 +518,14 @@ void HTTPRequest::parseContent(const std::string& body_line) {
             // Handle
             // std::cout << "check6\n";
             if (!with_cd_flag_) {
-                content_.setBodyWithNoCD(line); 
+                content_.setBodyWithNoCD(trimString(line)); 
             }
             else if (with_cd_flag_) {
                 ContentDisposition_ & last_cd = content_.getCDs().back();
                 if (with_file_flag_)
-                    last_cd.file_content_ += line;
+                    last_cd.file_content_ += trimString(line);
                 else
-                    last_cd.content_ += line;
+                    last_cd.content_ += trimString(line);
             }
         }
     }
@@ -627,7 +640,9 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
             if ((pos_begin = line.rfind(":")) != std::string::npos) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string length = trimString(line.substr(pos_begin));
-                setContentLength(atoi(length.c_str()));
+                int len = atoi(length.c_str());
+				setContentLength(len);
+				content_.setContentLength(len);
                 // std::cout << "Content-Length: " << ctlength << std::endl;
             }
         } 

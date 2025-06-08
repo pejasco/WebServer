@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/08 00:59:24 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/08 01:25:51 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,10 +77,9 @@ void Content::setContentType(const std::string &buffer)
     content_type_.second = subtype;
 }
 
-void Content::setContentLength(const std::string &buffer)
+void Content::setContentLength(int len)
 {
-    std::stringstream ss(buffer);
-    ss >> content_length_;
+    content_length_ = len;
 }
 
 void Content::setBodyWithNoCD(const std::string &line)
