@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/07 15:18:53 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/08 01:10:05 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -502,6 +502,9 @@ bool ServerManager::readRequestBody(HTTPRequest& current_request, size_t content
 		received_[byte_received] = '\0';
 		request_body.append(received_, byte_received);
 	}
+	std::cout << "<<sievdebug>> request_body received (" << request_body.size() << " bytes):\n";
+	std::cout << "<<sievdebug>>" << request_body << "\n";
+	std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
 	current_request.parseContent(request_body);
 	return true;
 }

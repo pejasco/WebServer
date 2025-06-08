@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/07 20:14:14 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/08 00:45:58 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ class HTTPRequest {
 		void setCloseBoundary(const std::string& close_boundary);		
 		void setBoundary(const std::string& boundary);
 		void setContentLength(int length);
+		void setCDFlag(bool flag);
 
 		//Getters
 		MET getMethod();
@@ -93,9 +94,11 @@ class HTTPRequest {
 		bool getConnection();
 		const std::string& getReferer();
 		const std::pair<std::string, std::string>& getAuthorisation();
-		const Content& getContent();
+		Content& getContent();
+		const Content& getContent() const;
 		const std::map <std::string, std::string>& getUnknown();
 		bool getCGIFlag();
+		bool getCDFlag();
 
 		const std::string getBoundary() const;
 		const std::string getOpenBoundary() const;
@@ -160,10 +163,11 @@ class HTTPRequest {
 		int content_length_; //new http
 		//bool within_the_cd_flag_; //new http for content actually; not useful
 		bool with_file_flag_; //new http for content actually
-
+		bool with_cd_flag_;
 
 
 	// CGI
+		std::string raw_body_;
 		std::string query_string_; //scrap?
 		std::map<std::string, std::string> headers_;  //map to store headers for cgi //scrap?
 	

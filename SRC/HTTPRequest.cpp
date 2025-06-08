@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/07 20:06:16 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/08 01:00:10 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,12 +28,16 @@ Accept::~Accept(){}
 
 //<<HTTPRequest>>
 HTTPRequest::HTTPRequest() : instance_index_(global_index_++),
-	cgi_flag_(false), with_file_flag(false){}
+	cgi_flag_(false), with_file_flag_(false){}
 
 HTTPRequest::~HTTPRequest(){}
 
 
 //Setters
+
+void HTTPRequest::setContentLength(int length) {
+    content_length_ = length;
+}
 
 void HTTPRequest::setContentFlag(const bool flag){
 	content_flag_ = flag;
@@ -273,6 +277,10 @@ void HTTPRequest::setContentType(std::string contentType){
     
 }
 
+void HTTPRequest::setCDFlag(bool flag){
+	with_cd_flag_ = flag;
+}
+
 
 MET HTTPRequest::getMethod() {
 	return method_;
@@ -315,7 +323,11 @@ const std::pair<std::string, std::string>& HTTPRequest::getAuthorisation(){
 	return authorisation_;
 }
 
-const Content& HTTPRequest::getContent(){
+Content& HTTPRequest::getContent() {
+    return content_;
+}
+
+const Content& HTTPRequest::getContent() const{
 	return content_;
 }
 
@@ -341,6 +353,14 @@ const std::string HTTPRequest::getOpenBoundary() const{
 
 const std::string HTTPRequest::getCloseBoundary() const{
     return close_boundary_;
+}
+
+bool  HTTPRequest::getCDFlag(){
+	return with_cd_flag_;
+}
+
+std::string HTTPRequest::getRawBody() const {
+    return raw_body_;
 }
 
 //Parser
@@ -412,94 +432,90 @@ const std::string HTTPRequest::getCloseBoundary() const{
 // 	}
 // }
 
+void HTTPRequest::parseContent(const std::string& body_line) {
+    size_t pos_begin;
+    size_t pos_end;
+    std::string line;
 
-void HTTPRequest::parseContent(const std::string& body_line){
-	size_t pos_begin;
-	size_t pos_end;
-	std::string line;
-	
-	std::isstringstrm stream(body_line);
-	while (std::getline(stream, line)){
-		// std::cout << BOLD MAGENTA "I got the body_line, time to parse content\n" RESET;
-		trimString(line);
-		if (line.empty()) {
-			continue;
-		} 
-		else if (line.find(close_boundary_) != std::string::npos){
-			// std::cout << "check1\n";
-			with_file_flag_ = false;
-			//cgi_flag_ = false; //need to review further?!?!
-			return;
-			// multipart/form-data
-		} 
-		else if (line.find(open_boundary_) != std::string::npos &&
-            line.find(close_boundary_) == std::string::npos){
-			// std::cout << "check1bis\n";
-			with_file_flag_ = false;
-		} 
-		else if  (line.find("Content-Disposition:") != std::string::npos){
-			// std::cout << "check3\n";
-			content_.addContentDisposition();
-			within_the_cd_flag_ = true;
-			// std::cout << "is it working here\n";
-			ContentDisposition_ & last_cd = content_.getCDs().back();
-			//--CD Type
-			if((pos_begin = line.find(':')) != std::string::npos){
-				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-				pos_end = line.find(";", pos_begin);
-				line = body_line.substr(pos_begin);
-				std::string type = trimString(line_input.substr(pos_begin, pos_end - pos_begin));
-				last_cd.CD_type_ = type;
-			}
-			//--name
-			if (line.find("name") != std::string::npos){
-				if ((pos_begin = line.find("name")) != std::string::npos){
-                	pos_begin = (line.find("\"", pos_begin)) + 1;
-                	pos_end = (line.find("\"", pos_begin));
-                	std::string name = trimString(line.substr(pos_begin, pos_end - pos_begin));
-                	last_cd.name_ = name;
-            	}
-			}
-
-			if (line.find("filename") != std::string::npos){
-				if ((pos_begin = line.find("filename")) != std::string::npos){
-					pos_begin = (line.find("\"", pos_begin)) + 1;
-					pos_end = (line.find("\"", pos_begin));
-					std::string filename = trimString(line_input.substr(pos_begin, pos_end - pos_begin));
-					last_cd.filename_ = filename;
-				}
-				with_file_flag_ = true;
-			}
-		} 
-		else if (body_line.find("Content-Type:") != std::string::npos){
-			// std::cout << "check4\n";
-			if ((pos_begin = line_input.rfind(":")) != std::string::npos){
-                pos_begin = line_input.find_first_not_of(" \t", pos_begin + 1);
-                pos_end = line_input.find(";");
-                std::string inner_cttype = trimString(line_input.substr(pos_begin, pos_end - pos_begin));
-                http_CD_ & lastest_cd = content_.getCDs_list_().back();
-                last_cd.setInnerContentType_(inner_cttype);
+	std::cout << "<<sievdebug>>  parseContent called with body_line size: " << body_line.size() << std::endl;
+    std::istringstream stream(body_line);
+    while (std::getline(stream, line)) {
+        // std::cout << BOLD MAGENTA "I got the body_line, time to parse content\n" RESET;
+        trimString(line);
+        if (line.empty()) {
+            continue;
+        } 
+        else if (line.find(close_boundary_) != std::string::npos) {
+            // std::cout << "check1\n";
+            with_file_flag_ = false;
+            with_cd_flag_ = false;
+            //cgi_flag_ = false; //need to review further?!?!
+            return;
+            // multipart/form-data
+        } 
+        else if (line.find(open_boundary_) != std::string::npos &&
+                 line.find(close_boundary_) == std::string::npos) {
+            // std::cout << "check1bis\n";
+            with_file_flag_ = false;
+        } 
+        else if (line.find("Content-Disposition:") != std::string::npos) {
+            // std::cout << "check3\n";
+            content_.addContentDisposition();
+            with_cd_flag_ = true;
+            // std::cout << "is it working here\n";
+            ContentDisposition_ & last_cd = content_.getCDs().back();
+            //--CD Type
+            if ((pos_begin = line.find(':')) != std::string::npos) {
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                pos_end = line.find(";", pos_begin);
+                line = line.substr(pos_begin);
+                std::string type = trimString(line.substr(pos_begin, pos_end - pos_begin));
+                last_cd.CD_type_ = type;
             }
-		}
-
-
-		else if (!body_line.empty()
-				&& (content_.getCDs()[boundary_index_].filename_.empty())){
-					// std::cout << "check4\n";
-					content_.setCDs(body_line, Cont, boundary_index_);			
-		} 
-		else if (!body_line.empty()
-				&& !(content_.getCDs()[boundary_index_].filename_.empty())){
-					// std::cout << "check5\n";
-					content_.setCDs(body_line, FileContent, boundary_index_);
-			}
-				
-		} else {
-			// Handle
-			// std::cout << "check6\n";
-			content_.setBodyWithNoCD(body_line); 
-			
-		}
+            //--name
+            if (line.find("name") != std::string::npos) {
+                if ((pos_begin = line.find("name")) != std::string::npos) {
+                    pos_begin = (line.find("\"", pos_begin)) + 1;
+                    pos_end = (line.find("\"", pos_begin));
+                    std::string name = trimString(line.substr(pos_begin, pos_end - pos_begin));
+                    last_cd.name_ = name;
+                }
+            }
+            if (line.find("filename") != std::string::npos) {
+                if ((pos_begin = line.find("filename")) != std::string::npos) {
+                    pos_begin = (line.find("\"", pos_begin)) + 1;
+                    pos_end = (line.find("\"", pos_begin));
+                    std::string filename = trimString(line.substr(pos_begin, pos_end - pos_begin));
+                    last_cd.filename_ = filename;
+                    with_file_flag_ = true;
+                }
+            }
+        } 
+        else if (line.find("Content-Type:") != std::string::npos) {
+            // std::cout << "check4\n";
+            if ((pos_begin = line.rfind(":")) != std::string::npos) {
+                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+                pos_end = line.find(";", pos_begin);
+                std::string inner_cttype = trimString(line.substr(pos_begin, pos_end - pos_begin));
+                ContentDisposition_ & last_cd = content_.getCDs().back();
+                last_cd.inner_content_type_ = inner_cttype;
+            }
+        }
+        else {
+            // Handle
+            // std::cout << "check6\n";
+            if (!with_cd_flag_) {
+                content_.setBodyWithNoCD(line); 
+            }
+            else if (with_cd_flag_) {
+                ContentDisposition_ & last_cd = content_.getCDs().back();
+                if (with_file_flag_)
+                    last_cd.file_content_ += line;
+                else
+                    last_cd.content_ += line;
+            }
+        }
+    }
 }
 
 
@@ -602,7 +618,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                             boundary = trimString(boundary.substr(0, end_pos + 1));
                         }
                         setBoundary(boundary);
-    
+						setCDFlag(true);
                     }
                 }
             }

@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/07 20:13:35 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/08 00:59:24 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@ void Content::setContentLength(const std::string &buffer)
 
 void Content::setBodyWithNoCD(const std::string &line)
 {
-    body_with_no_cd_ = line;
+    body_with_no_cd_ += line;
 }
 
 void Content::setCDs(const std::string &buffer, CD_header header, int index)
@@ -242,7 +242,11 @@ int Content::getContentLength()
 //     return body_;
 // }
 
-std::vector<ContentDisposition_> &Content::getCDs()
+std::vector<ContentDisposition_>& Content::getCDs() {
+    return CDs_list_;
+}
+
+const std::vector<ContentDisposition_> &Content::getCDs() const
 {
     return CDs_list_;
 }
@@ -254,6 +258,7 @@ std::string& Content::getBodyWithNoCD()
 
 void Content::addContentDisposition()
 {
+    std::cout << "<<sievdebug>> addContentDisposition called" << std::endl;
     CDs_list_.push_back(ContentDisposition_());
 }
 

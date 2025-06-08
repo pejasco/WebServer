@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/07 04:35:29 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/08 00:38:50 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,8 +163,8 @@ int HTTPResponse::checkDirectory(std::string& location){
 }
 
 
-int HTTPResponse::createUploadFile(std::string& upload_dir, const Content& content){
-	const std::vector<ContentDisposition_>& allCDs = content.getCDs();
+int HTTPResponse::createUploadFile(std::string& upload_dir, Content& content){
+	std::vector<ContentDisposition_>& allCDs = content.getCDs();
 	std::vector<ContentDisposition_>::const_iterator it = allCDs.begin();
 	
 	allCDs.empty() ? std::cout << "<<sievdebug>> " << "CD is empty!\n" : std::cout << "<<sievdebug>> " << "CD is not empty!\n";
@@ -222,7 +222,7 @@ void HTTPResponse::setPostResponse() {
 
 		if (location_ && current_request_.getPath().find("upload") != std::string::npos)
 			upload_dir = location_->getUploadDir(); //upload_dir
-		const Content& content = current_request_.getContent(); //content
+		Content& content = current_request_.getContent(); //content
 		std::cout << "<<sievdebug>>" << "!!!!!!!!!!!!!!!!!" << upload_dir << "!!!!!!!!!!!!!!!!!" << "\n";
 		//std::cout << "!!!!!!!!!!!!!!!!!" << << "!!!!!!!!!!!!!!!!!\'n";
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/05 14:59:35 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/08 00:37:12 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ class HTTPResponse {
 		void headerResponse();
 		void CGI_Body();
 		void autoIndexRequest();
-		int createUploadFile(std::string& upload_dir, const Content& content);
+		int createUploadFile(std::string& upload_dir, Content& content);
 		int checkDirectory(std::string& location);
 		//void makePostResponse(ContentDisposition_ &cd);
 		bool isReady() const;

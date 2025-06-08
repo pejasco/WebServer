@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:01:27 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/07 20:14:34 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/08 00:33:30 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,8 @@ class Content {
                 const std::string& getCloseBoundary();
                 int getContentLength();//no use?
                 const std::map<std::string, std::string> getBody(); //no use
-                std::vector<ContentDisposition_>& getCDs(); //modified
+                const std::vector<ContentDisposition_>& getCDs() const; //modified
+                std::vector<ContentDisposition_>& getCDs();
                 std::string& getBodyWithNoCD(); //modified
                 //const std::map<std::string, std::string> getBodyconst() const;
                 void printCDsList() const;
@@ -129,7 +130,7 @@ class Content {
                 // bool cd_flag_;
 
 
-                int content_length_; //Content-Length: 13
+                int content_length_; //Content-Length: 13 //no use
                 std::string boundary_; //Content-Type: multipart/form-dat; boundary=--WebKitFormBoundaryXYZ
                 // std::map<std::string, std::string> body_;
                 std::string open_boundary_; //new http_content
