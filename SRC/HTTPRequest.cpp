@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/09 17:08:40 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/09 18:23:36 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -532,7 +532,12 @@ std::string HTTPRequest::getRawBody() const {
 // }
 
 void HTTPRequest::parseContent(const std::string& body) {
-    size_t pos = 0;
+    if (open_boundary_.empty()){
+		content_.setBodyWithNoCD(body);
+		return;
+	}
+	
+	size_t pos = 0;
     while (true) {
         size_t boundary_start = body.find(open_boundary_, pos);
         if (boundary_start == std::string::npos)
