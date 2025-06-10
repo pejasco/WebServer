@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/08 00:45:58 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/10 15:04:25 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,7 @@ class HTTPRequest {
 		const std::string& getPath() const;
 		const std::string& getVersion();
 		const std::string& getHost() const;
+		int getContentLength();
 		const std::map<std::string, std::string>& getUserAgent();
 		const std::vector<Accept>& getAccept();
 		const std::vector<std::string>& getAcceptEncoding();

@@ -42,7 +42,7 @@ body = """
 	</style>
 </head>
 <body>
-	<form method="POST" action="/cgi-bin/say_hello.py">
+	<form method="POST" action="/cgi/cgi-bin/say_hello.py">
 		<input type="text" name="name" placeholder="Enter your name" />
 		<input type="submit" value="Say Hello" />
 	</form>

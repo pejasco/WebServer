@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/10 11:30:48 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/10 15:42:54 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -392,20 +392,19 @@ void ServerManager::createNewClientConnection() {
 void ServerManager::existingClientConnection() {
 	// PHASE 1: Read and validate headers
 	std::string headers;
+	std::string body;
 	HTTPRequest current_request;
 	
-	if (!readClientHeaders(headers))
+	if (!readClientHeaders(headers, body))
 		return; // Connection closed or error
-	
-	// PHASE 2: Parse headers and check body size limit
-	if (!parseHeadersAndCheckBodySize(headers, current_request))
-		return; // Size limit exceeded or parse error
+	if (!parseHeadersAndCheckBodySize(headers, body, current_request))
+		 // Size limit exceeded or parse error
 	if (current_fd_ > 0)
 		close(current_fd_);
 	cleanClient(current_fd_);
 }
 
-bool ServerManager::readClientHeaders(std::string& headers) {
+bool ServerManager::readClientHeaders(std::string& headers, std::string &body) {
 	std::string request;
 	bool headers_complete = false;
 	
@@ -428,6 +427,10 @@ bool ServerManager::readClientHeaders(std::string& headers) {
 		size_t header_end = request.find("\r\n\r\n");
 		if (header_end != std::string::npos) {
 			headers = request.substr(0, header_end + 4);
+			size_t body_start = header_end + 4;
+            if (body_start < request.length()) {
+                body = request.substr(body_start);
+            }
 			headers_complete = true;
 		}
 		
@@ -473,7 +476,7 @@ bool ServerManager::readClientHeaders(std::string& headers) {
 // 	return true;
 // }
 
-bool ServerManager::parseHeadersAndCheckBodySize(const std::string& headers, HTTPRequest& current_request) {
+bool ServerManager::parseHeadersAndCheckBodySize(const std::string& headers, std::string &body, HTTPRequest& current_request) {
 	// Parse headers only (not body)
 	current_request.parseRequest(headers);
 	std::cout << BOLD MAGENTA "\n#######HEADER RECEIVED##########\n\n" RESET << headers << BOLD MAGENTA "\n#######END OF HEADER##########\n" RESET << std::endl; 
@@ -488,10 +491,11 @@ bool ServerManager::parseHeadersAndCheckBodySize(const std::string& headers, HTT
 	std::cout << BOLD UNDERLINE GREEN "\n###### LEAVING SERVER//LOCATION DEBUGGING ######\n\n" RESET;
 	
 	// Get server IP for location matching
-	size_t max_body_size = maxBodySizeLocation(servers_list_.front(), server_requested, location_requested);
+	int max_body_size = maxBodySizeLocation(servers_list_.front(), server_requested, location_requested);
+	std::cout << "max_body_size: " << max_body_size << std::endl;
 	// Check Content-Length header if present
-	Content temp = current_request.getContent();
-	size_t content_length = temp.getContentLength();
+	int content_length = current_request.getContentLength();
+	std::cout << "Content-Length: " << content_length << std::endl;	
 	if (content_length > 0) {
 		if (max_body_size > 0 && content_length > max_body_size) {
 			std::cout << "Request body size " << content_length 
@@ -500,10 +504,14 @@ bool ServerManager::parseHeadersAndCheckBodySize(const std::string& headers, HTT
 			processAndSendResponse(current_request, server_requested, location_requested);
 			return true;
 		} else {
-			if (!readRequestBody(current_request, content_length, max_body_size))
+			std::cout << "content length is < 0\n";
+			if (!readRequestBody(current_request, body, content_length, max_body_size)) {
+				std::cout << "return false\n";
 				return false; // only process when body is fully read
+			}
 		}
 	}
+	std::cout << "return true, processing the request by preparing the response -- no content to work on\n";
 	processAndSendResponse(current_request, server_requested, location_requested);
 	return true;
 }
@@ -550,27 +558,21 @@ bool ServerManager::parseHeadersAndCheckBodySize(const std::string& headers, HTT
 // 	return true;
 // }
 
-bool ServerManager::readRequestBody(HTTPRequest& current_request, size_t content_length, size_t max_body_size) {
+bool ServerManager::readRequestBody(HTTPRequest& current_request, std::string &body, size_t content_length, size_t max_body_size) {
     Client* client = clients_list_[current_fd_];
     if (!client) return false;
-
-    // per-client buffer
-    std::string& request_body = client->body_buffer;
-    size_t& total_read = client->body_bytes_read;
-
-    request_body.reserve(content_length);
+	
+    std::string request_body = body;
+    size_t total_read = body.length();
 
     while (total_read < content_length) {
-        size_t to_read = std::min(sizeof(received_) - 1, content_length - total_read);
+        size_t remaining = content_length - total_read;
+        size_t to_read = std::min(sizeof(received_) - 1, remaining);
         ssize_t byte_received = recv(current_fd_, received_, to_read, 0);
 
         if (byte_received < 0) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) { // not authorised I think ?
-                return false;
-            } else {
-                std::cerr << "Error reading body: " << strerror(errno) << std::endl;
-                return false;
-            }
+            std::cerr << "Error reading body: " << strerror(errno) << std::endl;
+            return false;
         } else if (byte_received == 0) {
             std::cout << "Client disconnect during body reading\n";
             return false;
@@ -600,6 +602,7 @@ bool ServerManager::readRequestBody(HTTPRequest& current_request, size_t content
 
     return true;
 }
+
 void ServerManager::processAndSendResponse(HTTPRequest& current_request, Server *server_requested, Location *location_requested) {
 	// SEND THE RESPONSE HEADER
 	HTTPResponse current_response(current_request, default_server_, server_requested, location_requested, error_code_);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/05 14:58:12 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/10 15:41:08 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,9 +57,9 @@ class ServerManager {
 		bool cleanClient(int current_fd);
 		void shutdown();
 		bool isBlocked(const void *IP);
-		bool readClientHeaders(std::string& headers);
-		bool parseHeadersAndCheckBodySize(const std::string& headers, HTTPRequest& current_request);
-		bool readRequestBody(HTTPRequest& current_request, size_t content_length, size_t max_body_size);
+		bool readClientHeaders(std::string& headers, std::string &body);
+		bool parseHeadersAndCheckBodySize(const std::string& headers, std::string &body, HTTPRequest& current_request);
+		bool readRequestBody(HTTPRequest& current_request, std::string &body, size_t content_length, size_t max_body_size);
 		void processAndSendResponse(HTTPRequest& current_request, Server *server_requested, Location *location_requested);
 		void sendResponseBodyFile(HTTPResponse& current_response);
 		

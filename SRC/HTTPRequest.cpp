@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/10 10:45:12 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/10 16:12:16 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ HTTPRequest::~HTTPRequest(){}
 
 void HTTPRequest::setContentLength(int length) {
     content_length_ = length;
+	std::cout << "debbug len: " << content_length_ << std::endl;
 }
 
 void HTTPRequest::setContentFlag(const bool flag){
@@ -80,9 +81,8 @@ void HTTPRequest::setMet(const std::string&  method){
 
 void HTTPRequest::setPath(const std::string& path) {
 	path_ = path;
-	// std::cout << "path: " << path << std::endl;
-	// if (path_.find("cgi") != std::string::npos) // not a good flag as it will considere any pathname that include cgi as a cgi request
-	// 	setCGIFlag(true);
+	if (path_.find("cgi-bin") != std::string::npos) // not a good flag as it will considere any pathname that include cgi as a cgi request
+		setCGIFlag(true);
 }
 
 void HTTPRequest::setVersion(const std::string& version){
@@ -297,6 +297,10 @@ const std::string& HTTPRequest::getVersion(){
 const std::string& HTTPRequest::getHost() const {
 	return host_;
 }
+
+int HTTPRequest::getContentLength() {
+	return content_length_;
+};
 
 const std::map<std::string, std::string>& HTTPRequest::getUserAgent(){
 	return user_agent_;
@@ -536,7 +540,7 @@ void HTTPRequest::parseContent(const std::string& body) {
 		content_.setBodyWithNoCD(body);
 		return;
 	}
-	
+	std::cout << BOLD UNDERLINE BLACK BG_WHITE "\n###### START CONTENT READING DEBUG ######\n\n" RESET;
 	size_t pos = 0;
     while (true) {
         size_t boundary_start = body.find(open_boundary_, pos);
@@ -620,6 +624,7 @@ void HTTPRequest::parseContent(const std::string& body) {
         if (body.substr(pos, close_boundary_.size()) == close_boundary_)
             break; 
     }
+	std::cout << BOLD UNDERLINE BLACK BG_WHITE "\n###### END CONTENT READING DEBUG ######\n\n" RESET;
 }
 
 
@@ -735,7 +740,6 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                 int len = atoi(length.c_str());
 				setContentLength(len);
 				content_.setContentLength(len);
-                // std::cout << "Content-Length: " << ctlength << std::endl;
             }
         } 
     }
