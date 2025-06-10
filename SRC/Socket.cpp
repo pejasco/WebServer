@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:03:14 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/05 14:33:55 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/10 11:24:44 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,11 @@ Socket::Socket(const std::string &serverIP, const std::string &serverPort) : sta
 };
 
 Socket::~Socket() {
-	close(socket_fd_);
+	// struct stat buf;
+	// // if socket is not close, close it
+	// if (fstat(socket_fd_, &buf) == -1) {
+	// 	close(socket_fd_);
+	// }
 	// std::cout << "closing the socket_fd\n";
 };
 

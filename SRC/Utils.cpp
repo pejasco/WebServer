@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/06 13:35:23 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/10 11:28:48 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,8 @@ void cleanShutdown(ServerManager &master_server) {
 	std::vector<Socket*>::iterator begSo = master_server.getSockets().begin();
 	std::vector<Socket*>::iterator endSo = master_server.getSockets().end();
 	for (; begSo != endSo; ++begSo) {
-		delete *begSo;
+		if (*begSo != NULL)
+			delete *begSo;
 	}
 
 	//closing and deleting client info
@@ -133,7 +134,8 @@ void cleanShutdown(ServerManager &master_server) {
 	std::map<int,Client*>::iterator endCl = master_server.getClients().end();
 	for (; begCl != endCl; ++begCl) {
 		close(begCl->first);
-		delete begCl->second;
+		if ((begCl)->second != NULL)
+			delete begCl->second;
 	}
 
 	//freeing the struct server
@@ -143,11 +145,13 @@ void cleanShutdown(ServerManager &master_server) {
 	for (; beg != end; ++beg) {
 		std::vector<Location*>::iterator begLo = (*beg)->getLocationsList().begin();
 		std::vector<Location*>::iterator endLo = (*beg)->getLocationsList().end();
-		for (; begLo != endLo; ++begLo)
-			delete *begLo;
-		delete *beg;
+		for (; begLo != endLo; ++begLo) {
+			if (*begLo != NULL)
+				delete *begLo;
+		}
+		if (*beg != NULL)
+			delete *beg;
 	}
-
 	close(master_server.getEpollFd());
 }
 
@@ -174,9 +178,8 @@ std::string getStatusStr(int status_code) {
 }
 
 bool fileExists(const std::string& filename) {
-	std::cout << BOLD UNDERLINE RED "\n###### ENTERING URL REFORMAT DEBUUGING ######\n" RESET;
-	std::cout << "Here\n";
 	std::ifstream file(filename.c_str());
+	std::cout << "Does file " << filename << " exist? " << file.good() << std::endl;
 	return file.good();
 }
 
@@ -345,7 +348,7 @@ Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_s
 		std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
 		for (; begLo != endLo; ++begLo) {
 			if ((*begLo)->getName() == "/") {
-				std::cout << "found begLo: " << (*begLo)->getName() << std::endl;
+				std::cout << "found begLo: " << (*begLo)->getName() << " - " << (*begLo)->getRoot() << std::endl;
 				return *begLo;
 			}
 		}
@@ -357,30 +360,30 @@ Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_s
 	std::vector<Location*>::iterator begLo = current_server.getLocationsList().begin();
 	std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
 	for (; begLo != endLo; ++begLo) {
-		std::string location_name = (*begLo)->getName();
-		std::cout << "Request: " << request_path << ", server location: " << location_name << std::endl;
+		std::string location_path = (*begLo)->getRoot();
+		std::cout << "Request: " << request_path << ", server location: " << location_path << std::endl;
 		// Check if request path starts with location path (prefix matching)
-		if (request_path.length() >= location_name.length() && 
-			request_path.substr(0, location_name.length()) == location_name) {
-			std::cout << "Prefix match found: " << request_path.substr(0, location_name.length()) << std::endl;
+		if (request_path.length() >= location_path.length() && 
+			request_path.substr(0, location_path.length()) == location_path) {
+			std::cout << "Prefix match found: " << request_path.substr(0, location_path.length()) << std::endl;
 			// Additional check: ensure we match complete path segments
 			// /kapouet should match /kapouet/file but not /kapouetfile
 			bool isValidMatch = false;
-			if (location_name.length() == request_path.length()) {
+			if (location_path.length() == request_path.length()) {
 				// Exact match
 				isValidMatch = true;
-			} else if (location_name[-1] == '/') {
+			} else if (location_path[-1] == '/') {
 				std::cout << "is seg fault there\n";
 				isValidMatch = true;
-			} else if (request_path[location_name.length()] == '/') {
+			} else if (request_path[location_path.length()] == '/') {
 				// Next character in request is '/', valid path segment boundary
 				isValidMatch = true;
 			}
 			if (isValidMatch) {
 				// Keep track of longest matching location (most specific)
-				if (location_name.length() > name_length_track) {
+				if (location_path.length() > name_length_track) {
 					best_location_name = *begLo;
-					name_length_track = location_name.length();
+					name_length_track = location_path.length();
 					std::cout << "New best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot() << std::endl;
 				}
 			}

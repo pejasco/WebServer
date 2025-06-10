@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/09 18:23:36 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/10 10:45:12 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,8 +81,8 @@ void HTTPRequest::setMet(const std::string&  method){
 void HTTPRequest::setPath(const std::string& path) {
 	path_ = path;
 	// std::cout << "path: " << path << std::endl;
-	if (path_.find("cgi") != std::string::npos)
-		setCGIFlag(true);
+	// if (path_.find("cgi") != std::string::npos) // not a good flag as it will considere any pathname that include cgi as a cgi request
+	// 	setCGIFlag(true);
 }
 
 void HTTPRequest::setVersion(const std::string& version){
@@ -398,7 +398,7 @@ std::string HTTPRequest::getRawBody() const {
 		
 // 		if (body_line.find("Content-Disposition:") != std::string::npos){
 // 			// std::cout << "check3\n";
-// 			content_.addContentDisposition(ContentDisposition_());
+// 			content_.addContentDisposition();
 // 			// std::cout << "is it working here\n";
 // 			if((pos_begin = body_line.find(':')) != std::string::npos){
 // 				pos_begin = body_line.find_first_not_of(" \t", pos_begin + 1);
