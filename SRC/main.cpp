@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:48:24 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 14:10:57 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/10 11:33:21 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,10 @@ int main(int ac, char **av) {
 	signal(SIGQUIT, signal_handler);
 	ServerManager master_server(config_file);
 	master_server.serverMonitoring();
-	if (g_sigStatus)
+	if (g_sigStatus) {
 		master_server.setRunning(g_sigStatus);
+		return 0;
+	}
 	master_server.shutdown();
 	return 0;
 }

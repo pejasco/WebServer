@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/08 02:10:13 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/10 11:30:48 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -281,6 +281,7 @@ int ServerManager::startSockets() {
 	for (; beg != end; ++beg) {
 		sockets_list_.push_back(new Socket(beg->second, beg->first));
 		if (!sockets_list_.back()->getSocketError()) {
+			delete sockets_list_.back();
 			sockets_list_.pop_back();
 			return 0;
 		} else
@@ -564,7 +565,7 @@ bool ServerManager::readRequestBody(HTTPRequest& current_request, size_t content
         ssize_t byte_received = recv(current_fd_, received_, to_read, 0);
 
         if (byte_received < 0) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) { // not authorised I think ?
                 return false;
             } else {
                 std::cerr << "Error reading body: " << strerror(errno) << std::endl;
@@ -601,10 +602,9 @@ bool ServerManager::readRequestBody(HTTPRequest& current_request, size_t content
 }
 void ServerManager::processAndSendResponse(HTTPRequest& current_request, Server *server_requested, Location *location_requested) {
 	// SEND THE RESPONSE HEADER
-	
 	HTTPResponse current_response(current_request, default_server_, server_requested, location_requested, error_code_);
 	std::string response = current_response.getResponse();
-	std::cout << "response to send: " << response << std::endl;
+	// std::cout << "response to send: " << response << std::endl;
 	
 	if (current_fd_ < 0) {
 		std::cerr << "Error, current_fd_ socket is already close" << std::endl;
@@ -621,7 +621,7 @@ void ServerManager::processAndSendResponse(HTTPRequest& current_request, Server 
 		return;
 	}
 
-	if (current_response.isReady()) {
+	if (current_response.isReady()) { // error 
 		std::cout << "Response is already ready (e.g. from CGI), skipping body file send\n";
 		return;
 	}

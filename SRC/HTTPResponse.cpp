@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/08 02:57:11 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/10 11:02:42 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,6 @@ current_request_(input_request), server_(server_requested), location_(location_r
 		setErrorResponse(405);
 		break;
 	}
-	std::cout << "\nPRINTING RESPONSE\n\n" << response_ << std::endl;
 };
 
 HTTPResponse::~HTTPResponse() {
@@ -95,7 +94,6 @@ bool HTTPResponse::isAutoIndex() {
 //METHOD
 
 bool HTTPResponse::checkRedirection() {
-	std::cout << "redirect debugging\n";
 	if (!location_->getRedirectURL().empty()) {
 		std::cout << "location identify as redirection\n"; 
 		setErrorResponse(location_->getRedirectCode());
@@ -108,18 +106,13 @@ void HTTPResponse::setGetResponse() {
 	//1st -- check if the path request by the user exist
 	//2nd -- check if the file exist and readable (not already open, with correct permission (not sure if we need to set it up)) 
 	cgi_flag = current_request_.getCGIFlag();
-	// std::cerr << "[debugging] cgi_flag = " << cgi_flag << std::endl;
+	std::cout << "[debugging] cgi_flag = " << cgi_flag << std::endl;
 	//body_filename_ = "./CGI/cgi-bin/test.py"; //need to figure out how to set the correct root path for the cgi....maybe checkFile?
 
-	//int status_code = checkFile();
-	int status_code;
-	if (cgi_flag) {
-		body_filename_ = "./CGI/cgi-bin/test.py";  // TEMPORARY override for testing
-		status_code = fileExists(body_filename_) ? 200 : 404;
-	} else {
-		status_code = checkFile();
-		std::cout << "status_code of checkFIle in GET: " << status_code << std::endl;
-	}
+	int status_code = checkFile();
+	std::cout << "status_code of checkFIle in GET: " << status_code << std::endl;
+	cgi_flag = location_->isCGI();
+	std::cout << cgi_flag << std::endl;
 	if (status_code == 200) {
 		if (cgi_flag) {
 			CGI_Body(); // Run CGI handler, which builds full HTTP response
@@ -130,14 +123,12 @@ void HTTPResponse::setGetResponse() {
 			prepareStatusLine(status_code);
 			prepareHeader();
 			headerResponse();
-			//_response_ready_ = true;
 		}
 	}
 	else
 	{
 		std::cerr << "[ERRODEBUGG] Non-200 GET status. Calling setErrorResponse(" << status_code << ")\n";
 		setErrorResponse(status_code);
-		_response_ready_ = true;
 	}
 }
 
@@ -324,7 +315,7 @@ void HTTPResponse::setErrorResponse(int error_code) {
 		else
 			draftErrorResponse();
 	}
-	std::cerr << "[DEBUG draftErrorResponse whyyyys it ot working] response_ built = \n" << response_ << "\n";
+	// std::cerr << "[DEBUG draftErrorResponse whyyyys it ot working] response_ built = \n" << response_ << "\n";
 }
 
 void HTTPResponse::draftRedirectResponse() {
@@ -347,6 +338,7 @@ void HTTPResponse::draftErrorResponse() {
 
 //Checking if the file requested exist and if it is possible to read it 
 int HTTPResponse::checkFile() {
+	std::cout << BOLD UNDERLINE RED "\n###### ENTERING URL RE-FORMAT DEBUGGING ######\n" RESET;
 	std::string default_path = default_location_->getRoot();
 	default_path.erase(std::remove(default_path.begin(), default_path.end(), '/'), default_path.end());
 	std::cout << "check2\n";
@@ -367,7 +359,7 @@ int HTTPResponse::checkFile() {
 		std::cout << "check5\n";
 	} else {
 		body_filename_ = default_path;
-		std::cout << BOLD YELLOW "body_filename_: " << body_filename_ << "current_request_: " << current_request_.getPath() << RESET << std::endl;
+		std::cout << BOLD YELLOW "body_filename_: " << body_filename_ << ", current_request_: " << current_request_.getPath() << RESET << std::endl;
 		if (current_request_.getPath().find(".") == std::string::npos) {
 			std::cout << "XXXXXX -- " << location_->getIndex() << " -- " << location_->isAutoIndex() << std::endl;
 			if (location_->getIndex().empty() && location_->isAutoIndex() == true) {
@@ -384,18 +376,22 @@ int HTTPResponse::checkFile() {
 		if (fileExists(body_filename_)){
 			std::ifstream body_file(body_filename_.c_str(), std::ios::binary);
 			if (body_file.is_open()) {
-				body_file.close(); 
+				body_file.close();
+				std::cout << "is open\n";
 				return 200;
 			} else {
 				body_file.close();
 				std::cout << "Error: " << strerror(errno) << std::endl;
 				return 500;	
 			}
-		} else
+		} else {
+			std::cout << "file exist\n";
 			return 404;
+		}
+			
 	}
+	std::cout << BOLD UNDERLINE RED "\n###### LEAVING URL REFORMAT DEBUGGING ######\n\n" RESET;
 	return 500;	
-	std::cout << BOLD UNDERLINE RED "\n###### LEAVING URL REFORMAT DEBUUGING ######\n\n" RESET;
 }
 
 int HTTPResponse::checkMethod() {
@@ -475,7 +471,7 @@ int HTTPResponse::prepareHeader() {
 	}
 	header_ = content_type_ + "Content-Length: " + convertToStr(content_length_) + "\r\n";
 	/****DEBUGGING***/
-	std::cout << "HEADER = \n" << header_ << std::endl;
+	// std::cout << "HEADER = \n" << header_ << std::endl;
 	return 200;
 }
 
@@ -486,6 +482,79 @@ void HTTPResponse::headerResponse() {
 	// std::cout << "response: " << response << std::endl;
 }
 
+void HTTPResponse::CGI_Body() {
+	std::cout << BOLD UNDERLINE BLUE << "\n###### ENTERING BODY CGI DEBUGGING ######\n\n" RESET;
+	std::string scriptPath = body_filename_;
+	std::string script_name = getFilenameFromPath(body_filename_);
+	if (script_name == scriptPath) {
+		std::cerr << "unexpected URI\n";
+		setErrorResponse(404);  // unexpected URI
+		return;
+	}
+
+	std::cout << "uri: " << scriptPath << ", script name: " << script_name <<std::endl;
+	// Strip query string from URI to get actual script file path
+	size_t qmark = scriptPath.find('?');
+	if (qmark != std::string::npos) {
+		scriptPath = scriptPath.substr(0, qmark);  // now uri = "/cgi-bin/birthday.py"
+		std::cout << "uri substr: " << scriptPath << std::endl;
+	}
+	if (access(scriptPath.c_str(), F_OK) != 0) {
+		std::cerr << "[CGI ERROR] Script not found?? whyyyyy?: " << scriptPath << std::endl;
+		setErrorResponse(404);
+		return;
+	}
+	if (access(scriptPath.c_str(), X_OK) != 0) {
+		std::cerr << "[CGI ERROR] Script not executable :((( : " << scriptPath << std::endl;
+		setErrorResponse(403);
+		return;
+	}
+
+	std::cerr << "[CGI DEBUG] Raw POST body (from HTTPRequest): [" << current_request_.getRawBody() << "]" << std::endl;
+
+	// Build the RequestData object for CGI
+	RequestData data;
+	data.setMethod(current_request_.getMethodAsStr());
+	data.setPath(scriptPath);  // Used for SCRIPT_FILENAME and SCRIPT_NAME
+	data.setQueryString(current_request_.getQueryStr());
+	data.setHeaders(current_request_.getHeaders());
+	data.setBody(current_request_.getRawBody());
+
+	std::cerr << "[CGI] method : " << data.getMethod() << std::endl;
+	std::cerr << "[CGI] - path saved: " << data.getPath() << std::endl;
+	std::cerr << "[CGI] - query str: " << data.getQueryString() << std::endl;
+	std::cerr << "[CGI] - body saved: " << data.getBody() << std::endl;
+
+	if (data.getMethod() == "POST" && data.getBody().empty()) {
+		std::cerr << "[CGI WARNING] POST method but body is empty!" << std::endl;
+	}
+
+	CgiHandler handler(data, scriptPath); // pass to CGI engine
+	std::string cgiOutput = handler.run();
+
+	// Try to parse headers from CGI output
+	size_t headerEnd = cgiOutput.find("\r\n\r\n");
+	if (headerEnd != std::string::npos) {
+		std::string headers = cgiOutput.substr(0, headerEnd);
+		std::string body = cgiOutput.substr(headerEnd + 4);
+
+		if (headers.find("Content-Type:") == std::string::npos)
+			headers = "Content-Type: text/html\r\n" + headers;
+
+		if (headers.find("Connection:") == std::string::npos)
+			headers += "\r\nConnection: close";
+
+		response_ = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
+		body_filename_.clear();
+	} else {
+		// fallback response, in case headers were missing
+		response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;
+	}
+	_response_ready_ = true;
+	std::cout << BOLD UNDERLINE BLUE << "\n###### LEAVING BODY CGI DEBUGGING ######\n\n" RESET;
+}
+
+/* ORIGINAL VERSION
 void HTTPResponse::CGI_Body() {
 	const std::string CGI_ROOT = "./CGI/cgi-bin";
 	std::string uri = current_request_.getPath();  // e.g. /cgi-bin/birthday.py?day=13&month=11
@@ -559,6 +628,8 @@ void HTTPResponse::CGI_Body() {
 	}
 	_response_ready_ = true;
 }
+*/
+
 
 
 void HTTPResponse::autoIndexRequest() {

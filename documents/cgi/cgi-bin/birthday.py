@@ -77,7 +77,7 @@ print("""
 	<br><br><br><br><br><br><br><br><br>
 	<h1>🎂 Birthday Countdown 🎉</h1>
 	<div class="method">GET</div>
-	<button onclick="window.location.href='http://localhost:8080/'">Homepage</button>
+	<button onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button>
 	<br><br><br>
 """)
 

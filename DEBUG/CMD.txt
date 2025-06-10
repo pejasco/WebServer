@@ -1,0 +1,1 @@
+valgrind --leak-check=full --show-leak-kinds=all --log-file=DEBUG/valgrind.txt ./webserv (config file if needed)
