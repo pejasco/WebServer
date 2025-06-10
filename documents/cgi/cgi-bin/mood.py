@@ -53,7 +53,7 @@ print("""
 </head>
 <body>
 	<h1>How are you feeling today?</h1>
-	<form method="POST" action="/cgi-bin/mood.py">
+	<form method="POST" action="/cgi/cgi-bin/mood.py">
 		<button type="submit" name="mood" value="😊">😊</button>
 		<button type="submit" name="mood" value="😐">😐</button>
 		<button type="submit" name="mood" value="😢">😢</button>

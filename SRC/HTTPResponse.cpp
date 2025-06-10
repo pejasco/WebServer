@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/10 11:02:42 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/10 16:17:25 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,7 +134,7 @@ void HTTPResponse::setGetResponse() {
 
 int HTTPResponse::checkDirectory(std::string& location){
 	struct stat st;
-
+	std::cout << location << std::endl;
 	if (stat(location.c_str(), &st) == 0){
 		if (S_ISDIR(st.st_mode)){
 			return 200;
@@ -206,36 +206,45 @@ int HTTPResponse::createUploadFile(std::string& upload_dir, Content& content){
 
 void HTTPResponse::setPostResponse() {
 	// Switch or if statement to see if it is an upload request (CD --> filename)
-		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload		
+		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload
+	int status_code = checkFile();
+	// 2 OPTIONS --> either a POST CGI request or a REQUEST for upload file
 		std::string upload_dir;
-		int status_code;
-
-		std::cout << "<<sievdebug>>" << "yoyoyo " << location_ << " yoyoyo" << "\n";
-		std::cout << "<<sievdebug>>" << "xoxoxo " << current_request_.getPath().find("upload") << " xoxoxo" << "\n";
-
-		if (location_ && current_request_.getPath().find("upload") != std::string::npos)
-			upload_dir = location_->getUploadDir(); //upload_dir
-		Content& content = current_request_.getContent(); //content
-		std::cout << "<<sievdebug>>" << "!!!!!!!!!!!!!!!!!" << upload_dir << "!!!!!!!!!!!!!!!!!" << "\n";
-		//std::cout << "!!!!!!!!!!!!!!!!!" << << "!!!!!!!!!!!!!!!!!\'n";
-
-		status_code = checkDirectory(upload_dir);
-		if (status_code != 200){
-			setErrorResponse(status_code);
-			return;
-		}
-		status_code = createUploadFile(upload_dir, content);
-		if (status_code == 200) { 
-			prepareStatusLine(status_code);
-			body_msg_ = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
-		// if (cgi_flag) -- Check with Shally if we need that
-		// 	CGI_Body();
-			content_length_ = body_msg_.length();
-			header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length_) + "\r\n";
-			response_ = status_line_ + header_ + empty_line_ + body_msg_;
+	cgi_flag = current_request_.getCGIFlag();
+	std::cout << "cgi_flag: " << cgi_flag << std::endl;
+	if (cgi_flag)
+	{
+		CGI_Body();
+		return;
+	}
 	
-		} else {
-			setErrorResponse(status_code);
+	std::cout << "<<sievdebug>>" << "yoyoyo " << location_ << " yoyoyo" << "\n";
+	std::cout << "<<sievdebug>>" << "xoxoxo " << current_request_.getPath().find("upload") << " xoxoxo" << "\n";
+
+	if (location_ && current_request_.getPath().find("upload") != std::string::npos)
+		upload_dir = location_->getUploadDir();		  // upload_dir
+	Content &content = current_request_.getContent(); // content
+	std::cout << "<<sievdebug>>" << "!!!!!!!!!!!!!!!!!" << upload_dir << "!!!!!!!!!!!!!!!!!" << "\n";
+	// std::cout << "!!!!!!!!!!!!!!!!!" << << "!!!!!!!!!!!!!!!!!\'n";
+
+	status_code = checkDirectory(upload_dir);
+	if (status_code != 200)
+	{
+		setErrorResponse(status_code);
+		return;
+	}
+	status_code = createUploadFile(upload_dir, content);
+	if (status_code == 200)
+	{
+		prepareStatusLine(status_code);
+		body_msg_ = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
+		content_length_ = body_msg_.length();
+		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length_) + "\r\n";
+		response_ = status_line_ + header_ + empty_line_ + body_msg_;
+	}
+	else
+	{
+		setErrorResponse(status_code);
 	}
 }
 
@@ -484,7 +493,11 @@ void HTTPResponse::headerResponse() {
 
 void HTTPResponse::CGI_Body() {
 	std::cout << BOLD UNDERLINE BLUE << "\n###### ENTERING BODY CGI DEBUGGING ######\n\n" RESET;
-	std::string scriptPath = body_filename_;
+	std::string scriptPath;
+	if (!body_filename_.empty())
+		scriptPath = body_filename_;
+	else
+		scriptPath = current_request_.getPath();
 	std::string script_name = getFilenameFromPath(body_filename_);
 	if (script_name == scriptPath) {
 		std::cerr << "unexpected URI\n";
@@ -531,6 +544,7 @@ void HTTPResponse::CGI_Body() {
 
 	CgiHandler handler(data, scriptPath); // pass to CGI engine
 	std::string cgiOutput = handler.run();
+	std::cout << "cgiOutput: " << cgiOutput << std::endl;
 
 	// Try to parse headers from CGI output
 	size_t headerEnd = cgiOutput.find("\r\n\r\n");
