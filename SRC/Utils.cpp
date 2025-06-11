@@ -410,15 +410,15 @@ std::string getFilenameFromPath(const std::string& path) {
 
 size_t maxBodySizeLocation(Server *default_server, Server *server_requested, Location *location_requested) {
 	if (location_requested) {
-		if (location_requested->getMaxSize())
+		if (location_requested->getMaxSize() != 0)
 			return location_requested->getMaxSize();
 	} else {
-		if (server_requested->getMaxBodySize())
+		if (server_requested->getMaxBodySize() != 0)
 			return server_requested->getMaxBodySize();
-		else if (default_server->getMaxBodySize())
+		else if (default_server->getMaxBodySize() != 0)
 			return default_server->getMaxBodySize();
 	}
-	return 0;
+	return 1048576;
 }
 
 std::string trimString(const std::string& s){

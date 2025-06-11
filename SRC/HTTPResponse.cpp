@@ -523,7 +523,7 @@ void HTTPResponse::CGI_Body() {
 		return;
 	}
 
-	std::cerr << "[CGI DEBUG] Raw POST body (from HTTPRequest): [" << current_request_.getRawBody() << "]" << std::endl;
+	std::cerr << "[CGI DEBUG] Raw POST body (from HTTPRequest): [" << current_request_.getContent().getBodyWithNoCD() << "]" << std::endl;
 
 	// Build the RequestData object for CGI
 	RequestData data;
@@ -531,7 +531,7 @@ void HTTPResponse::CGI_Body() {
 	data.setPath(scriptPath);  // Used for SCRIPT_FILENAME and SCRIPT_NAME
 	data.setQueryString(current_request_.getQueryStr());
 	data.setHeaders(current_request_.getHeaders());
-	data.setBody(current_request_.getRawBody());
+	data.setBody(current_request_.getContent().getBodyWithNoCD());
 
 	std::cerr << "[CGI] method : " << data.getMethod() << std::endl;
 	std::cerr << "[CGI] - path saved: " << data.getPath() << std::endl;

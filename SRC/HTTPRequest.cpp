@@ -28,7 +28,7 @@ Accept::~Accept(){}
 
 //<<HTTPRequest>>
 HTTPRequest::HTTPRequest() : instance_index_(global_index_++),
-	cgi_flag_(false), with_file_flag_(false){}
+	cgi_flag_(false), content_length_(0), with_file_flag_(false) {}
 
 HTTPRequest::~HTTPRequest(){}
 
