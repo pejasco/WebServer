@@ -320,60 +320,35 @@ int ServerManager::startEpoll() {
 /*depending on the event, it can be either a new connection that need to be add to the epoll OR an existing one that will receive the HTTP request and send HTTP respond*/
 /****************/
 void ServerManager::serverMonitoring() {
-    int loop_counter = 0;
-    int max_loops = 100;
-    std::cout << "=== SERVER MONITORING STARTED ===" << std::endl;
-    
-    while (running_ && loop_counter < max_loops) {
-        loop_counter++;
-        std::cout << "=== LOOP " << loop_counter << " - WAITING FOR EPOLL_WAIT ===" << std::endl;
-        
-        num_events_ = epoll_wait(epoll_fd_, events_, MAX_EVENTS, 1000);
-        std::cout << "=== EPOLL_WAIT RETURNED: " << num_events_ << " events ===" << std::endl;
-        
-        if (num_events_ == -1) {
-            std::cout << "EPOLL ERROR: " << strerror(errno) << std::endl;
-            break;
-        }
-        
-        if (num_events_ == 0) {
-            std::cout << "=== TIMEOUT - NO EVENTS ===" << std::endl;
-            continue;
-        }
-        
-        // Process events - ADD THE MISSING LOGIC!
-        for (client_id_ = 0; client_id_ < num_events_; client_id_++) {
-            current_fd_ = events_[client_id_].data.fd;
-            std::cout << "=== EVENT " << client_id_ << " FD " << current_fd_ 
-                      << " EVENTS: " << events_[client_id_].events << " ===" << std::endl;
-            
-            // ADD THIS - Check if it's a new connection or existing client
-            if (std::find(sockets_fd_list_.begin(), sockets_fd_list_.end(), current_fd_) != sockets_fd_list_.end()) {
-                std::cout << "=== NEW CLIENT CONNECTION ===" << std::endl;
-                createNewClientConnection();
-            } else {
-                std::cout << "=== EXISTING CLIENT CONNECTION ===" << std::endl;
-                Client *current_client = clients_list_[current_fd_];
-                if (current_client == NULL) {
-                    std::cout << "=== ERROR: UNKNOWN CLIENT ===" << std::endl;
-                    // Clean up unknown client
-                    close(current_fd_);
-                    epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, current_fd_, NULL);
-                } else {
-                    existingClientConnection();
-                }
-            }
-            std::cout << "=== FINISHED PROCESSING EVENT " << client_id_ << " ===" << std::endl;
-        }
-        std::cout << "=== FINISHED PROCESSING ALL EVENTS ===" << std::endl;
-    }
-    
-    if (loop_counter >= max_loops) {
-        std::cout << "=== STOPPED DUE TO LOOP LIMIT ===" << std::endl;
-    }
-    
-    this->cleanClient(current_fd_);
-    this->shutdown();
+	while (running_) {
+		num_events_ = epoll_wait(epoll_fd_, events_, MAX_EVENTS, -1); // Changed back to infinite timeout
+		
+		if (num_events_ == -1) {
+			if (errno != EINTR)
+				std::cerr << "Error epoll_wait: " << strerror(errno) << std::endl;
+			running_ = false;
+		}
+		
+		for (client_id_ = 0; client_id_ < num_events_; client_id_++) {
+			current_fd_ = events_[client_id_].data.fd;
+			
+			if (std::find(sockets_fd_list_.begin(), sockets_fd_list_.end(), current_fd_) != sockets_fd_list_.end()) {
+				createNewClientConnection();
+			} else {
+				Client *current_client = clients_list_[current_fd_];
+				if (current_client == NULL) {
+					// Clean up unknown client
+					close(current_fd_);
+					epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, current_fd_, NULL);
+				} else {
+					existingClientConnection();
+				}
+			}
+		}
+	}
+	
+	this->cleanClient(current_fd_);
+	this->shutdown();
 }
 
 /****************/
@@ -420,347 +395,294 @@ void ServerManager::createNewClientConnection() {
 /****************/
 
 void ServerManager::existingClientConnection() {
-    std::cout << ">>> ENTERING existingClientConnection for FD " << current_fd_ << std::endl;
-    
-    Client* client = clients_list_[current_fd_];
-    if (!client) {
-        std::cout << ">>> ERROR: No client found for FD " << current_fd_ << std::endl;
-        return;
-    }
-    
-    std::cout << ">>> Client found - file_sending_complete: " << client->file_sending_complete << std::endl;
-    std::cout << ">>> Event type: " << events_[client_id_].events << std::endl;
-    std::cout << ">>> EPOLLIN check: " << (events_[client_id_].events & EPOLLIN) << std::endl;
-    
-    // Handle file sending if in progress
-    if (!client->file_sending_complete) {
-        std::cout << ">>> File sending in progress" << std::endl;
-        if (events_[client_id_].events & EPOLLOUT) {
-            std::cout << ">>> EPOLLOUT detected" << std::endl;
-            if (sendResponseBodyFile()) {
-                client->resetForNextRequest();
-            }
-            return;
-        } else if (events_[client_id_].events & EPOLLIN) {
-            std::cout << ">>> ERROR: Got EPOLLIN while file sending in progress - resetting client" << std::endl;
-            client->resetForNextRequest();
-            // Fall through to handle the EPOLLIN event
-        } else {
-            std::cout << ">>> Waiting for EPOLLOUT" << std::endl;
-            return;
-        }
-    }
-
-    std::cout << ">>> ABOUT TO CHECK EPOLLIN CONDITION" << std::endl;
-    
-    // Handle new request data - THIS IS THE CRITICAL PART
-    if (events_[client_id_].events & EPOLLIN) {
-        std::cout << ">>> EPOLLIN CONDITION TRUE - ENTERING PROCESSING" << std::endl;
-        HTTPRequest current_request;
-        std::cout << "check EPOLLIN ready\n";
-        
-        // PHASE 1: Read headers if not complete
-        if (!client->header_completed) {
-            std::cout << ">>> CALLING readClientHeaders()" << std::endl;
-            if (!readClientHeaders()) {
-                std::cout << "check client header not completed\n";
-                return; // Headers not complete yet or error
-            }
-            client->header_completed = true;
-            std::cout << "check client header completed\n";
-            if (!parseHeadersAndCheckBodySize(current_request)) {
-                std::cout << "check parse header and body return false\n";
-                if (current_fd_ > 0)  
-                    close(current_fd_);
-                cleanClient(current_fd_);
-                std::cout << "check client is clean\n";
-                return;
-            }
-        } else {
-            std::cout << ">>> HEADERS ALREADY COMPLETED - PROCESSING NEXT REQUEST" << std::endl;
-            // ADD THIS: Handle subsequent requests on keep-alive connection
-            client->header_completed = false; // Reset for next request
-            if (!readClientHeaders()) {
-                std::cout << ">>> Next request headers not complete yet\n";
-                return;
-            }
-            client->header_completed = true;
-            if (!parseHeadersAndCheckBodySize(current_request)) {
-                std::cout << ">>> Error processing next request\n";
-                if (current_fd_ > 0)  
-                    close(current_fd_);
-                cleanClient(current_fd_);
-                return;
-            }
-        }
-    } else {
-        std::cout << ">>> EPOLLIN CONDITION FALSE" << std::endl;
-    }
-    
-    std::cout << "check all finished\n";
-    std::cout << ">>> EXITING existingClientConnection" << std::endl;
+	Client* client = clients_list_[current_fd_];
+	if (!client) return;
+	
+	// Handle file sending if in progress
+	if (!client->file_sending_complete) {
+		if (events_[client_id_].events & EPOLLOUT) {
+			if (sendResponseBodyFile()) {
+				client->resetForNextRequest();
+			}
+			return;
+		} else if (events_[client_id_].events & EPOLLIN) {
+			// Client sending new data while file transfer in progress - reset state
+			client->resetForNextRequest();
+			// Fall through to handle the EPOLLIN event
+		} else {
+			return; // Wait for EPOLLOUT
+		}
+	}
+	
+	// Handle new request data
+	if (events_[client_id_].events & EPOLLIN) {
+		HTTPRequest current_request;
+		
+		if (!client->header_completed) {
+			if (!readClientHeaders()) {
+				return; // Headers not complete yet or error
+			}
+			client->header_completed = true;
+			
+			if (!parseHeadersAndCheckBodySize(current_request)) {
+				if (current_fd_ > 0) close(current_fd_);
+				cleanClient(current_fd_);
+				return;
+			}
+		} else {
+			// Handle subsequent requests on keep-alive connection
+			client->header_completed = false;
+			if (!readClientHeaders()) {
+				return; // Next request headers not complete yet
+			}
+			client->header_completed = true;
+			if (!parseHeadersAndCheckBodySize(current_request)) {
+				if (current_fd_ > 0) close(current_fd_);
+				cleanClient(current_fd_);
+				return;
+			}
+		}
+	}
 }
 
 bool ServerManager::readClientHeaders() {
-    Client* client = clients_list_[current_fd_];
-    if (!client) return false;
-    
-    if (!(events_[client_id_].events & EPOLLIN))
-        return false;
+	Client* client = clients_list_[current_fd_];
+	if (!client) return false;
+	
+	if (!(events_[client_id_].events & EPOLLIN))
+		return false;
 
-    ssize_t byte_received = recv(current_fd_, received_, sizeof(received_) - 1, 0);    
-    if (byte_received <= 0) {
-        if (byte_received == 0)
-            std::cout << "Client disconnect during header reading\n";
-        else
-            std::cerr << "Error reading headers: " << strerror(errno) << std::endl;
-        return false;
-    }
-    
-    received_[byte_received] = '\0';
-    client->header_buffer.append(received_, byte_received);
-    
-    // Check for end of headers
-    size_t header_end = client->header_buffer.find("\r\n\r\n");
-    if (header_end != std::string::npos) {
-        // Store headers and body separately
-        client->headers_string = client->header_buffer.substr(0, header_end + 4);
-        size_t body_start = header_end + 4;
-        if (body_start < client->header_buffer.length()) {
-            client->body_buffer = client->header_buffer.substr(body_start);
-            client->body_bytes_read = client->body_buffer.length();
-        }
-        
-        return true; // Headers complete
-    }
-    
-    // Header size check 
-    if (client->header_buffer.size() > MAX_HEADER_SIZE) {
-        error_code_ = 400;
-        return false;
-    }
-    
-    return false; // Headers not complete yet
+	ssize_t byte_received = recv(current_fd_, received_, sizeof(received_) - 1, 0);    
+	if (byte_received <= 0) {
+		if (byte_received == 0)
+			std::cout << "Client disconnect during header reading\n"; // Keep this - useful for debugging disconnections
+		else
+			std::cerr << "Error reading headers: " << strerror(errno) << std::endl; // Keep this - important error
+		return false;
+	}
+	
+	received_[byte_received] = '\0';
+	client->header_buffer.append(received_, byte_received);
+	
+	// Check for end of headers
+	size_t header_end = client->header_buffer.find("\r\n\r\n");
+	if (header_end != std::string::npos) {
+		client->headers_string = client->header_buffer.substr(0, header_end + 4);
+		size_t body_start = header_end + 4;
+		if (body_start < client->header_buffer.length()) {
+			client->body_buffer = client->header_buffer.substr(body_start);
+			client->body_bytes_read = client->body_buffer.length();
+		}
+		return true;
+	}
+	
+	// Header size check 
+	if (client->header_buffer.size() > MAX_HEADER_SIZE) {
+		error_code_ = 400;
+		return false;
+	}
+	
+	return false;
 }
 
 bool ServerManager::parseHeadersAndCheckBodySize(HTTPRequest& current_request) {
-    Client* client = clients_list_[current_fd_];
-    if (!client) return false;
+	Client* client = clients_list_[current_fd_];
+	if (!client) return false;
 
-    // Parse request using stored headers
-    current_request.parseRequest(client->headers_string);
-    
-    std::cout << BOLD MAGENTA "\n#######HEADER RECEIVED##########\n\n" RESET 
-              << client->headers_string << BOLD MAGENTA "\n#######END OF HEADER##########\n" RESET << std::endl; 
+	current_request.parseRequest(client->headers_string);
+	
+	// Keep these - they're part of your application logic
+	std::cout << BOLD MAGENTA "\n#######HEADER RECEIVED##########\n\n" RESET 
+			  << client->headers_string << BOLD MAGENTA "\n#######END OF HEADER##########\n" RESET << std::endl; 
 
-    std::cout << BOLD UNDERLINE GREEN "\n###### ENTERING SERVER//LOCATION DEBUGGING ######\n\n" RESET;
-    std::string server_IP = getServerIP(current_fd_);
-    default_server_ = servers_list_.front();
-    Server *server_requested = getCurrentServer(current_request, *this, server_IP);
-    Location *location_requested = getCurrentLocation(current_request, *server_requested);
-    if (location_requested == NULL && (current_request.getPath() == "/"))
-        location_requested = servers_list_.front()->getLocationsList().front();
-    std::cout << BOLD UNDERLINE GREEN "\n###### LEAVING SERVER//LOCATION DEBUGGING ######\n\n" RESET;
-    
-    int max_body_size = maxBodySizeLocation(servers_list_.front(), server_requested, location_requested);
-    std::cout << "max_body_size: " << max_body_size << std::endl;
-    
-    int content_length = current_request.getContentLength();
-    std::cout << "Content-Length: " << content_length << std::endl;    
-    
-    if (content_length > 0) {
-        if (max_body_size > 0 && content_length > max_body_size) {
-            std::cout << "Request body size " << content_length 
-                        << " exceeds limit " << max_body_size << std::endl;
-            error_code_ = 413;
-            processAndSendResponse(current_request, server_requested, location_requested);
-            return true;
-        } else {
-            std::cout << "Reading request body\n";
-            if (!readRequestBody(current_request, content_length, max_body_size)) {
-                std::cout << "Body not complete yet\n";
-                return false; // Wait for more body data
-            }
-        }
-    }
-    
-    std::cout << "Processing request and sending response\n";
-    processAndSendResponse(current_request, server_requested, location_requested);
-    return true;
+	std::cout << BOLD UNDERLINE GREEN "\n###### ENTERING SERVER//LOCATION DEBUGGING ######\n\n" RESET;
+	std::string server_IP = getServerIP(current_fd_);
+	default_server_ = servers_list_.front();
+	Server *server_requested = getCurrentServer(current_request, *this, server_IP);
+	Location *location_requested = getCurrentLocation(current_request, *server_requested);
+	if (location_requested == NULL && (current_request.getPath() == "/"))
+		location_requested = servers_list_.front()->getLocationsList().front();
+	std::cout << BOLD UNDERLINE GREEN "\n###### LEAVING SERVER//LOCATION DEBUGGING ######\n\n" RESET;
+	
+	int max_body_size = maxBodySizeLocation(servers_list_.front(), server_requested, location_requested);
+	int content_length = current_request.getContentLength();
+	
+	if (content_length > 0) {
+		if (max_body_size > 0 && content_length > max_body_size) {
+			std::cout << "Request body size " << content_length 
+						<< " exceeds limit " << max_body_size << std::endl; // Keep - important error
+			error_code_ = 413;
+			processAndSendResponse(current_request, server_requested, location_requested);
+			return true;
+		} else {
+			if (!readRequestBody(current_request, content_length, max_body_size)) {
+				return false;
+			}
+		}
+	}
+	
+	processAndSendResponse(current_request, server_requested, location_requested);
+	return true;
 }
 
 bool ServerManager::readRequestBody(HTTPRequest& current_request, size_t content_length, size_t max_body_size) {
-    Client* client = clients_list_[current_fd_];
-    if (!client) return false;
-    
-    // Continue reading body if not complete
-    if (client->body_bytes_read < content_length) {
-        size_t remaining = content_length - client->body_bytes_read;
-        size_t to_read = std::min(sizeof(received_) - 1, remaining);
-        ssize_t byte_received = recv(current_fd_, received_, to_read, 0);
-        
-        if (byte_received < 0) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                return false; // No more data available, try again later
-            }
-            std::cerr << "Error reading body: " << strerror(errno) << std::endl;
-            return false;
-        } else if (byte_received == 0) {
-            std::cout << "Client disconnect during body reading\n";
-            return false;
-        }
-        
-        client->body_bytes_read += byte_received;
-        if (max_body_size > 0 && client->body_bytes_read > max_body_size) {
-            std::cerr << "Body size exceeded during reading\n";
-            error_code_ = 413;
-            return false;
-        }
-        
-        received_[byte_received] = '\0';
-        client->body_buffer.append(received_, byte_received);
-    }
-    
-    // Check if body is complete
-    if (client->body_bytes_read >= content_length) {
-        std::cout << "<<sievdebug>> request_body received (" << client->body_buffer.size() << " bytes):\n";
-        std::cout << "<<sievdebug>>" << client->body_buffer << "\n";
-        std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
-        
-        current_request.parseContent(client->body_buffer);
-        return true; // Body complete
-    } 
-    
-    return false; // Need more data
+	Client* client = clients_list_[current_fd_];
+	if (!client) return false;
+	
+	if (client->body_bytes_read < content_length) {
+		size_t remaining = content_length - client->body_bytes_read;
+		size_t to_read = std::min(sizeof(received_) - 1, remaining);
+		ssize_t byte_received = recv(current_fd_, received_, to_read, 0);
+		
+		if (byte_received < 0) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				return false;
+			}
+			std::cerr << "Error reading body: " << strerror(errno) << std::endl; // Keep - important error
+			return false;
+		} else if (byte_received == 0) {
+			std::cout << "Client disconnect during body reading\n"; // Keep - useful for debugging
+			return false;
+		}
+		
+		client->body_bytes_read += byte_received;
+		if (max_body_size > 0 && client->body_bytes_read > max_body_size) {
+			std::cerr << "Body size exceeded during reading\n"; // Keep - important error
+			error_code_ = 413;
+			return false;
+		}
+		
+		received_[byte_received] = '\0';
+		client->body_buffer.append(received_, byte_received);
+	}
+	
+	if (client->body_bytes_read >= content_length) {
+		current_request.parseContent(client->body_buffer);
+		return true;
+	} 
+	
+	return false;
 }
 
 void ServerManager::processAndSendResponse(HTTPRequest& current_request, Server *server_requested, Location *location_requested) {
-    Client* client = clients_list_[current_fd_];
-    if (!client) return;
-    
-    // Create response and store in client
-    HTTPResponse* http_response = new HTTPResponse(current_request, default_server_, server_requested, location_requested, error_code_);
-    client->setResponse(http_response);
-    
-    std::string response_headers = client->current_response->getResponse();
-    std::cout << "response to send: " << response_headers << std::endl;
-    
-    if (current_fd_ < 0) {
-        std::cerr << "Error, current_fd_ socket is already close" << std::endl;
-        return;
-    }
-    if (response_headers.empty()) {
-        std::cerr << "Error, response is empty" << std::endl;
-        return;
-    }
-    
-    ssize_t bytes_sent = send(current_fd_, response_headers.c_str(), response_headers.length(), 0);
-    if (bytes_sent < 0) {
-        std::cerr << "Error when sending response to client: " << strerror(errno) << std::endl;
-        return;
-    }
+	Client* client = clients_list_[current_fd_];
+	if (!client) return;
+	
+	HTTPResponse* http_response = new HTTPResponse(current_request, default_server_, server_requested, location_requested, error_code_);
+	client->setResponse(http_response);
+	
+	std::string response_headers = client->current_response->getResponse();
+	
+	if (current_fd_ < 0) {
+		std::cerr << "Error, current_fd_ socket is already close" << std::endl; // Keep - important error
+		return;
+	}
+	if (response_headers.empty()) {
+		std::cerr << "Error, response is empty" << std::endl; // Keep - important error
+		return;
+	}
+	
+	ssize_t bytes_sent = send(current_fd_, response_headers.c_str(), response_headers.length(), 0);
+	if (bytes_sent < 0) {
+		std::cerr << "Error when sending response to client: " << strerror(errno) << std::endl; // Keep - important error
+		return;
+	}
 
-    if (client->current_response->isReady()) {
-        std::cout << "Response is already ready (e.g. from CGI), skipping body file send\n";
-        client->resetForNextRequest(); // IMPORTANT: Reset client state
-        return;
-    }
-    
-    if (!client->current_response->getBodyFilename().empty()) {
-        client->file_sending_complete = false;
-        sendResponseBodyFile();
-    } else {
-        std::cout << "SUCCESSFULLY COMPLETED RESPONSE (no body file)!\n";
-        client->resetForNextRequest(); // IMPORTANT: Reset client state
-    }
+	if (client->current_response->isReady()) {
+		client->resetForNextRequest();
+		return;
+	}
+	
+	if (!client->current_response->getBodyFilename().empty()) {
+		client->file_sending_complete = false;
+		sendResponseBodyFile();
+	} else {
+		client->resetForNextRequest();
+	}
 }
 
 bool ServerManager::sendResponseBodyFile() {
-    Client* client = clients_list_[current_fd_];
-    if (!client) return false;
-    
-    std::string body_file = client->current_response->getBodyFilename();
-    
-    // Initialize file reading state if first call
-    if (!client->file_stream.is_open()) {
-        std::cout << "check body_file: " << body_file << std::endl;
-        client->file_stream.open(body_file.c_str(), std::ios::binary);
-        if (!client->file_stream.is_open()) {
-            std::cerr << "Failed to open body file: " << body_file << std::endl;
-            error_code_ = 500;
-            return false;
-        }
-        client->file_sending_complete = false;
-    }
-    
-    // Check if socket is ready for writing
-    if (!(events_[client_id_].events & EPOLLOUT)) {
-        // Need to wait for EPOLLOUT event
-        struct epoll_event event;
-        event.events = EPOLLOUT;
-        event.data.fd = current_fd_;
-        if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, current_fd_, &event) == -1) {
-            std::cerr << "Error modifying epoll for EPOLLOUT: " << strerror(errno) << std::endl;
-            return false;
-        }
-        return false; // Will continue when EPOLLOUT triggers
-    }
-    
-    // Read chunk from file
-    if (!client->file_stream.eof()) {
-        client->file_stream.read(buffer_, sizeof(buffer_));
-        std::streamsize bytes_read = client->file_stream.gcount();
-        
-        if (bytes_read > 0) {
-            ssize_t bytes_sent = send(current_fd_, buffer_, bytes_read, 0);
-            if (bytes_sent < 0) {
-                if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                    // Socket buffer full, try again later
-                    client->file_stream.seekg(-bytes_read, std::ios::cur); // Rewind
-                    return false;
-                }
-                std::cerr << "Error sending file data: " << strerror(errno) << std::endl;
-                client->file_stream.close();
-                return false;
-            } else if (bytes_sent < bytes_read) {
-                // Partial send - rewind file position
-                client->file_stream.seekg(bytes_sent - bytes_read, std::ios::cur);
-                return false; // Continue on next EPOLLOUT
-            }
-        }
-        
-        if (client->file_stream.bad()) {
-            std::cerr << "Error reading from file: " << body_file << std::endl;
-            client->file_stream.close();
-            return false;
-        }
-    }
-    
-    // Check if file sending is complete
-    if (client->file_stream.eof()) {
-        client->file_stream.close();
-        client->file_sending_complete = true;
-        
-        // Clean up auto-generated file if needed
-        if (client->current_response->isAutoIndex()) {
-            if (std::remove(body_file.c_str()) == 0) {
-                client->current_response->setAutoIndex(false);
-            }
-        }
-        
-        // Switch back to EPOLLIN for next request
-        struct epoll_event event;
-        event.events = EPOLLIN;
-        event.data.fd = current_fd_;
-        if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, current_fd_, &event) == -1) {
-            std::cerr << "Error modifying epoll back to EPOLLIN: " << strerror(errno) << std::endl;
-        }
-        
-        std::cout << "SUCCESSFULLY COMPLETED FILE SENDING!\n";
-        return true; // File sending complete
-    }
-    
-    return false; // More data to send, continue on next EPOLLOUT
+	Client* client = clients_list_[current_fd_];
+	if (!client) return false;
+	
+	std::string body_file = client->current_response->getBodyFilename();
+	
+	// Initialize file reading state if first call
+	if (!client->file_stream.is_open()) {
+		client->file_stream.open(body_file.c_str(), std::ios::binary);
+		if (!client->file_stream.is_open()) {
+			std::cerr << "Failed to open body file: " << body_file << std::endl; // Keep - important error
+			error_code_ = 500;
+			return false;
+		}
+		client->file_sending_complete = false;
+	}
+	
+	// Check if socket is ready for writing
+	if (!(events_[client_id_].events & EPOLLOUT)) {
+		struct epoll_event event;
+		event.events = EPOLLOUT;
+		event.data.fd = current_fd_;
+		if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, current_fd_, &event) == -1) {
+			std::cerr << "Error modifying epoll for EPOLLOUT: " << strerror(errno) << std::endl; // Keep - important error
+			return false;
+		}
+		return false;
+	}
+	
+	// Read chunk from file
+	if (!client->file_stream.eof()) {
+		client->file_stream.read(buffer_, sizeof(buffer_));
+		std::streamsize bytes_read = client->file_stream.gcount();
+		
+		if (bytes_read > 0) {
+			ssize_t bytes_sent = send(current_fd_, buffer_, bytes_read, 0);
+			
+			if (bytes_sent < 0) {
+				if (errno == EAGAIN || errno == EWOULDBLOCK) {
+					client->file_stream.seekg(-bytes_read, std::ios::cur);
+					return false;
+				}
+				std::cerr << "Error sending file data: " << strerror(errno) << std::endl; // Keep - important error
+				client->file_stream.close();
+				return false;
+			} else if (bytes_sent < bytes_read) {
+				client->file_stream.seekg(bytes_sent - bytes_read, std::ios::cur);
+				return false;
+			}
+		}
+		
+		if (client->file_stream.bad()) {
+			std::cerr << "Error reading from file: " << body_file << std::endl; // Keep - important error
+			client->file_stream.close();
+			return false;
+		}
+	}
+	
+	// Check if file sending is complete
+	if (client->file_stream.eof()) {
+		client->file_stream.close();
+		client->file_sending_complete = true;
+		
+		// Clean up auto-generated file if needed
+		if (client->current_response->isAutoIndex()) {
+			if (std::remove(body_file.c_str()) == 0) {
+				client->current_response->setAutoIndex(false);
+			}
+		}
+		
+		// Switch back to EPOLLIN for next request
+		struct epoll_event event;
+		event.events = EPOLLIN;
+		event.data.fd = current_fd_;
+		if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, current_fd_, &event) == -1) {
+			std::cerr << "Error modifying epoll back to EPOLLIN: " << strerror(errno) << std::endl; // Keep - important error
+		}
+		
+		return true;
+	}
+	
+	return false;
 }
 
 bool ServerManager::cleanClient(int current_fd_) {
@@ -784,4 +706,3 @@ void ServerManager::shutdown() {
 bool ServerManager::isBlocked(const void *IP) {
 	return blocked_clients_list_.find(IP) != blocked_clients_list_.end();
 }
-
