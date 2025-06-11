@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/10 15:42:54 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/11 15:18:09 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,30 +320,60 @@ int ServerManager::startEpoll() {
 /*depending on the event, it can be either a new connection that need to be add to the epoll OR an existing one that will receive the HTTP request and send HTTP respond*/
 /****************/
 void ServerManager::serverMonitoring() {
-	while (running_) {
-		/*STEP3 -- wait for an event to occur in any socket in epoll instance*/
-		num_events_ = epoll_wait(epoll_fd_, events_, MAX_EVENTS, -1); // -1 is timeout setup with -1 for infinite
-		if (num_events_ == -1) {
-			if (errno != EINTR)
-				std::cerr << "Error epoll_wait: " << strerror(errno) << std::endl;
-			running_ = false ;
-		}
-		
-		/*STEP4 -- Process each event happening*/
-		for (client_id_ = 0; client_id_ < num_events_; client_id_++) {
-			current_fd_ = events_[client_id_].data.fd;
-			if (std::find(sockets_fd_list_.begin(), sockets_fd_list_.end(), current_fd_) != sockets_fd_list_.end()) { //add the check to clients list ??
-				createNewClientConnection(); //is the current_fd_ in the epoll instance (meaning connections has been established so known client or need to be added as it is a new one)
-			} else {
-				Client *current_client = clients_list_[current_fd_];
-				if (current_client == NULL)
-					std::cout << "unknown client\n";
-				existingClientConnection();
-			}
-		}
-	}
-	this->cleanClient(current_fd_);
-	this->shutdown();
+    int loop_counter = 0;
+    int max_loops = 100;
+    std::cout << "=== SERVER MONITORING STARTED ===" << std::endl;
+    
+    while (running_ && loop_counter < max_loops) {
+        loop_counter++;
+        std::cout << "=== LOOP " << loop_counter << " - WAITING FOR EPOLL_WAIT ===" << std::endl;
+        
+        num_events_ = epoll_wait(epoll_fd_, events_, MAX_EVENTS, 1000);
+        std::cout << "=== EPOLL_WAIT RETURNED: " << num_events_ << " events ===" << std::endl;
+        
+        if (num_events_ == -1) {
+            std::cout << "EPOLL ERROR: " << strerror(errno) << std::endl;
+            break;
+        }
+        
+        if (num_events_ == 0) {
+            std::cout << "=== TIMEOUT - NO EVENTS ===" << std::endl;
+            continue;
+        }
+        
+        // Process events - ADD THE MISSING LOGIC!
+        for (client_id_ = 0; client_id_ < num_events_; client_id_++) {
+            current_fd_ = events_[client_id_].data.fd;
+            std::cout << "=== EVENT " << client_id_ << " FD " << current_fd_ 
+                      << " EVENTS: " << events_[client_id_].events << " ===" << std::endl;
+            
+            // ADD THIS - Check if it's a new connection or existing client
+            if (std::find(sockets_fd_list_.begin(), sockets_fd_list_.end(), current_fd_) != sockets_fd_list_.end()) {
+                std::cout << "=== NEW CLIENT CONNECTION ===" << std::endl;
+                createNewClientConnection();
+            } else {
+                std::cout << "=== EXISTING CLIENT CONNECTION ===" << std::endl;
+                Client *current_client = clients_list_[current_fd_];
+                if (current_client == NULL) {
+                    std::cout << "=== ERROR: UNKNOWN CLIENT ===" << std::endl;
+                    // Clean up unknown client
+                    close(current_fd_);
+                    epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, current_fd_, NULL);
+                } else {
+                    existingClientConnection();
+                }
+            }
+            std::cout << "=== FINISHED PROCESSING EVENT " << client_id_ << " ===" << std::endl;
+        }
+        std::cout << "=== FINISHED PROCESSING ALL EVENTS ===" << std::endl;
+    }
+    
+    if (loop_counter >= max_loops) {
+        std::cout << "=== STOPPED DUE TO LOOP LIMIT ===" << std::endl;
+    }
+    
+    this->cleanClient(current_fd_);
+    this->shutdown();
 }
 
 /****************/
@@ -390,46 +420,85 @@ void ServerManager::createNewClientConnection() {
 /****************/
 
 void ServerManager::existingClientConnection() {
-	Client* client = clients_list_[current_fd_];
-    if (!client) return;
-	// std::cout << "check existing client\n";
+    std::cout << ">>> ENTERING existingClientConnection for FD " << current_fd_ << std::endl;
+    
+    Client* client = clients_list_[current_fd_];
+    if (!client) {
+        std::cout << ">>> ERROR: No client found for FD " << current_fd_ << std::endl;
+        return;
+    }
+    
+    std::cout << ">>> Client found - file_sending_complete: " << client->file_sending_complete << std::endl;
+    std::cout << ">>> Event type: " << events_[client_id_].events << std::endl;
+    std::cout << ">>> EPOLLIN check: " << (events_[client_id_].events & EPOLLIN) << std::endl;
+    
     // Handle file sending if in progress
     if (!client->file_sending_complete) {
+        std::cout << ">>> File sending in progress" << std::endl;
         if (events_[client_id_].events & EPOLLOUT) {
+            std::cout << ">>> EPOLLOUT detected" << std::endl;
             if (sendResponseBodyFile()) {
-                // File sending complete, reset client for next request
                 client->resetForNextRequest();
             }
-			std::cout << "check EPOLLOUT ready\n";
+            return;
+        } else if (events_[client_id_].events & EPOLLIN) {
+            std::cout << ">>> ERROR: Got EPOLLIN while file sending in progress - resetting client" << std::endl;
+            client->resetForNextRequest();
+            // Fall through to handle the EPOLLIN event
+        } else {
+            std::cout << ">>> Waiting for EPOLLOUT" << std::endl;
             return;
         }
-		// std::cout << "check wait EPOLLOUT\n";
-        return; // Wait for EPOLLOUT
     }
 
-    // Handle new request data
+    std::cout << ">>> ABOUT TO CHECK EPOLLIN CONDITION" << std::endl;
+    
+    // Handle new request data - THIS IS THE CRITICAL PART
     if (events_[client_id_].events & EPOLLIN) {
+        std::cout << ">>> EPOLLIN CONDITION TRUE - ENTERING PROCESSING" << std::endl;
         HTTPRequest current_request;
         std::cout << "check EPOLLIN ready\n";
+        
         // PHASE 1: Read headers if not complete
         if (!client->header_completed) {
+            std::cout << ">>> CALLING readClientHeaders()" << std::endl;
             if (!readClientHeaders()) {
-				std::cout << "check clietn header not completed\n";
+                std::cout << "check client header not completed\n";
                 return; // Headers not complete yet or error
             }
             client->header_completed = true;
             std::cout << "check client header completed\n";
             if (!parseHeadersAndCheckBodySize(current_request)) {
-				std::cout << "check parse header and body return false\n";
+                std::cout << "check parse header and body return false\n";
                 if (current_fd_ > 0)  
-					close(current_fd_);
+                    close(current_fd_);
                 cleanClient(current_fd_);
-				std::cout << "check client is clean\n";
+                std::cout << "check client is clean\n";
+                return;
+            }
+        } else {
+            std::cout << ">>> HEADERS ALREADY COMPLETED - PROCESSING NEXT REQUEST" << std::endl;
+            // ADD THIS: Handle subsequent requests on keep-alive connection
+            client->header_completed = false; // Reset for next request
+            if (!readClientHeaders()) {
+                std::cout << ">>> Next request headers not complete yet\n";
+                return;
+            }
+            client->header_completed = true;
+            if (!parseHeadersAndCheckBodySize(current_request)) {
+                std::cout << ">>> Error processing next request\n";
+                if (current_fd_ > 0)  
+                    close(current_fd_);
+                cleanClient(current_fd_);
                 return;
             }
         }
+    } else {
+        std::cout << ">>> EPOLLIN CONDITION FALSE" << std::endl;
     }
-	std::cout << "check all finished\n";
+    
+    std::cout << "check all finished\n";
+    std::cout << ">>> EXITING existingClientConnection" << std::endl;
 }
 
 bool ServerManager::readClientHeaders() {
