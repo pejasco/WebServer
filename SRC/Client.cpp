@@ -15,6 +15,7 @@
 Client::Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, socklen_t inputClientAddrLen): header_completed(false), file_sending_complete(false), current_response(NULL), error_(false), client_fd_(inputClientFd), client_addr_(inputClientAddr), client_addr_len_(inputClientAddrLen) {
 	header_buffer = "";
 	body_buffer = "";
+	headers_string = "";
 	
 	flags_ = fcntl(client_fd_, F_GETFL, 0);
 	if (flags_ == -1)
@@ -69,4 +70,24 @@ socklen_t Client::getClientAddrLen() {
 
 bool Client::getError() {
 	return error_;
+}
+
+void Client::resetForNextRequest() {
+	header_buffer.clear();
+	headers_string.clear(); // NEW: Clear stored headers
+	body_buffer.clear();
+	body_bytes_read = 0;
+	header_completed = false; // NEW: Reset header completion flag
+
+	if (current_response)
+	{
+		delete current_response;
+		current_response = NULL;
+	}
+	file_sending_complete = true;
+
+	if (file_stream.is_open())
+	{
+		file_stream.close();
+	}
 }

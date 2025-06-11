@@ -31,10 +31,12 @@ class Client {
 		struct sockaddr_storage &getClientAddr();
 		socklen_t getClientAddrLen();
 		bool getError();
+		void resetForNextRequest();
 		
 		//siev:
 		std::string body_buffer;
 		std::string header_buffer;
+		std::string headers_string;
 		size_t body_bytes_read;
 		bool header_completed;
 		std::ifstream file_stream;
