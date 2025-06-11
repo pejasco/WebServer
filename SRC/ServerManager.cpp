@@ -408,7 +408,6 @@ void ServerManager::existingClientConnection() {
 		} else if (events_[client_id_].events & EPOLLIN) {
 			// Client sending new data while file transfer in progress - reset state
 			client->resetForNextRequest();
-			// Fall through to handle the EPOLLIN event
 		} else {
 			return; // Wait for EPOLLOUT
 		}
@@ -430,7 +429,6 @@ void ServerManager::existingClientConnection() {
 				return;
 			}
 		} else {
-			// Handle subsequent requests on keep-alive connection
 			client->header_completed = false;
 			if (!readClientHeaders()) {
 				return; // Next request headers not complete yet
@@ -453,10 +451,10 @@ bool ServerManager::readClientHeaders() {
 		return false;
 
 	ssize_t byte_received = recv(current_fd_, received_, sizeof(received_) - 1, 0);    
-	if (byte_received <= 0) {
-		if (byte_received == 0)
-			std::cout << "Client disconnect during header reading\n"; // Keep this - useful for debugging disconnections
-		else
+	if (byte_received < 0) {
+		// if (byte_received == 0)
+		// 	std::cout << "Client disconnect during header reading\n"; // Keep this - useful for debugging disconnections
+		// else
 			std::cerr << "Error reading headers: " << strerror(errno) << std::endl; // Keep this - important error
 		return false;
 	}
@@ -533,12 +531,9 @@ bool ServerManager::readRequestBody(HTTPRequest& current_request, size_t content
 		size_t remaining = content_length - client->body_bytes_read;
 		size_t to_read = std::min(sizeof(received_) - 1, remaining);
 		ssize_t byte_received = recv(current_fd_, received_, to_read, 0);
-		
+		std::cout << "remaining: " << remaining << ", to_read: " << to_read << ", byte_received: " << byte_received << std::endl;
 		if (byte_received < 0) {
-			if (errno == EAGAIN || errno == EWOULDBLOCK) {
-				return false;
-			}
-			std::cerr << "Error reading body: " << strerror(errno) << std::endl; // Keep - important error
+			std::cout << "Error reading body: " << strerror(errno) << std::endl; // Keep - important error
 			return false;
 		} else if (byte_received == 0) {
 			std::cout << "Client disconnect during body reading\n"; // Keep - useful for debugging
