@@ -57,11 +57,11 @@ class ServerManager {
 		bool cleanClient(int current_fd);
 		void shutdown();
 		bool isBlocked(const void *IP);
-		bool readClientHeaders(std::string& headers, std::string &body);
-		bool parseHeadersAndCheckBodySize(const std::string& headers, std::string &body, HTTPRequest& current_request);
-		bool readRequestBody(HTTPRequest& current_request, std::string &body, size_t content_length, size_t max_body_size);
+		bool readClientHeaders();
+		bool parseHeadersAndCheckBodySize(HTTPRequest& current_request);
+		bool readRequestBody(HTTPRequest& current_request, size_t content_length, size_t max_body_size);
 		void processAndSendResponse(HTTPRequest& current_request, Server *server_requested, Location *location_requested);
-		void sendResponseBodyFile(HTTPResponse& current_response);
+		bool sendResponseBodyFile();
 		
 
 		
@@ -78,6 +78,9 @@ class ServerManager {
 		int num_events_;
 		int current_fd_;
 		struct epoll_event events_[MAX_EVENTS];
+		std::string header_;
+		std::string body_;
+		int client_id_;
 
 		/*CLIENT INFORMATION ATTRIBUTES*/
 		struct sockaddr_storage temp_client_addr_;

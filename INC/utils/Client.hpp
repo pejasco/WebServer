@@ -14,11 +14,16 @@
 #define CLIENT_HPP
 
 #include "Webserv.hpp"
+#include "HTTPResponse.hpp"
+
+class HTTPResponse;
 
 class Client {
 	public:
 		Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, socklen_t inputClientAddrLen);
 		~Client();
+
+		void setResponse(HTTPResponse* response);
 
 		int getClientFd();
 		const void* getClientIP();
@@ -29,7 +34,12 @@ class Client {
 		
 		//siev:
 		std::string body_buffer;
+		std::string header_buffer;
 		size_t body_bytes_read;
+		bool header_completed;
+		std::ifstream file_stream;
+    	bool file_sending_complete;
+		HTTPResponse* current_response;
 
 	private:
 		bool error_;

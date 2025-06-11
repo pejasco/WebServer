@@ -550,7 +550,7 @@ void HTTPResponse::CGI_Body() {
 	size_t headerEnd = cgiOutput.find("\r\n\r\n");
 	if (headerEnd != std::string::npos) {
 		std::string headers = cgiOutput.substr(0, headerEnd);
-		std::string body = cgiOutput.substr(headerEnd + 4);
+		std::string body = cgiOutput.substr(headerEnd + 1);
 
 		if (headers.find("Content-Type:") == std::string::npos)
 			headers = "Content-Type: text/html\r\n" + headers;

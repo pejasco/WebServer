@@ -12,7 +12,10 @@
 
 #include "../INC/utils/Client.hpp"
 
-Client::Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, socklen_t inputClientAddrLen): error_(false), client_fd_(inputClientFd), client_addr_(inputClientAddr), client_addr_len_(inputClientAddrLen) {
+Client::Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, socklen_t inputClientAddrLen): header_completed(false), file_sending_complete(false), current_response(NULL), error_(false), client_fd_(inputClientFd), client_addr_(inputClientAddr), client_addr_len_(inputClientAddrLen) {
+	header_buffer = "";
+	body_buffer = "";
+	
 	flags_ = fcntl(client_fd_, F_GETFL, 0);
 	if (flags_ == -1)
 		error_ = true;
@@ -32,7 +35,21 @@ Client::Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, sock
 	}// to check if authorize otherwise re-write the function
 }
 
-Client::~Client() {}
+Client::~Client() {
+	if (current_response)
+		delete current_response;
+	if (file_stream.is_open())
+		file_stream.close();
+}
+
+void Client::setResponse(HTTPResponse* response) {
+	if (current_response) {
+		delete current_response;
+	}
+	current_response = response;
+	file_sending_complete = true;
+}
+	
 
 int Client::getClientFd() {
 	return client_fd_;

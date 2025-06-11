@@ -66,6 +66,7 @@ void HTTPRequest::setCGIType(const std::string cgi_type){
 
 
 void HTTPRequest::setMet(const std::string&  method){
+		std::cout << "check3\n";
 	if (method == "GET")
 		method_ = GET;
 	else if (method == "POST")
@@ -107,7 +108,7 @@ void HTTPRequest::setUserAgent(const std::string& agents){
 			last_key = token;
 			user_agent_[last_key] = "";
 		} 
-		else if (token[0] == '('){
+		else if (token[0] == '(') {
 			std::string group = token;
 
 			bool group_complete = false;
@@ -118,7 +119,7 @@ void HTTPRequest::setUserAgent(const std::string& agents){
 			while (!group_complete && iss >> token){
 
 				group += " " + token;
-				if (token.find(')') != std::string::npos) {
+				if (token.find('\'') != std::string::npos) {
 					group_complete = true;
 				}
 			}
@@ -748,7 +749,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
 // Ensure the function is defined outside the class scope
 void HTTPRequest::parseRequestLine(const std::string& request_line) {
 	std::string method, request_uri, version;
-	
+	std::cout << request_line << std::endl;
 	std::istringstream stream(request_line);
 	stream >> method >> request_uri >> version;
 
@@ -763,6 +764,7 @@ void HTTPRequest::parseRequestLine(const std::string& request_line) {
 		setPath(request_uri);
 		setQueryStr("");
 	}
+		std::cout << "check2\n";
 	setMet(method);
 	setVersion(version);
 }
@@ -771,10 +773,9 @@ void HTTPRequest::parseRequestLine(const std::string& request_line) {
 
 
 void HTTPRequest::parseRequest(const std::string& request){
-
 	std::istringstream stream(request);
 	std::string request_line;
-
+	std::cout << request << std::endl;
 	std::getline(stream, request_line);
 	parseRequestLine(request_line); //dry method, uri, ver
 	parseRequestHeader(stream); 
