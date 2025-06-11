@@ -59,7 +59,7 @@ class ServerManager {
 		bool isBlocked(const void *IP);
 		bool readClientHeaders();
 		bool parseHeadersAndCheckBodySize(HTTPRequest& current_request);
-		bool readRequestBody(HTTPRequest& current_request, size_t content_length, size_t max_body_size);
+		int readRequestBody(HTTPRequest& current_request, size_t content_length, size_t max_body_size);
 		void processAndSendResponse(HTTPRequest& current_request, Server *server_requested, Location *location_requested);
 		bool sendResponseBodyFile();
 		
@@ -88,7 +88,7 @@ class ServerManager {
 		std::map<int,Client*> clients_list_;
 		std::set<const void *> blocked_clients_list_;
 
-		char received_[4096];
+		char received_[1000];
 		char buffer_[8192];
 		int error_code_;
 
