@@ -28,7 +28,7 @@ void ReturnOutput::splitHeaderBody()
 		return;
 	
 	_headerSection = std::string(_rawOutput.begin(), _rawOutput.begin() + headerEnd);
-	_body = std::string(_rawOutput.begin() + headerEnd + 4, _rawOutput.end());
+	_body = std::string(_rawOutput.begin() + headerEnd + 3, _rawOutput.end());
 }
 
 void ReturnOutput::parseHeaders()

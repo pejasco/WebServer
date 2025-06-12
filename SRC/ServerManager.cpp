@@ -491,8 +491,15 @@ void ServerManager::existingClientConnection() {
         
         // Check if response is complete
         if (client->current_response && client->current_response->isReady()) {
-            std::cout << "[DEBUG] Response is ready, resetting client for next request" << std::endl;
-            client->resetForNextRequest();
+            std::cout << "[DEBUG] Response has been sent, resetting client for next request" << std::endl;
+            // Switch back to EPOLLIN for next request
+			std::cout << "[DEBUG] Switching epoll back to EPOLLIN" << std::endl;
+			struct epoll_event event;
+			event.events = EPOLLIN;
+			event.data.fd = current_fd_;
+			int epoll_result = epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, current_fd_, &event);
+			std::cout << "[DEBUG] epoll_ctl result: " << epoll_result << std::endl;
+			client->resetForNextRequest();
             return;
         }
         
@@ -837,7 +844,14 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 	std::cout << "[DEBUG] All headers sent successfully" << std::endl;
 	
 	if (client->current_response->isReady()) {
-		std::cout << "[DEBUG] Response is ready, resetting client for next request" << std::endl;
+		std::cout << "[DEBUG] Response has been sent, resetting client for next request" << std::endl;
+		// Switch back to EPOLLIN for next request
+		std::cout << "[DEBUG] Switching epoll back to EPOLLIN" << std::endl;
+		struct epoll_event event;
+		event.events = EPOLLIN;
+		event.data.fd = current_fd_;
+		int epoll_result = epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, current_fd_, &event);
+		std::cout << "[DEBUG] epoll_ctl result: " << epoll_result << std::endl;
 		client->resetForNextRequest();
 		return;
 	}

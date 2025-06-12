@@ -59,5 +59,5 @@ body += f"<p>[DEBUG] Post Data Raw: {post_data}</p>"
 # Required headers
 print("Content-Type: text/html")
 print(f"Content-Length: {len(body.encode('utf-8'))}")
-# print()  # blank line after headers
+print()  # blank line after headers
 print(body)
