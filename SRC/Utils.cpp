@@ -179,7 +179,7 @@ std::string getStatusStr(int status_code) {
 
 bool fileExists(const std::string& filename) {
 	std::ifstream file(filename.c_str());
-	std::cout << "Does file " << filename << " exist? " << file.good() << std::endl;
+	// std::cout << "Does file " << filename << " exist? " << file.good() << std::endl;
 	return file.good();
 }
 
@@ -279,7 +279,7 @@ std::string toLowerCase(const std::string& input) {
 
 int calculateFileSize(std::string &filename) { //auto_index.html
 	std::streampos pos = -1;
-	std::cout << "inside calculateFilesSize: " << filename << std::endl;
+	// std::cout << "inside calculateFilesSize: " << filename << std::endl;
 	std::ifstream body_file(filename.c_str(), std::ios::binary);
 	if (body_file.is_open()) {
 		pos = body_file.tellg();
@@ -314,14 +314,14 @@ Server *getCurrentServer(const HTTPRequest &input_request, ServerManager &server
 	
 	for (; begSe != endSe; ++begSe) {
 		if ((*begSe)->getIP() == server_IP) {
-			std::cout << "current server: " << (*begSe)->getIP() << ", request host: " << server_IP << std::endl;
+			// std::cout << "current server: " << (*begSe)->getIP() << ", request host: " << server_IP << std::endl;
 			std::vector<std::string> tempPort = (*begSe)->getPort();
 			std::vector<std::string>::iterator begPo = tempPort.begin();
 			std::vector<std::string>::iterator endPo = tempPort.end();
 			for (; begPo != endPo; ++ begPo) {
-				std::cout << "current port " << *begPo << ", request port: " << input_request.getHost() << std::endl;
+				// std::cout << "current port " << *begPo << ", request port: " << input_request.getHost() << std::endl;
 				if (input_request.getHost() == *begPo) {
-					std::cout << "found the matching port, bye\n";
+					// std::cout << "found the matching port, bye\n";
 					return *begSe; 
 				}
 					
@@ -332,27 +332,27 @@ Server *getCurrentServer(const HTTPRequest &input_request, ServerManager &server
 }
 
 Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_server) {
-	if (current_server.getLocationsList().empty()) {
-		std::cout << "is NULL\n";
+	if (current_server.getLocationsList().empty()) 
+		// std::cout << "is NULL\n";
 		return NULL; 
-	} else 
-		std::cout << "is not null\n";
+	// } else 
+		// std::cout << "is not null\n";
 		 
 	std::string request_path = input_request.getPath();
-	std::cout << "URL to look for: " << request_path << std::endl;
+	// std::cout << "URL to look for: " << request_path << std::endl;
 	// Handle root request specially if needed
 	if (request_path == "/") {
 		// Look for exact root location match first
-		std::cout << "it is a default location\n";
+		// std::cout << "it is a default location\n";
 		std::vector<Location*>::iterator begLo = current_server.getLocationsList().begin();
 		std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
 		for (; begLo != endLo; ++begLo) {
 			if ((*begLo)->getName() == "/") {
-				std::cout << "found begLo: " << (*begLo)->getName() << " - " << (*begLo)->getRoot() << std::endl;
+				// std::cout << "found begLo: " << (*begLo)->getName() << " - " << (*begLo)->getRoot() << std::endl;
 				return *begLo;
 			}
 		}
-		std::cout << "is returning the default location\n";
+		// std::cout << "is returning the default location\n";
 		return NULL; // or return default location if you prefer
 	}
 	Location *best_location_name = NULL;
@@ -361,11 +361,11 @@ Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_s
 	std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
 	for (; begLo != endLo; ++begLo) {
 		std::string location_path = (*begLo)->getRoot();
-		std::cout << "Request: " << request_path << ", server location: " << location_path << std::endl;
+		// std::cout << "Request: " << request_path << ", server location: " << location_path << std::endl;
 		// Check if request path starts with location path (prefix matching)
 		if (request_path.length() >= location_path.length() && 
 			request_path.substr(0, location_path.length()) == location_path) {
-			std::cout << "Prefix match found: " << request_path.substr(0, location_path.length()) << std::endl;
+			// std::cout << "Prefix match found: " << request_path.substr(0, location_path.length()) << std::endl;
 			// Additional check: ensure we match complete path segments
 			// /kapouet should match /kapouet/file but not /kapouetfile
 			bool isValidMatch = false;
@@ -384,18 +384,18 @@ Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_s
 				if (location_path.length() > name_length_track) {
 					best_location_name = *begLo;
 					name_length_track = location_path.length();
-					std::cout << "New best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot() << std::endl;
+					// std::cout << "New best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot() << std::endl;
 				}
 			}
 		}
 	}
 	// Check if we found a match before accessing it
 	if (best_location_name != NULL) {
-		std::cout << "Final best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot() << std::endl;
+		// std::cout << "Final best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot() << std::endl;
 		return best_location_name;
 	}
 	// If no specific location matched, return default (first location or NULL)
-	std::cout << "No location match found, using default" << std::endl;
+	// std::cout << "No location match found, using default" << std::endl;
 	return current_server.getLocationsList().empty() ? NULL : current_server.getLocationsList().front();
 }
 

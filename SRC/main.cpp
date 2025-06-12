@@ -15,6 +15,7 @@
 volatile std::sig_atomic_t g_sigStatus = 0;
 
 void signal_handler(int signal) {
+	std::cout << "calling ctrl+c here\n";
 	g_sigStatus = signal;
 }
 
