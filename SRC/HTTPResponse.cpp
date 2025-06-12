@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/10 16:17:25 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/12 15:12:18 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,7 +208,7 @@ void HTTPResponse::setPostResponse() {
 		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload
 	int status_code = checkFile();
 	// 2 OPTIONS --> either a POST CGI request or a REQUEST for upload file
-		std::string upload_dir;
+	std::string upload_dir;
 	cgi_flag = current_request_.getCGIFlag();
 	std::cout << "cgi_flag: " << cgi_flag << std::endl;
 	if (cgi_flag)
@@ -221,7 +221,7 @@ void HTTPResponse::setPostResponse() {
 	std::cout << "<<sievdebug>>" << "xoxoxo " << current_request_.getPath().find("upload") << " xoxoxo" << "\n";
 
 	if (location_ && current_request_.getPath().find("upload") != std::string::npos)
-		upload_dir = location_->getUploadDir();		  // upload_dir
+		upload_dir = "documents" + location_->getUploadDir();		  // upload_dir
 	Content &content = current_request_.getContent(); // content
 	std::cout << "<<sievdebug>>" << "!!!!!!!!!!!!!!!!!" << upload_dir << "!!!!!!!!!!!!!!!!!" << "\n";
 	// std::cout << "!!!!!!!!!!!!!!!!!" << << "!!!!!!!!!!!!!!!!!\'n";
