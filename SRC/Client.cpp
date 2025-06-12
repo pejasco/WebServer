@@ -12,10 +12,13 @@
 
 #include "../INC/utils/Client.hpp"
 
-Client::Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, socklen_t inputClientAddrLen): header_completed(false), file_sending_complete(false), current_response(NULL), error_(false), client_fd_(inputClientFd), client_addr_(inputClientAddr), client_addr_len_(inputClientAddrLen) {
+Client::Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, socklen_t inputClientAddrLen): header_completed(false), file_sending_complete(false), 
+	current_response(NULL), current_request(NULL), body_bytes_read(0), max_body_size(0), expected_content_length(0),
+	state(CLIENT_READING_HEADERS), error_(false), client_fd_(inputClientFd), client_addr_(inputClientAddr), client_addr_len_(inputClientAddrLen) {
 	header_buffer = "";
 	body_buffer = "";
 	headers_string = "";
+	pending_response = "";
 	
 	flags_ = fcntl(client_fd_, F_GETFL, 0);
 	if (flags_ == -1)
@@ -50,7 +53,14 @@ void Client::setResponse(HTTPResponse* response) {
 	current_response = response;
 	file_sending_complete = true;
 }
+
+void Client::setRequest(HTTPRequest *request) {
+	if (current_request) {
+		delete current_request;
+	}
+	current_request = request;
 	
+}
 
 int Client::getClientFd() {
 	return client_fd_;
@@ -73,21 +83,20 @@ bool Client::getError() {
 }
 
 void Client::resetForNextRequest() {
-	header_buffer.clear();
-	headers_string.clear(); // NEW: Clear stored headers
-	body_buffer.clear();
-	body_bytes_read = 0;
-	header_completed = false; // NEW: Reset header completion flag
-
-	if (current_response)
-	{
-		delete current_response;
-		current_response = NULL;
-	}
-	file_sending_complete = true;
-
-	if (file_stream.is_open())
-	{
-		file_stream.close();
-	}
+    std::cout << "[DEBUG] Client::resetForNextRequest() called" << std::endl;
+    header_buffer.clear();
+    body_buffer.clear();
+    headers_string.clear();
+    pending_response.clear();
+    body_bytes_read = 0;
+    expected_content_length = 0;
+    max_body_size = 0;
+    header_completed = false;
+    file_sending_complete = true;
+    state = CLIENT_READING_HEADERS;
+    if (file_stream.is_open()) {
+        std::cout << "[DEBUG] Closing file stream in resetForNextRequest()" << std::endl;
+        file_stream.close();
+    }
+    std::cout << "[DEBUG] Client reset completed" << std::endl;
 }

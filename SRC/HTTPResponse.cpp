@@ -18,7 +18,7 @@ bool cgi_flag = false;
 
 HTTPResponse::HTTPResponse(const HTTPRequest &input_request, Server *default_server, Server *server_requested, Location *location_requested, int error_flag) : 
 current_request_(input_request), server_(server_requested), location_(location_requested), default_server_(default_server), default_location_(default_server->getLocationsList().front()), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
-	std::cout << "here the error code is: " << error_flag << std::endl;;
+	// std::cout << "here the error code is: " << error_flag << std::endl;;
 	if (error_flag > 0) {
 		setErrorResponse(error_flag);
 		return ;
@@ -106,13 +106,12 @@ void HTTPResponse::setGetResponse() {
 	//1st -- check if the path request by the user exist
 	//2nd -- check if the file exist and readable (not already open, with correct permission (not sure if we need to set it up)) 
 	cgi_flag = current_request_.getCGIFlag();
-	std::cout << "[debugging] cgi_flag = " << cgi_flag << std::endl;
+	// std::cout << "[debugging] cgi_flag = " << cgi_flag << std::endl;
 	//body_filename_ = "./CGI/cgi-bin/test.py"; //need to figure out how to set the correct root path for the cgi....maybe checkFile?
 
 	int status_code = checkFile();
-	std::cout << "status_code of checkFIle in GET: " << status_code << std::endl;
 	cgi_flag = location_->isCGI();
-	std::cout << cgi_flag << std::endl;
+	// std::cout << cgi_flag << std::endl;
 	if (status_code == 200) {
 		if (cgi_flag) {
 			CGI_Body(); // Run CGI handler, which builds full HTTP response
@@ -288,7 +287,7 @@ void HTTPResponse::setDeleteResponse() {
 
 void HTTPResponse::setErrorResponse(int error_code) {
 	if (!server_->getErrorList().empty()) {
-		std::cout << "Error list exist inside current server\n";
+		// std::cout << "Error list exist inside current server\n";
 		std::map<int, std::string>::iterator begEr = server_->getErrorList().begin();
 		std::map<int, std::string>::iterator endEr = server_->getErrorList().end();
 		for (; begEr != endEr; ++begEr) {
@@ -299,10 +298,10 @@ void HTTPResponse::setErrorResponse(int error_code) {
 			body_filename_ = server_->getErrorDirectory() + convertToStr(error_code) + ".html";
 	} else 
 		body_filename_ = default_server_->getErrorDirectory() + convertToStr(error_code) + ".html";
-	std::cout << "body_filename_ found via map lookup: " << body_filename_ << std::endl;
-	std::cerr << "[DEBUG hellooo] setErrorResponse: using body_filename_ = " << body_filename_ << std::endl;
+	// std::cout << "body_filename_ found via map lookup: " << body_filename_ << std::endl;
+	// std::cerr << "[DEBUG hellooo] setErrorResponse: using body_filename_ = " << body_filename_ << std::endl;
 	if (fileExists(body_filename_)) {
-		std::cout << "error_file exist " << body_filename_ << std::endl;
+		// std::cout << "error_file exist " << body_filename_ << std::endl;
 		prepareStatusLine(error_code);
 		content_length_ = calculateFileSize(body_filename_);
 		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length_) + "\r\nConnection: close\r\n";
@@ -347,16 +346,12 @@ void HTTPResponse::draftErrorResponse() {
 
 //Checking if the file requested exist and if it is possible to read it 
 int HTTPResponse::checkFile() {
-	std::cout << BOLD UNDERLINE RED "\n###### ENTERING URL RE-FORMAT DEBUGGING ######\n" RESET;
+	// std::cout << BOLD UNDERLINE RED "\n###### ENTERING URL RE-FORMAT DEBUGGING ######\n" RESET;
 	std::string default_path = default_location_->getRoot();
 	default_path.erase(std::remove(default_path.begin(), default_path.end(), '/'), default_path.end());
-	std::cout << "check2\n";
 	if (current_request_.getPath() == "/") {
 		body_filename_ = default_path + "/" + default_location_->getIndex();
-		std::cout << "check3\n";
-		std::cout << "body_filename_: " << body_filename_ << std::endl;
 		std::ifstream body_file(body_filename_.c_str(), std::ios::binary);
-		std::cout << "check4\n";
 		if (body_file.is_open()) {
 			body_file.close();
 			return 200;
@@ -365,28 +360,27 @@ int HTTPResponse::checkFile() {
 			std::cout << "Error: " << strerror(errno) << std::endl;
 			return 500;
 		}
-		std::cout << "check5\n";
 	} else {
 		body_filename_ = default_path;
-		std::cout << BOLD YELLOW "body_filename_: " << body_filename_ << ", current_request_: " << current_request_.getPath() << RESET << std::endl;
+		// std::cout << BOLD YELLOW "body_filename_: " << body_filename_ << ", current_request_: " << current_request_.getPath() << RESET << std::endl;
 		if (current_request_.getPath().find(".") == std::string::npos) {
-			std::cout << "XXXXXX -- " << location_->getIndex() << " -- " << location_->isAutoIndex() << std::endl;
+			// std::cout << "XXXXXX -- " << location_->getIndex() << " -- " << location_->isAutoIndex() << std::endl;
 			if (location_->getIndex().empty() && location_->isAutoIndex() == true) {
 				autoIndexRequest();
 				return 200;
 			}
 			body_filename_ += location_->getRoot() + "/" + location_->getIndex();
-			std::cout << "adding the file from config\n";
+			// std::cout << "adding the file from config\n";
 		} else {
 			body_filename_ += current_request_.getPath();
-			std::cout << "adding the file from request\n";
+			// std::cout << "adding the file from request\n";
 		}
-		std::cout << BOLD YELLOW "New body_filename_: " << body_filename_ << RESET << std::endl;
+		// std::cout << BOLD YELLOW "New body_filename_: " << body_filename_ << RESET << std::endl;
 		if (fileExists(body_filename_)){
 			std::ifstream body_file(body_filename_.c_str(), std::ios::binary);
 			if (body_file.is_open()) {
 				body_file.close();
-				std::cout << "is open\n";
+				// std::cout << "is open\n";
 				return 200;
 			} else {
 				body_file.close();
@@ -394,12 +388,12 @@ int HTTPResponse::checkFile() {
 				return 500;	
 			}
 		} else {
-			std::cout << "file exist\n";
+			// std::cout << "file exist\n";
 			return 404;
 		}
 			
 	}
-	std::cout << BOLD UNDERLINE RED "\n###### LEAVING URL REFORMAT DEBUGGING ######\n\n" RESET;
+	// std::cout << BOLD UNDERLINE RED "\n###### LEAVING URL REFORMAT DEBUGGING ######\n\n" RESET;
 	return 500;	
 }
 
@@ -412,22 +406,22 @@ int HTTPResponse::checkMethod() {
 		endM = default_location_.getMethod().end();
 			for (; begM != endM; ++begM) {
 				if (*begM == current_request_.getMethod()) {
-					std::cout << "return value of checkMethod: 200\n";
+					// std::cout << "return value of checkMethod: 200\n";
 					return 200;
 				}
 			}
-			std::cout << "return value of checkMethod: 405\n";
+			// std::cout << "return value of checkMethod: 405\n";
 			return 405;
 	} else {
 		begM = location_->getMethod().begin();
 		endM = location_->getMethod().end();
 		for (; begM != endM; ++begM) {
 				if (*begM == current_request_.getMethod()) {
-					std::cout << "return value of checkMethod: 200\n";
+					// std::cout << "return value of checkMethod: 200\n";
 					return 200;
 				}
 			}
-		std::cout << "return value of checkMethod: 405\n";
+		// std::cout << "return value of checkMethod: 405\n";
 		return 405;
 	}
 }
@@ -465,14 +459,14 @@ void HTTPResponse::prepareStatusLine(int status_code) {
 
 int HTTPResponse::prepareHeader() {
 	//Probably to adapt so it can change for POST and DELETE as the content can be different
-	std::cout << "INSIDE PREPARE HEARDER\n";
+	// std::cout << "INSIDE PREPARE HEARDER\n";
 	
 	if (current_request_.getPath().find(".") != std::string::npos) {
 		size_t pos;
 		if ((pos = current_request_.getPath().rfind(".")) != std::string::npos)
 			content_type_ = "Content-Type: " + getContentType(current_request_.getPath().substr(pos)) + "\r\n";
 	}
-	std::cout << "body_filename_: " << body_filename_ << std::endl;;
+	// std::cout << "body_filename_: " << body_filename_ << std::endl;;
 	content_length_ = calculateFileSize(body_filename_);
 	if (content_length_ < 0) {
 		std::cout << "Error: Content-Length is -1\n";
@@ -650,14 +644,14 @@ void HTTPResponse::autoIndexRequest() {
 	//needed to look inside a directory
 	is_autoindex_ = true;
 	std::string dir_path = body_filename_ + current_request_.getPath();
-	std::cout << "directory to lookup: " << body_filename_ + current_request_.getPath() << std::endl;
+	// std::cout << "directory to lookup: " << body_filename_ + current_request_.getPath() << std::endl;
 	// needed to save the auto_index file in the base directory
 	std::string default_folder = default_location_->getRoot();
 	size_t pos = 0;
 	if ((pos = default_folder.find("/")) != std::string::npos)
 		default_folder = default_folder.substr(pos + 1);
 	int status_code = 0;
-	std::cout << "Auto_index future location: " << default_folder << std::endl;
+	// std::cout << "Auto_index future location: " << default_folder << std::endl;
 	status_code = structureInfo(dir_path, current_request_.getPath(), default_folder);
 	body_filename_ = default_folder + "/auto_index.html";
 	if (status_code != 200) {
@@ -667,6 +661,6 @@ void HTTPResponse::autoIndexRequest() {
 		setErrorResponse(status_code);
 		return ;
 	}
-	std::cout << "Auto_index file location: " << body_filename_ << std::endl;
+	// std::cout << "Auto_index file location: " << body_filename_ << std::endl;
 }
 

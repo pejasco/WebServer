@@ -66,7 +66,6 @@ void HTTPRequest::setCGIType(const std::string cgi_type){
 
 
 void HTTPRequest::setMet(const std::string&  method){
-		std::cout << "check3\n";
 	if (method == "GET")
 		method_ = GET;
 	else if (method == "POST")
@@ -257,8 +256,10 @@ void HTTPRequest::setCloseBoundary(const std::string& close_boundary){
 
 void HTTPRequest::setBoundary(const std::string& boundary){
 	boundary_ = boundary;
+	std::cout << "{{printing boundary: " << boundary << "}}" << std::endl;
     setOpenBoundary(("--" + boundary_));
     setCloseBoundary((open_boundary_ + "--"));
+	std::cout << "{{This is open_boundary: " << open_boundary_ << "}}" << "{{This is close_boundary: " << close_boundary_ << "}}" << std::endl;
 
     content_.setBoundary(boundary_);
     content_.setOpenBoundary(open_boundary_);
@@ -537,11 +538,13 @@ std::string HTTPRequest::getRawBody() const {
 // }
 
 void HTTPRequest::parseContent(const std::string& body) {
+	std::cout << BOLD UNDERLINE BLACK BG_WHITE "\n###### START CONTENT READING DEBUG ######" RESET "\n\n";
+
     if (open_boundary_.empty()){
 		content_.setBodyWithNoCD(body);
+		std::cout << "no boundary\n";
 		return;
 	}
-	std::cout << BOLD UNDERLINE BLACK BG_WHITE "\n###### START CONTENT READING DEBUG ######\n\n" RESET;
 	size_t pos = 0;
     while (true) {
         size_t boundary_start = body.find(open_boundary_, pos);
@@ -625,7 +628,7 @@ void HTTPRequest::parseContent(const std::string& body) {
         if (body.substr(pos, close_boundary_.size()) == close_boundary_)
             break; 
     }
-	std::cout << BOLD UNDERLINE BLACK BG_WHITE "\n###### END CONTENT READING DEBUG ######\n\n" RESET;
+	std::cout << BOLD UNDERLINE BLACK BG_WHITE "\n###### END CONTENT READING DEBUG ######" RESET "\n\n";
 }
 
 
@@ -707,20 +710,23 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                 std::string cttype = trimString(line.substr(pos_begin, pos_end - pos_begin));
                 setContentType(cttype);
                 if (line.find("boundary") != std::string::npos) {
+					std::cout << "check0\n";
                     pos_begin = line.find("boundary") + 8;
                     pos_begin = line.find_first_of("=", pos_begin);
                     if (pos_begin != std::string::npos) {
                         pos_begin++;
                         pos_begin = line.find_first_not_of(" \t", pos_begin); 
-                        
+                        std::cout << "check1\n";
                         std::string boundary = trimString(line.substr(pos_begin, std::string::npos));
-                        
+                        std::cout << "check2\n";
                         if (!boundary.empty() && (boundary[0] == '"' || boundary[0] == '\'')) {
                             size_t quote_end = boundary.find_first_of("\"'", 1);
                             if (quote_end != std::string::npos) {
                                 boundary = trimString(boundary.substr(1, quote_end - 1));
+								std::cout << "check3\n";
                             } else {
                                 boundary = trimString(boundary.substr(1));
+								std::cout << "check4\n";
                             }
                         }
                         
@@ -728,10 +734,12 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                         if (end_pos != std::string::npos) {
                             boundary = trimString(boundary.substr(0, end_pos + 1));
                         }
+						std::cout << "check5\n";
                         setBoundary(boundary);
 						setCDFlag(true);
                     }
                 }
+				std::cout << "check6\n";
             }
         } 
 		else if (line.find("Content-Length") != std::string::npos) {
@@ -749,7 +757,6 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
 // Ensure the function is defined outside the class scope
 void HTTPRequest::parseRequestLine(const std::string& request_line) {
 	std::string method, request_uri, version;
-	std::cout << request_line << std::endl;
 	std::istringstream stream(request_line);
 	stream >> method >> request_uri >> version;
 
@@ -764,7 +771,6 @@ void HTTPRequest::parseRequestLine(const std::string& request_line) {
 		setPath(request_uri);
 		setQueryStr("");
 	}
-		std::cout << "check2\n";
 	setMet(method);
 	setVersion(version);
 }
@@ -775,7 +781,7 @@ void HTTPRequest::parseRequestLine(const std::string& request_line) {
 void HTTPRequest::parseRequest(const std::string& request){
 	std::istringstream stream(request);
 	std::string request_line;
-	std::cout << request << std::endl;
+	// std::cout << request << std::endl;
 	std::getline(stream, request_line);
 	parseRequestLine(request_line); //dry method, uri, ver
 	parseRequestHeader(stream); 

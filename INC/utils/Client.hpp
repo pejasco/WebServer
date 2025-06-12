@@ -16,7 +16,15 @@
 #include "Webserv.hpp"
 #include "HTTPResponse.hpp"
 
+class HTTPRequest;
 class HTTPResponse;
+
+enum ClientState {
+    CLIENT_READING_HEADERS,
+    CLIENT_PROCESSING_HEADERS, 
+    CLIENT_READING_BODY,
+    CLIENT_READY_TO_RESPOND
+};
 
 class Client {
 	public:
@@ -24,6 +32,7 @@ class Client {
 		~Client();
 
 		void setResponse(HTTPResponse* response);
+		void setRequest(HTTPRequest *request);
 
 		int getClientFd();
 		const void* getClientIP();
@@ -35,14 +44,19 @@ class Client {
 		
 		//siev:
 		std::string body_buffer;
+		std::string body_string;
 		std::string header_buffer;
 		std::string headers_string;
-		size_t body_bytes_read;
-		bool header_completed;
+		std::string pending_response;
 		std::ifstream file_stream;
+		bool header_completed;
     	bool file_sending_complete;
 		HTTPResponse* current_response;
-
+		HTTPRequest* current_request;
+		size_t body_bytes_read;
+		size_t max_body_size; 
+    	size_t expected_content_length;
+    	ClientState state;
 	private:
 		bool error_;
 		int client_fd_;
