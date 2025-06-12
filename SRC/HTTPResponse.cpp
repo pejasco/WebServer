@@ -29,6 +29,7 @@ current_request_(input_request), server_(server_requested), location_(location_r
 	}
 	switch (current_request_.getMethod()) {
 	case GET:
+		std::cout << "METHOD: GET" << std::endl;
 		if (checkMethod() != 200) {
 			setErrorResponse(405);
 			return ;
@@ -37,6 +38,7 @@ current_request_(input_request), server_(server_requested), location_(location_r
 		cgi_flag = false;
 		break;
 	case POST:
+		std::cout << "METHOD: POST" << std::endl;
 		if (checkMethod() != 200) {
 			setErrorResponse(405);
 			return;
@@ -46,6 +48,7 @@ current_request_(input_request), server_(server_requested), location_(location_r
 		cgi_flag = false;
 		break;
 	case DELETE:
+		std::cout << "METHOD: DELETE" << std::endl;
 		if (checkMethod() != 200) {
 			setErrorResponse(405);
 			return;
@@ -507,17 +510,17 @@ void HTTPResponse::CGI_Body() {
 		std::cout << "uri substr: " << scriptPath << std::endl;
 	}
 	if (access(scriptPath.c_str(), F_OK) != 0) {
-		std::cerr << "[CGI ERROR] Script not found?? whyyyyy?: " << scriptPath << std::endl;
+		std::cout << "[CGI ERROR] Script not found?? whyyyyy?: " << scriptPath << std::endl;
 		setErrorResponse(404);
 		return;
 	}
 	if (access(scriptPath.c_str(), X_OK) != 0) {
-		std::cerr << "[CGI ERROR] Script not executable :((( : " << scriptPath << std::endl;
+		std::cout << "[CGI ERROR] Script not executable :((( : " << scriptPath << std::endl;
 		setErrorResponse(403);
 		return;
 	}
 
-	std::cerr << "[CGI DEBUG] Raw POST body (from HTTPRequest): [" << current_request_.getContent().getBodyWithNoCD() << "]" << std::endl;
+	std::cout << "[CGI DEBUG] Raw POST body (from HTTPRequest): [" << current_request_.getContent().getBodyWithNoCD() << "]" << std::endl;
 
 	// Build the RequestData object for CGI
 	RequestData data;
@@ -527,21 +530,21 @@ void HTTPResponse::CGI_Body() {
 	data.setHeaders(current_request_.getHeaders());
 	data.setBody(current_request_.getContent().getBodyWithNoCD());
 
-	std::cerr << "[CGI] method : " << data.getMethod() << std::endl;
-	std::cerr << "[CGI] - path saved: " << data.getPath() << std::endl;
-	std::cerr << "[CGI] - query str: " << data.getQueryString() << std::endl;
-	std::cerr << "[CGI] - body saved: " << data.getBody() << std::endl;
+	std::cout << "[CGI] method : " << data.getMethod() << std::endl;
+	std::cout << "[CGI] - path saved: " << data.getPath() << std::endl;
+	std::cout << "[CGI] - query str: " << data.getQueryString() << std::endl;
+	std::cout << "[CGI] - body saved: " << data.getBody() << std::endl;
 
 	if (data.getMethod() == "POST" && data.getBody().empty()) {
-		std::cerr << "[CGI WARNING] POST method but body is empty!" << std::endl;
+		std::cout << "[CGI WARNING] POST method but body is empty!" << std::endl;
 	}
 
 	CgiHandler handler(data, scriptPath); // pass to CGI engine
 	std::string cgiOutput = handler.run();
-	std::cout << "cgiOutput: " << cgiOutput << std::endl;
+	// std::cout << "cgiOutput: " << cgiOutput << std::endl;
 
 	// Try to parse headers from CGI output
-	size_t headerEnd = cgiOutput.find("\r\n\r\n");
+	size_t headerEnd = cgiOutput.find("\n\n");
 	if (headerEnd != std::string::npos) {
 		std::string headers = cgiOutput.substr(0, headerEnd);
 		std::string body = cgiOutput.substr(headerEnd + 1);
@@ -556,9 +559,11 @@ void HTTPResponse::CGI_Body() {
 		body_filename_.clear();
 	} else {
 		// fallback response, in case headers were missing
+		std::cout << "[CGI] headers not available\n";
 		response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;
 	}
 	_response_ready_ = true;
+	std::cout << "[CGI] printing the response:\n" << response_ << "\n" << std::endl;
 	std::cout << BOLD UNDERLINE BLUE << "\n###### LEAVING BODY CGI DEBUGGING ######\n\n" RESET;
 }
 
@@ -577,7 +582,7 @@ void HTTPResponse::CGI_Body() {
 	if (uri.find(prefix) == 0) {
 		std::string relativePath = uri.substr(prefix.size());     // e.g. "/birthday.py"
 		scriptPath = CGI_ROOT + relativePath;                     // e.g. "./CGI/cgi-bin/birthday.py"
-		std::cerr << "[CGI DEBUG] full path to script: " << scriptPath << std::endl;
+		std::cout << "[CGI DEBUG] full path to script: " << scriptPath << std::endl;
 	} else {
 		setErrorResponse(404);  // unexpected URI
 		return;

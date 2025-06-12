@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "prepEnv.hpp"
+#include "../../INC/utils/Utils.hpp"
 
 EnvBuilder::EnvBuilder() {}
 
@@ -40,8 +41,16 @@ void EnvBuilder::initFromRequest(const RequestData& request) //building map of c
 	std::map<std::string, std::string> headers = request.getHeaders();
 	if (headers.find("Content-Type") != headers.end()) //cgI requires CONTENT_TYPE if the request has a body
 		_env["CONTENT_TYPE"] = headers["Content-Type"];
-	if (headers.find("Content-Length") != headers.end()) // specifically for POST - tells CGI script how many bytes to read from stdin
-		_env["CONTENT_LENGTH"] = headers["Content-Length"];
+ 	std::string body = request.getBody();
+    if (!body.empty()) {
+        _env["CONTENT_LENGTH"] = convertToStr(body.length());
+        // Set default content type if not provided
+        if (headers.find("Content-Type") == headers.end()) {
+            _env["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
+        }
+    } else {
+        _env["CONTENT_LENGTH"] = "0";
+    }
 
 	std::cerr << "[CGI DEBUG] === ENVIRONMENT VARIABLES ===" << std::endl;
 	for (std::map<std::string, std::string>::const_iterator it = _env.begin(); it != _env.end(); ++it) {

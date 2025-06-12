@@ -88,7 +88,7 @@ class ServerManager {
 		std::map<int,Client*> clients_list_;
 		std::set<const void *> blocked_clients_list_;
 
-		char received_[100];
+		char received_[4096];
 		char buffer_[8192];
 		int error_code_;
 
