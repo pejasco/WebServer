@@ -1,0 +1,15 @@
+POST /cgi-bin/process.php HTTP/1.1
+Host: example.com
+Content-Type: multipart/form-data; boundary=---------------------------12345
+Content-Length: 321
+
+-----------------------------12345
+Content-Disposition: form-data; name="action"
+
+process
+-----------------------------12345
+Content-Disposition: form-data; name="document"; filename="report.pdf"
+Content-Type: application/pdf
+
+[Binary PDF data]
+-----------------------------12345--

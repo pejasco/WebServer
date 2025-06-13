@@ -4,8 +4,27 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
+
+.helvetica-header {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    animation: flash 1.5s linear infinite;
+}
+
+@keyframes flash {
+    0%, 100% {
+        opacity: 1;
+        color: #000102;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.1;
+        color: #f692fa;
+        transform: scale(1.08);
+    }
+}
+
 body{
     display: flex;
     align-items: center;
@@ -15,12 +34,16 @@ body{
     background-size: cover;
     background-color: #000102;
 }
-.wrapper{
+.wrapper {
     width: 900px;
     padding: 60px;
-    background: hsl(307, 83%, 75%, 0.7);
-    border-radius: 5px;
+    background: linear-gradient(135deg, rgba(246,146,250,0.65) 0%, rgba(255,241,251,0.35) 100%);
+    border-radius: 10px;
+    box-shadow: 0 4px 32px 0 rgba(246,146,250,0.25), 0 0 24px 4px #fff8;
+    position: relative;
+    transition: box-shadow 0.3s, background 0.3s;
 }
+
 .wrapper header{
     color: #000102;
     font-size: 40px;
@@ -153,23 +176,44 @@ section .details span{
     top: 30px;
     left: 40px;
     z-index: 100;
-    background:hsl(307, 83%, 75%, 0.7);
-    color: #000000;
+    background: #f692fa;       
+    color: #000102;            
     border: none;
     border-radius: 4px;
     padding: 8px 20px;
     font-size: 16px;
-    font-weight: 500;
+    font-weight: bold;
     text-decoration: none;
     text-align: center;
-    transition: background 0.2s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 10px 0 rgba(246,146,250,0.3), 0 0 8px 2px #fff8;
+    overflow: hidden;
 }
+
+.home-btn::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(120deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.1) 100%);
+    transform: skewX(-25deg);
+    transition: left 0.5s;
+    pointer-events: none;
+}
+
 .home-btn:hover {
-    background: #000000;
-    color: hsl(307, 83%, 75%, 0.7);
-    text-decoration: none;
+    background: #000102;       
+    color: #f692fa;          
+    box-shadow: 0 4px 20px 0 rgba(246,146,250,0.5), 0 0 16px 4px #fff8;
 }
+
+.home-btn:hover::after {
+    left: 120%;
+    transition: left 0.5s;
+}
+
 /* <!-- ///orginal/// --> */
 /* Basic styling for the page
 body {

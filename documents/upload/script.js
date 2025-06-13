@@ -71,3 +71,13 @@ function uploadFile(name){
     xhr.send(formData);
 }
 
+document.addEventListener("DOMContentLoaded", function() {
+    const header = document.getElementById("flashing-header");
+    if (!header) return;
+    const texts = ["WEBSERVVV FILE UPLOADER", "Rosé the BESTTTT!"];
+    let idx = 0;
+    setInterval(() => {
+        idx = 1 - idx;
+        header.textContent = texts[idx];
+    }, 1500); // matches your 1s flash animation
+});
