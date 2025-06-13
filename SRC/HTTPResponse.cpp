@@ -275,7 +275,14 @@ void HTTPResponse::setPostResponse() {
 
 
 void HTTPResponse::setDeleteResponse() {
-    body_filename_ = "documents" + current_request_.getPath();
+    std::string reqPath = current_request_.getPath(); // e.g. "/upload/rose.jpg"
+    if (reqPath.find("/upload/") == 0) {
+        // Remove "/upload/" from the start and prepend the real directory
+        std::string filename = reqPath.substr(strlen("/upload/")); // "rose.jpg"
+        body_filename_ = "documents/upload/storage/" + filename;
+    } else {
+        body_filename_ = "documents" + reqPath;
+    }
     if (fileExists(body_filename_)) {
         if (!std::remove(body_filename_.c_str())) {
             response_ = current_request_.getVersion() + " 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\nFile deleted";

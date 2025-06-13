@@ -81,3 +81,18 @@ document.addEventListener("DOMContentLoaded", function() {
         header.textContent = texts[idx];
     }, 1500); // matches your 1s flash animation
 });
+
+uploadedArea.addEventListener("click", function(e) {
+    if (e.target.classList.contains("delete-btn")) {
+        const btn = e.target;
+        const filename = btn.getAttribute("data-filename");
+        fetch(`/upload/${filename}`, { method: "DELETE" })
+            .then(res => {
+                if (res.ok) {
+                    btn.closest(".row").remove();
+                } else {
+                    alert("Failed to delete file.");
+                }
+            });
+    }
+});
