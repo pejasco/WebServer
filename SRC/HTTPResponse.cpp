@@ -275,9 +275,9 @@ void HTTPResponse::setPostResponse() {
 
 
 void HTTPResponse::setDeleteResponse() {
-    std::string reqPath = current_request_.getPath(); // e.g. "/upload/rose.jpg"
+    std::string reqPath = current_request_.getPath(); //  "/upload/rose.jpg"
     if (reqPath.find("/upload/") == 0) {
-        // Remove "/upload/" from the start and prepend the real directory
+        // remove "/upload/" from the start and prepend the real directory
         std::string filename = reqPath.substr(strlen("/upload/")); // "rose.jpg"
         body_filename_ = "documents/upload/storage/" + filename;
     } else {
