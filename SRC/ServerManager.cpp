@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/11 15:18:09 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/13 00:33:16 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,14 +320,14 @@ int ServerManager::startEpoll() {
 /*depending on the event, it can be either a new connection that need to be add to the epoll OR an existing one that will receive the HTTP request and send HTTP respond*/
 /****************/
 void ServerManager::serverMonitoring() {
-	int loop = 1500;
-	int nb_loop = 0;
+	// int loop = 1500;
+	// int nb_loop = 0;
 
 	std::cout << "########[DEBUG] Server monitoring started ############" << std::endl;
-
-	while (running_ && nb_loop < loop) {
-		nb_loop++;
-		std::cout << "[DEBUG] Loop " << nb_loop << " - waiting for events..." << std::endl;
+	while (running_) {
+	// while (running_ && nb_loop < loop) {
+		// // nb_loop++;
+		// std::cout << "[DEBUG] Loop " << nb_loop << " - waiting for events..." << std::endl;
 		
 		num_events_ = epoll_wait(epoll_fd_, events_, MAX_EVENTS, -1);
 		std::cout << "[DEBUG] epoll_wait returned " << num_events_ << " events" << std::endl;
@@ -366,10 +366,10 @@ void ServerManager::serverMonitoring() {
 			}
 		}
 	}
-	if (nb_loop > loop)
-		std::cout << BOLD RED "[DEBUG] Reaching the loop limits" RESET << std::endl;
+	// if (nb_loop > loop)
+	// 	std::cout << BOLD RED "[DEBUG] Reaching the loop limits" RESET << std::endl;
 	
-	std::cout << "[DEBUG] Server monitoring loop ended, cleaning up..." << std::endl;
+	// std::cout << "[DEBUG] Server monitoring loop ended, cleaning up..." << std::endl;
 	this->cleanClient(current_fd_);
 	this->shutdown();
 }
