@@ -53,14 +53,15 @@ function uploadFile(name){
             progressArea.innerHTML = "";
             let uploadedHTML = `<li class="row">
                                     <div class="content">
-                                    <i class="fas fa-file-alt"></i>
-                                    <div class="details">
-                                        <span class="name">${name} · Uploaded</span>
-                                        <span class="size">${fileSize}</span>
+                                        <i class="fas fa-file-alt"></i>
+                                        <div class="details">
+                                            <span class="name">${name} · Uploaded</span>
+                                            <span class="size">${fileSize}</span>
+                                        </div>
                                     </div>
-                                    </div>
-                                    <i class="fas fa-check"></i>
+                                            <button class="delete-btn" data-filename="${name}" title="Delete">Del</button>
                                 </li>`;
+            
             // uploadedArea.innerHTML = uploadedHTML; yoyo
             uploadedArea.classList.remove("onprogress");
             uploadedArea.insertAdjacentHTML("afterbegin", uploadedHTML);

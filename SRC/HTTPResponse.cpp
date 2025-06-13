@@ -274,18 +274,18 @@ void HTTPResponse::setPostResponse() {
 // }
 
 
-
-
 void HTTPResponse::setDeleteResponse() {
-	body_filename_ = "documents" + current_request_.getPath();
-	if (fileExists(body_filename_)) {
-		if (!std::remove(body_filename_.c_str()))
-			response_ = current_request_.getVersion() + " 204 No Content\r\n\r\n";
-		else
-			setErrorResponse(500); // file exist but not closable so internal error ?
-	} else {
-		setErrorResponse(404); // file not found as return false to fileExist()? 
-	}
+    body_filename_ = "documents" + current_request_.getPath();
+    if (fileExists(body_filename_)) {
+        if (!std::remove(body_filename_.c_str())) {
+            response_ = current_request_.getVersion() + " 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\nFile deleted";
+            _response_ready_ = true;
+        } else {
+            setErrorResponse(500);
+        }
+    } else {
+        setErrorResponse(404);
+    }
 }
 
 void HTTPResponse::setErrorResponse(int error_code) {
