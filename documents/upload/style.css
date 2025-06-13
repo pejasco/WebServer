@@ -148,7 +148,28 @@ section .details span{
     background: #c0392b;
 }
 
-
+.home-btn {
+    position: absolute;
+    top: 30px;
+    left: 40px;
+    z-index: 100;
+    background:hsl(307, 83%, 75%, 0.7);
+    color: #000000;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+}
+.home-btn:hover {
+    background: #000000;
+    color: hsl(307, 83%, 75%, 0.7);
+    text-decoration: none;
+}
 /* <!-- ///orginal/// --> */
 /* Basic styling for the page
 body {
