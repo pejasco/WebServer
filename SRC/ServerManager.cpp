@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/13 00:33:16 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/14 13:31:21 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,14 +320,14 @@ int ServerManager::startEpoll() {
 /*depending on the event, it can be either a new connection that need to be add to the epoll OR an existing one that will receive the HTTP request and send HTTP respond*/
 /****************/
 void ServerManager::serverMonitoring() {
-	// int loop = 1500;
-	// int nb_loop = 0;
+	int loop = 2000;
+	int nb_loop = 0;
 
 	std::cout << "########[DEBUG] Server monitoring started ############" << std::endl;
-	while (running_) {
-	// while (running_ && nb_loop < loop) {
-		// // nb_loop++;
-		// std::cout << "[DEBUG] Loop " << nb_loop << " - waiting for events..." << std::endl;
+	// while (running_) {
+	while (running_ && nb_loop < loop) {
+		nb_loop++;
+		std::cout << "[DEBUG] Loop " << nb_loop << " - waiting for events..." << std::endl;
 		
 		num_events_ = epoll_wait(epoll_fd_, events_, MAX_EVENTS, -1);
 		std::cout << "[DEBUG] epoll_wait returned " << num_events_ << " events" << std::endl;
@@ -366,10 +366,10 @@ void ServerManager::serverMonitoring() {
 			}
 		}
 	}
-	// if (nb_loop > loop)
-	// 	std::cout << BOLD RED "[DEBUG] Reaching the loop limits" RESET << std::endl;
+	if (nb_loop > loop)
+		std::cout << BOLD RED "[DEBUG] Reaching the loop limits" RESET << std::endl;
 	
-	// std::cout << "[DEBUG] Server monitoring loop ended, cleaning up..." << std::endl;
+	std::cout << "[DEBUG] Server monitoring loop ended, cleaning up..." << std::endl;
 	this->cleanClient(current_fd_);
 	this->shutdown();
 }
@@ -544,7 +544,7 @@ void ServerManager::existingClientConnection() {
 				
 				int content_length = client->current_request->getContentLength();
 				std::cout << "[DEBUG] Content-Length: " << content_length << std::endl;
-				if (content_length > 0) {
+				if (content_length > 0 && error_code_ < 0) {
 					client->expected_content_length = content_length;
 					client->state = CLIENT_READING_BODY;
 					std::cout << "[DEBUG] Transitioning to CLIENT_READING_BODY" << std::endl;
@@ -620,6 +620,7 @@ bool ServerManager::readClientHeaders() {
     }
 	
 	received_[byte_received] = '\0';
+	std::cout << "[DEBUG] Header buffer size before append: " << client->header_buffer.size() << std::endl;
 	client->header_buffer.append(received_, byte_received);
 	std::cout << "[DEBUG] Header buffer size after append: " << client->header_buffer.size() << std::endl;
 	
@@ -628,6 +629,7 @@ bool ServerManager::readClientHeaders() {
 	if (header_end != std::string::npos) {
 		std::cout << "[DEBUG] Found end of headers at position: " << header_end << std::endl;
 		client->headers_string = client->header_buffer.substr(0, header_end + 4);
+		std::cout << "[DEBUG] Header string after split with body: \n" << client->headers_string << std::endl;
 		size_t body_start = header_end + 4;
 		if (body_start < client->header_buffer.length()) {
 			client->body_buffer = client->header_buffer.substr(body_start);
@@ -642,8 +644,10 @@ bool ServerManager::readClientHeaders() {
 	// Header size check 
 	if (client->header_buffer.size() > MAX_HEADER_SIZE) {
 		std::cout << "[DEBUG] Header size exceeded: " << client->header_buffer.size() << " > " << MAX_HEADER_SIZE << std::endl;
-		error_code_ = 400;
-		return false;
+		error_code_ = 431;
+		client->header_completed = true;
+		std::cout << "[DEBUG] Headers too large -- sending HTTP error" << std::endl;
+		return true;
 	}
 	
 	std::cout << "[DEBUG] Headers not complete yet, need more data" << std::endl;
@@ -660,6 +664,7 @@ bool ServerManager::parseHeadersAndCheckBodySize() {
 	}
 	HTTPRequest* http_request = new HTTPRequest();
 	std::cout << "[DEBUG] Parsing request headers" << std::endl;
+	std::cout << client->headers_string << "\nheader_buffer:\n" << client->header_buffer << std::endl;
 	http_request->parseRequest(client->headers_string);
 	client->setRequest(http_request);
 	
@@ -691,7 +696,6 @@ bool ServerManager::parseHeadersAndCheckBodySize() {
 					  << " exceeds limit " << max_body_size << std::endl;
 			error_code_ = 413;
 			processAndSendResponse(server_requested, location_requested);
-			return false;
 		}
 		// Store max_body_size for later use in body reading
 		client->max_body_size = max_body_size;
@@ -913,7 +917,8 @@ bool ServerManager::sendResponseBodyFile() {
 		if (bytes_read > 0) {
 			std::cout << "[DEBUG] Sending " << bytes_read << " bytes to client" << std::endl;
 			ssize_t bytes_sent = send(current_fd_, buffer_, bytes_read, 0);
-			std::cout << "\n$$$$$ SENDING FILE INFORMATION $$$$$\n" << std::endl << buffer_ << std::endl;
+			std::string debug_content(buffer_, bytes_read);
+			std::cout << "\n$$$$$ SENDING FILE INFORMATION $$$$$\n" << std::endl << debug_content << std::endl;
 			std::cout << "[DEBUG] send() returned: " << bytes_sent << " bytes" << std::endl;
 			
 			// DON'T CHECK ERRNO - per requirements
@@ -964,9 +969,15 @@ bool ServerManager::sendResponseBodyFile() {
 		event.data.fd = current_fd_;
 		int epoll_result = epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, current_fd_, &event);
 		std::cout << "[DEBUG] epoll_ctl result: " << epoll_result << std::endl;
+
+		if (error_code_ > 0) {
+			close(current_fd_);
+			error_code_ = -1;
+		}
 		
 		std::cout << BG_BLACK BOLD WHITE "[DEBUG] File transfer complete - resetting client for next request" RESET << std::endl;
         client->resetForNextRequest();
+		std::cout << "[DEBUG] check header string cleanup: " << client->headers_string.size() << std::endl;
 		return true;
 	}
 	
