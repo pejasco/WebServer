@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/10 16:12:16 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/14 12:45:34 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -781,7 +781,8 @@ void HTTPRequest::parseRequestLine(const std::string& request_line) {
 void HTTPRequest::parseRequest(const std::string& request){
 	std::istringstream stream(request);
 	std::string request_line;
-	// std::cout << request << std::endl;
+	std::cout << "\nREQUEST RECEIVED\n" << request << "\n" << std::endl;
+	std::cout << "[DEBUG] Starting parsing \n";
 	std::getline(stream, request_line);
 	parseRequestLine(request_line); //dry method, uri, ver
 	parseRequestHeader(stream); 

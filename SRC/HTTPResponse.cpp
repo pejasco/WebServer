@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/12 15:12:18 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/14 12:30:16 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -318,15 +318,15 @@ void HTTPResponse::setErrorResponse(int error_code) {
 		if (!location_->getRedirectURL().empty())
 			header_ += "Location: " + location_->getRedirectURL() + "\r\n";
 		response_ = status_line_ + header_ + empty_line_;
-		std::ifstream file(body_filename_.c_str());
-		if (file) {
-			std::stringstream buffer;
-			buffer << file.rdbuf();
-			response_ += buffer.str();
-			file.close();
-		} else {
-			std::cerr << "[DEBUG STILL TRYING TO FIX ERROR] setErrorResponse: could not open " << body_filename_ << " for reading\n";
-		}
+		// std::ifstream file(body_filename_.c_str());
+		// if (file) {
+		// 	std::stringstream buffer;
+		// 	buffer << file.rdbuf();
+		// 	response_ += buffer.str();
+		// 	file.close();
+		// } else {
+		// 	std::cerr << "[DEBUG STILL TRYING TO FIX ERROR] setErrorResponse: could not open " << body_filename_ << " for reading\n";
+		// }
 	} else {
 		if (!location_->getRedirectURL().empty())
 			draftRedirectResponse();

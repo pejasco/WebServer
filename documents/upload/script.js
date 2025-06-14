@@ -24,6 +24,33 @@ fileInput.onchange = ({target}) =>{
 function uploadFile(name){
     let xhr = new XMLHttpRequest(); //creating new xml obj (AJAX)
     xhr.open("POST", "http://localhost:9000/upload"); //sending post request to the specified URL/File
+
+    // Adding error handling so a text appear (particular case for 412 where file is too large to be uploaded)
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 413) {
+                // Handle 413 File Too Large error - show inline error message
+                progressArea.innerHTML = "";
+                uploadedArea.classList.remove("onprogress");
+                
+                let errorHTML = `<li class="row error">
+                                    <i class="fas fa-exclamation-triangle" style="color: red;"></i>
+                                    <div class="content">
+                                        <div class="details">
+                                            <span class="name" style="color: red;">${name} · File Too Large!</span>
+                                        </div>
+                                    </div>
+                                </li>`;
+                uploadedArea.insertAdjacentHTML("afterbegin", errorHTML);
+                
+            } else if (xhr.status >= 400) {
+                // Handle other errors - redirect to error page
+                document.body.innerHTML = xhr.responseText;
+            }
+            // Success case is handled in the progress event below
+        }
+    };
+
     xhr.upload.addEventListener("progress", (e) =>{
         let fileLoaded = Math.floor((e.loaded/e.total) * 100);
         // let fileTotal = Math.floor(e.total / 1000);
