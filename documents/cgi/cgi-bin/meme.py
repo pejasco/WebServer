@@ -65,7 +65,7 @@ print(f"""
 			color: limegreen;
 			margin-top: 6px;
 		}}
-		.back {{
+		.homepage {{
 			position: absolute;
 			top: 10px;
 			left: 10px; /* Or use right: 10px; for right side */
@@ -82,10 +82,10 @@ print(f"""
 <body>
 	<img src="{html.escape(chosen_meme)}" alt="Random Meme">
 	<form method="GET">
-		<button type="submit">🎲 Give me a meme!</button>
+		<button type="submit">🎲 Shuffle meme!</button>
 	</form>
 	<div class="method">GET</div>
-	<button class="back" onclick="history.back()">⬅️ Back</button>
+	<button class="homepage"<button onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button></button>
 </body>
 </html>
 """)
