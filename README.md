@@ -12,12 +12,12 @@
 > - ✅ Basic GET HTTP request/response handling
 > - ✅ Static file serving
 > - ✅ Configuration file parsing
-> - 🔄 CGI implementation
+> - ✅ CGI implementation
 > - ✅  Autoindex management
 > - ✅ Redirection
 > - 🔄 Advanced error handling
-> - 🔄 File upload functionality
-> - 🔄 Static Webserv website to display functionality
+> - ✅ File upload functionality
+> - ✅ Static Webserv website to display functionality
 > - ✅ Signal handling and graceful shutdown
 >
 
@@ -73,10 +73,10 @@
 3. **Run with default configuration**
    ```bash
    # webserver with default configuration file
-   ./webserver
+   ./webserv
 
    # Webserver with custom configuration file
-   ./webserver config/your_filename.conf
+   ./webserv config/your_filename.conf
    ```
 
 4. **Test the server**
@@ -121,8 +121,8 @@ server {
 | Method | Status | Description |
 |--------|--------|-------------|
 | `GET` | ✅ Complete | Retrieve resources |
-| `POST` | 🔄 In progress | Submit data, file uploads |
-| `DELETE` | 🔄 In progress | Delete resources |
+| `POST` | ✅ In progress | Submit data, file uploads |
+| `DELETE` | ✅ In progress | Delete resources |
 
 ## 🧪 Testing
 
@@ -176,6 +176,12 @@ make re
 
 ## 🔧 Troubleshooting
 
+### Enable Debugging message
+```bash
+make debug
+./webserv > output
+```
+
 ### Common Issues
 
 **Port already in use:**
@@ -188,7 +194,7 @@ lsof -i :8080 #or other ports
 **Permission denied:**
 ```bash
 # Make sure you have permissions for the port
-sudo ./webserver  # For ports < 1024
+sudo ./webserv  # For ports < 1024
 ```
 
 **CGI scripts not executing:**
@@ -203,7 +209,7 @@ chmod +x www/cgi-bin/script.py
 **High memory usage:**
 ```bash
 # Run with Valgrind to check for leaks
-valgrind --leak-check=full ./webserv
+make leaks
 ```
 
 ## 📝 License
@@ -260,8 +266,8 @@ This project demonstrates mastery of:
 
 ### Phase 2: Advanced Features 🔄
 - [x] CGI implementation
-- [ ] File upload completion
-- [ ] Enhanced error handling
+- [x] File upload completion
+- [x] Enhanced error handling
 - [ ] Performance optimization
 - [ ] Testing edge cases
 
@@ -270,4 +276,4 @@ This project demonstrates mastery of:
 - [ ] Database connection
 - [ ] WebSocket support
 
-**Last Updated:** 03/06/2025
+**Last Updated:** 17/06/2025
