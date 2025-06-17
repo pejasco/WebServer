@@ -1,0 +1,5 @@
+HTTP/1.1 302 Found
+Location: loop2/
+Content-Length: 0
+Connection: close
+

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 11:54:15 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 18:26:13 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/17 16:17:09 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,11 @@ bool Client::getError() {
 }
 
 void Client::resetForNextRequest() {
-    std::cout << "[DEBUG] Client::resetForNextRequest() called" << std::endl;
+    DEBUG_PRINT(BOLD RED "Client::resetForNextRequest() called" RESET);
+	// if (current_request)
+	// 	delete current_request;
+	// if (current_response)
+	// 	delete current_request;
     header_buffer.clear();
     body_buffer.clear();
     headers_string.clear();
@@ -95,8 +99,7 @@ void Client::resetForNextRequest() {
     file_sending_complete = true;
     state = CLIENT_READING_HEADERS;
     if (file_stream.is_open()) {
-        std::cout << "[DEBUG] Closing file stream in resetForNextRequest()" << std::endl;
         file_stream.close();
     }
-    std::cout << "[DEBUG] Client reset completed" << std::endl;
+   	DEBUG_PRINT(BOLD RED "Client::resetForNextRequest() exited" RESET);
 }

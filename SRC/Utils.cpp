@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/10 13:49:09 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/17 17:07:26 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,46 +15,43 @@
 
 void printLocation(Location &location) {
 	/*BASIC INFO*/
-	std::cout << BOLD MAGENTA "location Path: " RESET << location.getName() << std::endl;
-	std::cout << BOLD MAGENTA "location root: " RESET << location.getRoot() << std::endl;
+	DEBUG_PRINT(BOLD MAGENTA "Location");
+	DEBUG_PRINT("Path: " << location.getName());
+	DEBUG_PRINT("root: " << location.getRoot());
 	//method display
-	std::cout << BOLD MAGENTA "location methods: " RESET;
 	std::vector<MET>::iterator itMet = location.getMethod().begin();
 	std::vector<MET>::iterator iteMet = location.getMethod().end();
 	for (; itMet != iteMet; ++ itMet) {
 		if (*itMet == 0)
-			std::cout << "GET ";
+			DEBUG_PRINT("methods: GET");
 		else if (*itMet == 1)
-			std::cout << "POST ";
+			DEBUG_PRINT("methods: POST");
 		else if (*itMet == 2)
-			std::cout << "DELETE ";
+			DEBUG_PRINT("methods: DELETE");
 		else
-			std::cout << BOLD RED "Not recognized " RESET;
+			DEBUG_PRINT("methods: UNKNOWN");
 	}
-	std::cout << std::endl;
 	
-	std::cout << BOLD MAGENTA "location index: " RESET << location.getIndex() << std::endl;
-	std::cout << BOLD MAGENTA "location directories listing: " RESET << location.isAutoIndex() << std::endl;
+	DEBUG_PRINT("index: " << location.getIndex());
+	DEBUG_PRINT("directories listing: " << location.isAutoIndex());
 	
 	/*UPLAOD INFO*/
-	std::cout << BOLD MAGENTA "location - is upload enable: " RESET << location.isUpload() << std::endl;
-	std::cout << BOLD MAGENTA "location upload storage folder: " RESET << location.getUploadDir() << std::endl;
-	std::cout << BOLD MAGENTA "location upload Max body size: " RESET << location.getMaxSize() << std::endl;
+	DEBUG_PRINT("- is upload enable: " << location.isUpload());
+	DEBUG_PRINT("upload storage folder: " << location.getUploadDir());
+	DEBUG_PRINT("upload Max body size: " << location.getMaxSize());
 
 	/*CGI INFO*/
-	std::cout << BOLD MAGENTA "location - is CGI enable: " RESET << location.isCGI() << std::endl;
+	DEBUG_PRINT("- is CGI enable: " << location.isCGI());
 	//cgi extension list
-	std::cout << BOLD MAGENTA "location CGI extensions: " RESET;
 	std::vector<std::string>::iterator itExt = location.getCGIExt().begin();
 	std::vector<std::string>::iterator iteExt = location.getCGIExt().end();
 	for (; itExt != iteExt; ++ itExt)
-		std::cout << *itExt << " ";
-	std::cout << std::endl;
+		DEBUG_PRINT("extension: " << *iteExt);
 
 	/*REDIRECTION INFO*/
-	std::cout << BOLD MAGENTA "location - is redirection enable: " RESET << location.getRedirect() << std::endl;
-	std::cout << BOLD MAGENTA "location redirection code: " RESET << location.getRedirectCode() << std::endl;
-	std::cout << BOLD MAGENTA "location redirection URL: " RESET << location.getRedirectURL() << std::endl;
+	DEBUG_PRINT("- is redirection enable: " << location.getRedirect());
+	DEBUG_PRINT("redirection code: " << location.getRedirectCode());
+	DEBUG_PRINT("redirection URL: " << location.getRedirectURL());
 	
 }
 
@@ -62,38 +59,33 @@ void printServer(Server &server) {
 	/*SERVER NAMES*/
 	std::vector<std::string>::iterator it = server.getServerNames().begin();
 	std::vector<std::string>::iterator ite = server.getServerNames().end();
-	std::cout << BOLD BLUE << "server name: " RESET;
 	for (; it != ite; ++it)
-		std::cout << *it << " ";
-	std::cout << std::endl;
+		DEBUG_PRINT("server name: " << *ite);
 	
 	/*PORT AND HOST*/
-	std::cout << BOLD BLUE "server host: " << RESET << server.getIP() << std::endl;
+	DEBUG_PRINT("server host: " << server.getIP());
 	std::vector<std::string>::iterator itp = server.getPort().begin();
 	std::vector<std::string>::iterator itep = server.getPort().end();
-	std::cout << BOLD BLUE << "server ports: " RESET;
 	for (; itp != itep; ++itp)
-		std::cout << *itp << " ";
-	std::cout << std::endl;
+		DEBUG_PRINT("server ports: " << *itp);
 
 	/*ERROR PAGES CODE LIST*/
 	std::map<int, std::string>::iterator itr = server.getErrorList().begin();
 	std::map<int, std::string>::iterator iter = server.getErrorList().end();
-	std::cout << BOLD BLUE << "error page: " RESET;
 	for (; itr != iter; ++itr)
-		std::cout << itr->first << " " << itr->second << std::endl;
+		DEBUG_PRINT("error page: " << itr->first << " " << itr->second);
 	
 	/*MAX BODY SIZE*/
-	std::cout << BOLD BLUE "server maxsize: " RESET << server.getMaxBodySize() << std::endl;
-	std::cout << BOLD BLUE "server keep alive: " RESET << server.isKeepAlive() << std::endl;
+	DEBUG_PRINT("server maxsize: " << server.getMaxBodySize());
+	DEBUG_PRINT("server keep alive: " << server.isKeepAlive());
 	
 	/*LOCATIONS BLOCKS*/
 	std::vector<Location*>::iterator itL = server.getLocationsList().begin();
 	std::vector<Location*>::iterator iteL = server.getLocationsList().end();
 	for (; itL != iteL; ++itL) {
 		printLocation(**itL);
-		std::cout << std::endl;
 	}
+	DEBUG_PRINT("");
 }
 
 bool is_file_empty(const std::string &config_file) {
@@ -107,7 +99,6 @@ bool isMessageCompleted(const std::string &request) {
 	int body_size = 0; 
 	if ((pos = request.find("Content-Length: ")) != std::string::npos) {
 		body_size = convertToNb<int>(request.substr(pos + 16));
-		// std::cout << "body_size: " << body_size << std::endl;
 		if ((pos = request.find("\r\n\r\n")) != std::string::npos) {
 			temp_body_message = request.substr(pos + 4);
 			if (temp_body_message.size() < static_cast<unsigned long>(body_size))
@@ -125,6 +116,12 @@ void cleanShutdown(ServerManager &master_server) {
 	std::vector<Socket*>::iterator begSo = master_server.getSockets().begin();
 	std::vector<Socket*>::iterator endSo = master_server.getSockets().end();
 	for (; begSo != endSo; ++begSo) {
+		int fd = (*begSo)->getSocketFd();
+        if (isFdOpen(fd)) {
+            DEBUG_PRINT("Closing fd: " << fd);
+        } else {
+            DEBUG_PRINT("fd " << fd << " already closed or invalid");
+        }
 		if (*begSo != NULL)
 			delete *begSo;
 	}
@@ -133,11 +130,25 @@ void cleanShutdown(ServerManager &master_server) {
 	std::map<int,Client*>::iterator begCl = master_server.getClients().begin();
 	std::map<int,Client*>::iterator endCl = master_server.getClients().end();
 	for (; begCl != endCl; ++begCl) {
-		close(begCl->first);
-		if ((begCl)->second != NULL)
+		int fd = begCl->first;
+        if (isFdOpen(fd)) {
+            DEBUG_PRINT("Closing fd: " << fd);
+        } else {
+            DEBUG_PRINT("fd " << fd << " already closed or invalid");
+        }
+		if ((begCl)->second) {
+			if (begCl->second->current_request) {
+				delete begCl->second->current_request;
+				begCl->second->current_request = NULL;
+			}
+			if (begCl->second->current_response) {
+				delete begCl->second->current_response;
+				begCl->second->current_response = NULL;
+			}
 			delete begCl->second;
+		}
 	}
-
+		
 	//freeing the struct server
 	std::vector<Server*>::iterator beg = master_server.getServers().begin();
 	std::vector<Server*>::iterator end = master_server.getServers().end();
@@ -153,6 +164,10 @@ void cleanShutdown(ServerManager &master_server) {
 			delete *beg;
 	}
 	close(master_server.getEpollFd());
+}
+
+bool isFdOpen(int fd) {
+    return fcntl(fd, F_GETFD) != -1;
 }
 
 std::string getStatusStr(int status_code) {
@@ -179,7 +194,7 @@ std::string getStatusStr(int status_code) {
 
 bool fileExists(const std::string& filename) {
 	std::ifstream file(filename.c_str());
-	// std::cout << "Does file " << filename << " exist? " << file.good() << std::endl;
+	DEBUG_PRINT("Does file " << filename << " exist? " << file.good());
 	return file.good();
 }
 
@@ -279,7 +294,6 @@ std::string toLowerCase(const std::string& input) {
 
 int calculateFileSize(std::string &filename) { //auto_index.html
 	std::streampos pos = -1;
-	// std::cout << "inside calculateFilesSize: " << filename << std::endl;
 	std::ifstream body_file(filename.c_str(), std::ios::binary);
 	if (body_file.is_open()) {
 		pos = body_file.tellg();
@@ -287,7 +301,7 @@ int calculateFileSize(std::string &filename) { //auto_index.html
 		pos = body_file.tellg() - pos;
 		body_file.close();
 	} else
-		std::cout << "Error: " << strerror(errno) << std::endl;
+		std::cerr << BOLD RED "Error in calculateFileSize(): " << strerror(errno) << RESET << std::endl;
 	int length = static_cast<int>(pos);
 	return length;
 }
@@ -308,51 +322,90 @@ size_t getMaxSize(const std::string &input_size) {
 		
 }
 
+
 Server *getCurrentServer(const HTTPRequest &input_request, ServerManager &server_manager, const std::string &server_IP) {
-	std::vector<Server*>::iterator begSe = server_manager.getServers().begin();
-	std::vector<Server*>::iterator endSe = server_manager.getServers().end();
-	
-	for (; begSe != endSe; ++begSe) {
-		if ((*begSe)->getIP() == server_IP) {
-			// std::cout << "current server: " << (*begSe)->getIP() << ", request host: " << server_IP << std::endl;
-			std::vector<std::string> tempPort = (*begSe)->getPort();
-			std::vector<std::string>::iterator begPo = tempPort.begin();
-			std::vector<std::string>::iterator endPo = tempPort.end();
-			for (; begPo != endPo; ++ begPo) {
-				// std::cout << "current port " << *begPo << ", request port: " << input_request.getHost() << std::endl;
-				if (input_request.getHost() == *begPo) {
-					// std::cout << "found the matching port, bye\n";
-					return *begSe; 
-				}
-					
-			}
-		}
+    std::string host_header = input_request.getHost();
+    std::string hostname;
+    std::string request_port;
+    
+    size_t colon_pos = host_header.find(':');
+    if (colon_pos != std::string::npos) {
+        // Host header contains port (e.g., "localhost:8080")
+        hostname = host_header.substr(0, colon_pos);           // "localhost"
+        request_port = host_header.substr(colon_pos + 1);
 	}
-	return server_manager.getServers().front();
+    // Step 1: Collect all servers that match IP and port
+    std::vector<Server*> matching_servers;
+    std::vector<Server*>::iterator begSe = server_manager.getServers().begin();
+    std::vector<Server*>::iterator endSe = server_manager.getServers().end();
+    
+    for (; begSe != endSe; ++begSe) {
+        if ((*begSe)->getIP() == server_IP) {
+            DEBUG_PRINT("Checking server IP: " << (*begSe)->getIP());
+            
+            std::vector<std::string> server_ports = (*begSe)->getPort();
+            std::vector<std::string>::iterator begPo = server_ports.begin();
+            std::vector<std::string>::iterator endPo = server_ports.end();
+            
+            for (; begPo != endPo; ++begPo) {
+                DEBUG_PRINT("Checking port: " << *begPo << " against request port: " << request_port);
+                if (request_port == *begPo) {
+                    DEBUG_PRINT("Found matching IP:port - adding to candidates");
+                    matching_servers.push_back(*begSe);
+                    break; // Found matching port for this server, no need to check other ports
+                }
+            }
+        }
+    }
+    
+    // If no servers match IP:port, return the first server as fallback
+    if (matching_servers.empty()) {
+        DEBUG_PRINT("No matching servers found, returning first server");
+        return server_manager.getServers().front();
+    }
+    
+    // Step 2: Among matching IP:port servers, find one with matching server_name
+    std::vector<Server*>::iterator matching_it = matching_servers.begin();
+    std::vector<Server*>::iterator matching_end = matching_servers.end();
+    
+    for (; matching_it != matching_end; ++matching_it) {
+        // Get server names for this server (you'll need to implement getServerNames())
+        std::vector<std::string> server_names = (*matching_it)->getServerNames();
+        std::vector<std::string>::iterator name_it = server_names.begin();
+        std::vector<std::string>::iterator name_end = server_names.end();
+        
+        for (; name_it != name_end; ++name_it) {
+            DEBUG_PRINT("Checking server_name: " << *name_it << " against hostname: " << hostname);
+            if (*name_it == hostname) {
+                DEBUG_PRINT("Found exact server_name match!");
+                return *matching_it;
+            }
+        }
+    }
+    
+    // Step 3: No server_name match found, return FIRST server for this IP:port (default behavior)
+    DEBUG_PRINT("No server_name match, using default (first) server for " << server_IP << ":" << request_port);
+    return matching_servers.front();
 }
 
 Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_server) {
-	if (current_server.getLocationsList().empty()) 
-		// std::cout << "is NULL\n";
-		return NULL; 
-	// } else 
-		// std::cout << "is not null\n";
+	DEBUG_PRINT("is locationList empty? " << (current_server.getLocationsList().empty() ? "is empty" : "is not empty"));
 		 
 	std::string request_path = input_request.getPath();
-	// std::cout << "URL to look for: " << request_path << std::endl;
+	DEBUG_PRINT("URL to look for: " << request_path);
 	// Handle root request specially if needed
 	if (request_path == "/") {
 		// Look for exact root location match first
-		// std::cout << "it is a default location\n";
+		// DEBUG_PRINT("it is a default location\n";
 		std::vector<Location*>::iterator begLo = current_server.getLocationsList().begin();
 		std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
 		for (; begLo != endLo; ++begLo) {
 			if ((*begLo)->getName() == "/") {
-				// std::cout << "found begLo: " << (*begLo)->getName() << " - " << (*begLo)->getRoot() << std::endl;
+				DEBUG_PRINT("found begLo: " << (*begLo)->getName() << " - " << (*begLo)->getRoot());
 				return *begLo;
 			}
 		}
-		// std::cout << "is returning the default location\n";
+		// DEBUG_PRINT("is returning the default location\n";
 		return NULL; // or return default location if you prefer
 	}
 	Location *best_location_name = NULL;
@@ -361,11 +414,11 @@ Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_s
 	std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
 	for (; begLo != endLo; ++begLo) {
 		std::string location_path = (*begLo)->getRoot();
-		// std::cout << "Request: " << request_path << ", server location: " << location_path << std::endl;
+		DEBUG_PRINT("Request: " << request_path << ", server location: " << location_path);
 		// Check if request path starts with location path (prefix matching)
 		if (request_path.length() >= location_path.length() && 
 			request_path.substr(0, location_path.length()) == location_path) {
-			// std::cout << "Prefix match found: " << request_path.substr(0, location_path.length()) << std::endl;
+			DEBUG_PRINT("Prefix match found: " << request_path.substr(0, location_path.length()));
 			// Additional check: ensure we match complete path segments
 			// /kapouet should match /kapouet/file but not /kapouetfile
 			bool isValidMatch = false;
@@ -373,7 +426,6 @@ Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_s
 				// Exact match
 				isValidMatch = true;
 			} else if (location_path[-1] == '/') {
-				std::cout << "is seg fault there\n";
 				isValidMatch = true;
 			} else if (request_path[location_path.length()] == '/') {
 				// Next character in request is '/', valid path segment boundary
@@ -384,18 +436,18 @@ Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_s
 				if (location_path.length() > name_length_track) {
 					best_location_name = *begLo;
 					name_length_track = location_path.length();
-					// std::cout << "New best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot() << std::endl;
+					DEBUG_PRINT("New best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot());
 				}
 			}
 		}
 	}
 	// Check if we found a match before accessing it
 	if (best_location_name != NULL) {
-		// std::cout << "Final best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot() << std::endl;
+		DEBUG_PRINT("Final best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot());
 		return best_location_name;
 	}
 	// If no specific location matched, return default (first location or NULL)
-	// std::cout << "No location match found, using default" << std::endl;
+	DEBUG_PRINT("No location match found, using default");
 	return current_server.getLocationsList().empty() ? NULL : current_server.getLocationsList().front();
 }
 

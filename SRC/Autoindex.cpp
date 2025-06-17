@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Autoindex.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 09:19:15 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 11:20:32 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/17 10:03:41 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <cstring>
+#include "../INC/utils/Debug.hpp"
+#include "../INC/utils/Colors.hpp"
 
 
 	// DIR *dir = opendir("/var/www/tools/");
@@ -43,7 +45,7 @@ static int addDirectories(std::ofstream &HTML, const std::string &dir_path, cons
 	
 	dir = opendir((dir_path).c_str());
 	if (dir == NULL) {
-		std::cout << "Error in addDir: " << strerror(errno) << std::endl;
+		std::cerr << BOLD RED "Error in addDir: " << strerror(errno) << RESET << std::endl;
 		closedir(dir);
 		return 404;
 	}
@@ -66,7 +68,7 @@ static int addFiles(std::ofstream &HTML, const std::string &dir_path) {
 	
 	dir = opendir((dir_path).c_str());
 	if (dir == NULL) {
-		std::cout << "Error in addFiles: " << strerror(errno) << std::endl;
+		std::cerr << BOLD RED "Error in addFiles: " << strerror(errno) << RESET << std::endl;
 		closedir(dir);
 		return 404;
 	}
@@ -121,7 +123,7 @@ static void endSetupHTML(std::ofstream &HTML) {
 int structureInfo(const std::string &dir_path, const std::string &sub_dir, const std::string &default_folder) {
 	//default folder minus the '// in front
 	
-	std::cout << "location of HTML file: " << (default_folder) << std::endl;
+	DEBUG_PRINT("location of HTML file: " << (default_folder));
 	// start to write the HTML file 
 	std::ofstream HTML((default_folder + "/auto_index.html").c_str());
 	int status_code = 0;
@@ -138,10 +140,10 @@ int structureInfo(const std::string &dir_path, const std::string &sub_dir, const
 		endSetupHTML(HTML);
 		HTML.close();
 	} else {
-		std::cerr << "Error in structureInfo: " << strerror(errno) << std::endl;
+		std::cerr << BOLD RED "Error in structureInfo: " << strerror(errno) << RESET << std::endl;
 		return 500;
 	}	
-	std::cout << "\nLEAVING DIRECTORY LOOKUP\n";
+	DEBUG_PRINT("\nLEAVING DIRECTORY LOOKUP\n");
 	return 200;
 };
 
