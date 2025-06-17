@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Content.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/08 01:25:51 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/17 10:08:41 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,10 +90,8 @@ void Content::setBodyWithNoCD(const std::string &line)
 void Content::setCDs(const std::string &buffer, CD_header header, int index)
 { // problem with this function -- unable to parse the content of file and get segfault
     std::stringstream iss(buffer);
-    std::cout << BOLD GREEN "IS THIS THE PROBLEM\n" RESET;
-    std::cout << "buffer: " << buffer << std::endl;
-    std::cout << "header: " << header << std::endl;
-    std::cout << "index: " << index << std::endl;
+    DEBUG_PRINT("setCDs() calling");
+    DEBUG_PRINT("Buffer: " << buffer << "Header: " << header << "Index: " << index);
     switch (header)
     {
     case ContentDisposition:
@@ -101,7 +99,6 @@ void Content::setCDs(const std::string &buffer, CD_header header, int index)
         size_t pos_begin;
         size_t pos_end;
         std::string cd_element;
-        std::cout << "check1\n";
         std::string type_part;
         // getline(iss, type_part, ';');
         // std::cout << "type-part: " << type_part << std::endl;
@@ -132,18 +129,15 @@ void Content::setCDs(const std::string &buffer, CD_header header, int index)
         // std::cout << "type-part3: " << type_part << std::endl;
         while (getline(iss, type_part, ';'))
         {
-            std::cout << "type-part: " << type_part << std::endl;
-            std::cout << "check2\n";
             pos_begin = type_part.find_first_not_of(" \t");
-            std::cout << "pos_begin: " << pos_begin << std::endl;
+            DEBUG_PRINT("type-part: " << type_part << "pos_begin: " << pos_begin);
             if (pos_begin != std::string::npos)
             {
-                std::cout << "check2bis BEFORE\n";
                 std::string newStr = type_part.substr(pos_begin);
-                std::cout << "CD_type: " << newStr << std::endl;
+                DEBUG_PRINT("CD_type: " << newStr);
                 if (CDs_list_.empty())
                 {
-                    std::cout << "CD doesn't exist - vector is empty\n";
+                    DEBUG_PRINT("CD doesn't exist - vector is empty");
                 }
                 else
                 {
@@ -154,18 +148,16 @@ void Content::setCDs(const std::string &buffer, CD_header header, int index)
                     }
                     else
                     {
-                        std::cout << "Error: Index " << index << " out of bounds for CDs_list_ of size " << CDs_list_.size() << std::endl;
+                        DEBUG_PRINT("Error: Index " << index << " out of bounds for CDs_list_ of size " << CDs_list_.size());
                     }
                 }
 
-                std::cout << "check2bis AFTER\n";
             }
-            std::cout << "check3\n";
             size_t pos_begin = cd_element.find_first_not_of(" \t");
             if (pos_begin != std::string::npos)
             {
                 cd_element = cd_element.substr(pos_begin);
-                std::cout << "cd_element= " << cd_element << std::endl;
+                DEBUG_PRINT("cd_element= " << cd_element);
             }
             if (cd_element.find("name=") != std::string::npos)
             {
@@ -173,7 +165,7 @@ void Content::setCDs(const std::string &buffer, CD_header header, int index)
                 pos_end = cd_element.rfind("\"");
                 std::string res = cd_element.substr(pos_begin, pos_end - pos_begin);
                 CDs_list_[index].name_ = res;
-                std::cout << "cd_name= " << res << std::endl;
+                DEBUG_PRINT("cd_name= " << res);
             }
             else if (cd_element.find("filename=") != std::string::npos)
             {
@@ -181,11 +173,10 @@ void Content::setCDs(const std::string &buffer, CD_header header, int index)
                 pos_end = cd_element.rfind("\"");
                 std::string res = cd_element.substr(pos_begin, pos_end - pos_begin);
                 CDs_list_[index].filename_ = res;
-                std::cout << "filename= " << res << std::endl;
+                DEBUG_PRINT("filename= " << res);
             }
-            std::cout << "check4\n";
         }
-        std::cerr << "error with the getline function: " << strerror(errno) << std::endl;
+        std::cerr << BOLD RED "Error with the getline function: " << strerror(errno) << RESET << std::endl;
         break;
     }
     case InterContentType:
@@ -257,26 +248,26 @@ std::string& Content::getBodyWithNoCD()
 
 void Content::addContentDisposition()
 {
-    std::cout << "<<sievdebug>> addContentDisposition called" << std::endl;
+    DEBUG_PRINT("addContentDisposition() called");
     CDs_list_.push_back(ContentDisposition_());
 }
 
 
 void Content::printCDsList() const
 {
-    std::cout << "<sievdebug> beginning printing CDs\n";
+    DEBUG_PRINT("printCDsList() called");
     for (std::vector<ContentDisposition_>::const_iterator it = CDs_list_.begin(); it != CDs_list_.end(); ++it) {
-        std::cout << "<<CD>>: " << global_index_ << " <CD>>" << "\n";
-        std::cout << "  global_index: " << global_index_ << "\n";
-        std::cout << "  index: " << it->instance_index_ << "\n";
-        std::cout << "  CD_type: [" << it->CD_type_ << "]\n";
-        std::cout << "  name: [" << it->name_ << "]\n";
-        std::cout << "  filename: [" << it->filename_ << "]\n";
-        std::cout << "  inner_content: [" << it->inner_content_type_ << "]\n";
-        std::cout << "  content_: [" << it->content_ << "]\n";
-        std::cout << "  file_content_: [" << it->file_content_ << "]\n";
+        DEBUG_PRINT("<<CD>>: " << global_index_ << " <CD>>");
+        DEBUG_PRINT("  global_index: " << global_index_);
+        DEBUG_PRINT("  index: " << it->instance_index_);
+        DEBUG_PRINT("  CD_type: [" << it->CD_type_);
+        DEBUG_PRINT("  name: [" << it->name_ << "]");
+        DEBUG_PRINT("  filename: [" << it->filename_ << "]");
+        DEBUG_PRINT("  inner_content: [" << it->inner_content_type_ << "]");
+        DEBUG_PRINT("  content_: [" << it->content_ << "]");
+        DEBUG_PRINT("  file_content_: [" << it->file_content_ << "]");
     }
-    std::cout << "<sievdebug> finishing printing CDs\n";
+    DEBUG_PRINT("printCDsList() exited");
 }
 
 // const std::map<std::string, std::string> Content::getBodyconst() const { return body_; }

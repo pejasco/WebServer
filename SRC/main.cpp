@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:48:24 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/10 11:33:21 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/17 10:09:56 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,13 @@
 volatile std::sig_atomic_t g_sigStatus = 0;
 
 void signal_handler(int signal) {
-	std::cout << "calling ctrl+c here\n";
+	DEBUG_PRINT("calling ctrl+c here");
 	g_sigStatus = signal;
 }
 
 int main(int ac, char **av) {
 	if (ac > 2) {
-		std::cerr << "ERROR\n";
+		std::cerr << BOLD RED "Error: invalid number of arguments\n" RESET;
 		return (-1);
 	}
 	std::string config_file;
@@ -40,40 +40,3 @@ int main(int ac, char **av) {
 	master_server.shutdown();
 	return 0;
 }
-
-/**************************/
-/********DEBUGGING*********/
-/**************************/
-
-// #include <string>
-// #include <iostream>
-// #include <sstream>
-
-// int convertInt(const std::string &str) {
-// 	int nb;
-// 	std::istringstream (str) >> nb;
-// 	//if no error
-// 	return nb;
-// }
-
-// int main() {
-// 	size_t pos = 0;
-// 	std::string request = "POST /api/users HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\nContent-Length: 44\r\n\r\n{\"name\":\"John Doe\",\"email\":\"john@example.com\"}";
-// 	std::string temp_body_message;
-// 	int body_size; 
-// 	if ((pos = request.find("Content-Length: ")) != std::string::npos) {
-// 		body_size = convertInt(request.substr(pos + 16));
-// 		std::cout << "body_size: " << body_size << std::endl;
-// 	}
-// 	if ((pos = request.find("\r\n\r\n")) != std::string::npos) {
-// 		temp_body_message = request.substr(pos + 4);
-// 		std::cout << "temp: " << temp_body_message << std::endl;
-// 	}
-// 	else 
-// 		std::cout << "not found\n" << request << std::endl;
-	
-// 	if (temp_body_message.size() < body_size)
-// 		std::cout << "not completed\n" << temp_body_message.size() << std::endl << "45: " << temp_body_message[45];
-// 	else
-// 		std::cout << "completed\n";
-// }

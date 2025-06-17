@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/06 13:28:17 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/17 17:04:50 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ int calculateFileSize(std::string &filename);
 size_t getMaxSize(const std::string &inputSize);
 Server *getCurrentServer(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP);
 Location *getCurrentLocation(const HTTPRequest &inputRequest, Server &currentServer);
-// std::string formatURL(const std::string &input);
+bool isFdOpen(int fd);
 std::string getFilenameFromPath(const std::string& path);
 std::string trimString(const std::string& s);
 

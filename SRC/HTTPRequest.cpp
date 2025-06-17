@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/14 12:45:34 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/17 12:45:23 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,6 @@ HTTPRequest::~HTTPRequest(){}
 
 void HTTPRequest::setContentLength(int length) {
     content_length_ = length;
-	std::cout << "debbug len: " << content_length_ << std::endl;
 }
 
 void HTTPRequest::setContentFlag(const bool flag){
@@ -57,7 +56,6 @@ void HTTPRequest::setIsInTheBodyFlag(const bool flag){
 
 void HTTPRequest::setCGIFlag(const bool flag){
 	cgi_flag_ = flag;
-	std::cerr << "[debuggging] setting CGI flag to-> " << (flag ? "true" : "false") << std::endl;
 }
 
 void HTTPRequest::setCGIType(const std::string cgi_type){
@@ -76,7 +74,7 @@ void HTTPRequest::setMet(const std::string&  method){
 	else if (method == "DELETE")
 		method_ = DELETE;
 	else
-		throw std::invalid_argument("Invalid HTTP method: " + method);
+		std::cerr << BOLD RED "Error: Invalid method --> " << method << RESET << std::endl;
 }
 
 void HTTPRequest::setPath(const std::string& path) {
@@ -93,7 +91,6 @@ void HTTPRequest::setVersion(const std::string& version){
 void HTTPRequest::setHost(std::string& host) {
 	host.erase(host.end() - 1);
 	host_ = host;
-	// std::cout << "host: " << host << std::endl;
 }
 
 void HTTPRequest::setUserAgent(const std::string& agents){
@@ -255,11 +252,12 @@ void HTTPRequest::setCloseBoundary(const std::string& close_boundary){
 }
 
 void HTTPRequest::setBoundary(const std::string& boundary){
+	DEBUG_PRINT("setBoundary() called");
 	boundary_ = boundary;
-	std::cout << "{{printing boundary: " << boundary << "}}" << std::endl;
+	DEBUG_PRINT("Printing boundary: " << boundary);
     setOpenBoundary(("--" + boundary_));
     setCloseBoundary((open_boundary_ + "--"));
-	std::cout << "{{This is open_boundary: " << open_boundary_ << "}}" << "{{This is close_boundary: " << close_boundary_ << "}}" << std::endl;
+	DEBUG_PRINT("Open_boundary: " << open_boundary_ << ", close_boundary: " << close_boundary_);
 
     content_.setBoundary(boundary_);
     content_.setOpenBoundary(open_boundary_);
@@ -276,6 +274,7 @@ void HTTPRequest::setContentType(std::string contentType){
     std::getline(ss, type, '/');
     std::getline(ss, value);
     content_type_[type] = value;
+	DEBUG_PRINT("setContentType() called\ncontent_type_[" << type << "] = " << value);
     
 }
 
@@ -538,11 +537,11 @@ std::string HTTPRequest::getRawBody() const {
 // }
 
 void HTTPRequest::parseContent(const std::string& body) {
-	std::cout << BOLD UNDERLINE BLACK BG_WHITE "\n###### START CONTENT READING DEBUG ######" RESET "\n\n";
+	DEBUG_PRINT(BOLD UNDERLINE BLACK BG_WHITE "PARSE CONTENT CALLED" RESET);
 
     if (open_boundary_.empty()){
 		content_.setBodyWithNoCD(body);
-		std::cout << "no boundary\n";
+		DEBUG_PRINT("no boundary");
 		return;
 	}
 	size_t pos = 0;
@@ -628,7 +627,7 @@ void HTTPRequest::parseContent(const std::string& body) {
         if (body.substr(pos, close_boundary_.size()) == close_boundary_)
             break; 
     }
-	std::cout << BOLD UNDERLINE BLACK BG_WHITE "\n###### END CONTENT READING DEBUG ######" RESET "\n\n";
+	DEBUG_PRINT(BOLD UNDERLINE BLACK BG_WHITE "END PARSE CONTENT" RESET);
 }
 
 
@@ -636,10 +635,12 @@ void HTTPRequest::parseContent(const std::string& body) {
 //if (!(content_.getContentType()->first).empty() && content_.getContentLength() >= 0;
 
 void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
+	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "PARSE REQUEST HEADER CALLED" RESET);
     std::string line;
     size_t pos_begin;
     size_t pos_end;
     // size_t pos_end;
+	
 
     while (std::getline(stream, line)) {
 		trimString(line);
@@ -647,11 +648,11 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
             return;        
         } 
 		else if (line.find("Host") != std::string::npos) {
-            if ((pos_begin = line.rfind(":")) != std::string::npos) {
+            if ((pos_begin = line.find(":")) != std::string::npos) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string host = line.substr(pos_begin, std::string::npos);
                 setHost(host);
-                // std::cout << "Host: " << host << std::endl;
+                DEBUG_PRINT("Host: " << host);
             }
         } 
 		else if (line.find("Connection") != std::string::npos) {
@@ -659,7 +660,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string connection = line.substr(pos_begin, std::string::npos);
                 setConnection(connection);
-                // std::cout << "connection: " << connection << std::endl;
+                DEBUG_PRINT("connection: " << connection);
             }
         } 
 		else if (line.find("User-Agent") != std::string::npos) {   
@@ -667,7 +668,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string agents = line.substr(pos_begin, std::string::npos);
                 setUserAgent(agents);
-                // std::cout << "agents: " << agents << std::endl;
+                DEBUG_PRINT("agents: " << agents);
             }
         } 
 		else if (line.find("Accept") != std::string::npos) {
@@ -675,7 +676,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string accept = line.substr(pos_begin, std::string::npos);
                 setAccept(accept);
-                // std::cout << "accept: " << accept << std::endl;
+                DEBUG_PRINT("accept: " << accept);
             }
         } 
 		else if (line.find("Referer") != std::string::npos) {
@@ -683,7 +684,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string referer = line.substr(pos_begin, std::string::npos);
                 setReferer(referer);
-                // std::cout << "referer: " << referer << std::endl;
+                DEBUG_PRINT("referer: " << referer);
             }
         } 
 		else if (line.find("Accept-Encoding") != std::string::npos) {
@@ -691,7 +692,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string encoding = line.substr(pos_begin, std::string::npos);
                 setAcceptEncoding(encoding);
-                // std::cout << "encoding: " << encoding << std::endl;
+                DEBUG_PRINT("encoding: " << encoding);
             }
         } 
 		else if (line.find("Accept-Language") != std::string::npos) {
@@ -699,7 +700,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                 pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
                 std::string languages = line.substr(pos_begin, std::string::npos);
                 setAcceptLanguage(languages);
-                // std::cout << "languages: " << languages << std::endl;
+                DEBUG_PRINT("languages: " << languages);
             }
         } 
         // content related (only applicable to POST and DEL)
@@ -710,23 +711,18 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                 std::string cttype = trimString(line.substr(pos_begin, pos_end - pos_begin));
                 setContentType(cttype);
                 if (line.find("boundary") != std::string::npos) {
-					std::cout << "check0\n";
                     pos_begin = line.find("boundary") + 8;
                     pos_begin = line.find_first_of("=", pos_begin);
                     if (pos_begin != std::string::npos) {
                         pos_begin++;
                         pos_begin = line.find_first_not_of(" \t", pos_begin); 
-                        std::cout << "check1\n";
                         std::string boundary = trimString(line.substr(pos_begin, std::string::npos));
-                        std::cout << "check2\n";
                         if (!boundary.empty() && (boundary[0] == '"' || boundary[0] == '\'')) {
                             size_t quote_end = boundary.find_first_of("\"'", 1);
                             if (quote_end != std::string::npos) {
                                 boundary = trimString(boundary.substr(1, quote_end - 1));
-								std::cout << "check3\n";
                             } else {
                                 boundary = trimString(boundary.substr(1));
-								std::cout << "check4\n";
                             }
                         }
                         
@@ -734,12 +730,10 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                         if (end_pos != std::string::npos) {
                             boundary = trimString(boundary.substr(0, end_pos + 1));
                         }
-						std::cout << "check5\n";
                         setBoundary(boundary);
 						setCDFlag(true);
                     }
                 }
-				std::cout << "check6\n";
             }
         } 
 		else if (line.find("Content-Length") != std::string::npos) {
@@ -748,17 +742,21 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
                 std::string length = trimString(line.substr(pos_begin));
                 int len = atoi(length.c_str());
 				setContentLength(len);
+				DEBUG_PRINT("content_length: " << len);
 				content_.setContentLength(len);
             }
         } 
     }
+	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "PARSE REQUEST HEADER EXITED" RESET);
 }
 
 // Ensure the function is defined outside the class scope
 void HTTPRequest::parseRequestLine(const std::string& request_line) {
+	DEBUG_PRINT(BOLD UNDERLINE BG_YELLOW BLACK "PARSE REQUEST LINE CALLED" RESET);
 	std::string method, request_uri, version;
 	std::istringstream stream(request_line);
 	stream >> method >> request_uri >> version;
+	DEBUG_PRINT("Raw request line: " << request_line);
 
 	// Split path and query
 	size_t pos = request_uri.find('?');
@@ -767,12 +765,15 @@ void HTTPRequest::parseRequestLine(const std::string& request_line) {
 		std::string query = request_uri.substr(pos + 1);
 		setPath(path);
 		setQueryStr(query);
+		DEBUG_PRINT("Path: " << path << ", Query: " << query);
 	} else {
 		setPath(request_uri);
 		setQueryStr("");
 	}
 	setMet(method);
 	setVersion(version);
+	DEBUG_PRINT("Method: " << method << ", version: " << version);
+	DEBUG_PRINT(BOLD UNDERLINE BG_YELLOW BLACK "PARSE REQUEST LINE EXITED" RESET);
 }
 
 
@@ -781,11 +782,11 @@ void HTTPRequest::parseRequestLine(const std::string& request_line) {
 void HTTPRequest::parseRequest(const std::string& request){
 	std::istringstream stream(request);
 	std::string request_line;
-	std::cout << "\nREQUEST RECEIVED\n" << request << "\n" << std::endl;
-	std::cout << "[DEBUG] Starting parsing \n";
+	DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE REQUEST STARTED\n---------------------\n---------------------\n" RESET);
 	std::getline(stream, request_line);
 	parseRequestLine(request_line); //dry method, uri, ver
-	parseRequestHeader(stream); 
+	parseRequestHeader(stream);
+	DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE REQUEST EXITED\n---------------------\n---------------------\n" RESET);
 	// should modify it 
 	//-note: the ServerManger::readRequestBody already 
 	//calling parseContent, but it do again in parseRequestHeader

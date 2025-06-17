@@ -44,7 +44,10 @@ function uploadFile(name){
                 uploadedArea.insertAdjacentHTML("afterbegin", errorHTML);
                 
             } else if (xhr.status >= 400) {
-                // Handle other errors - redirect to error page
+                progressArea.innerHTML = "";
+                uploadedArea.classList.remove("onprogress");
+                
+                // Replace the entire page with server's error page
                 document.body.innerHTML = xhr.responseText;
             }
             // Success case is handled in the progress event below
@@ -113,13 +116,19 @@ uploadedArea.addEventListener("click", function(e) {
     if (e.target.classList.contains("delete-btn")) {
         const btn = e.target;
         const filename = btn.getAttribute("data-filename");
-        fetch(`/upload/${filename}`, { method: "DELETE" })
+        
+        fetch(`/upload/storage/${filename}`, { method: "DELETE" })
             .then(res => {
                 if (res.ok) {
                     btn.closest(".row").remove();
+                    console.log("Delete success");
+                    alert("Delete success!");
                 } else {
-                    alert("Failed to delete file.");
+                    throw new Error("Failed to delete file");
                 }
+            })
+            .catch(error => {
+                alert("Failed to delete file: " + error.message);
             });
     }
 });

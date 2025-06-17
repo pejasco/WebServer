@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: cofische <cofische@student.42.fr>          +#+  +:+       +#+         #
+#    By: cofische <cofische@student.42london.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/24 01:20:10 by ssottori          #+#    #+#              #
-#    Updated: 2025/06/05 14:09:56 by cofische         ###   ########.fr        #
+#    Updated: 2025/06/17 18:33:02 by cofische         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,7 +20,9 @@ NC = \033[0m
 # ======================= COMPILER ======================
 NAME = webserv
 CXX = clang++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 
+USUAL_MODE = -DNDEBUG # silent the debug flag to not print any debug statement
+DEBUG_MODE = -DDEBUG -g -O0 #-fsanitize=address # -O0 => preserve the source code so no optimization and it is executed as written in same order
 RM = rm -rf
 
 # ======================= DIRS/FILES ====================
@@ -50,6 +52,7 @@ CGI_SRC_FILES = CGI/cgi_test.cpp \
 	  $(CGI_SRC)/returnOutput.cpp \
 
 INC = $(INC_DIR)/Colors.hpp \
+	  $(INC_DIR)/Debug.hpp \
 	  $(INC_DIR)/Webserver.hpp \
 	  $(INC_DIR)/Socket.hpp \
 	  $(INC_DIR)/Server.hpp \
@@ -73,11 +76,19 @@ OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o) $(CGI_OBJ)
 # ======================= RULES =========================
 all: $(NAME)
 
-$(NAME): banner $(OBJ) $(CGI_OBJ)
+$(NAME): CXXFLAGS += $(USUAL_MODE)
+$(NAME): fclean banner $(OBJ) $(CGI_OBJ)
 	@$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
 	@echo "${BLUE}===============================${NC}"
 	@echo "${NC}"
 	@echo "[${GREEN}WEBSERV${NC}] Executable ${BLUE}$(NAME)${NC} created!"
+
+debug: CXXFLAGS += $(DEBUG_MODE)
+debug: fclean banner $(OBJ) $(CGI_OBJ)
+	@$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
+	@echo "${BLUE}===============================${NC}"
+	@echo "${NC}"
+	@echo "[${GREEN}WEBSERV${NC}] Debugging Executable ${BLUE}$(NAME)${NC} created!"
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
@@ -100,7 +111,7 @@ fclean: clean
 re: fclean all
 
 leaks:
-	valgrind --leak-check=full ./$(NAME)
+	valgrind --leak-check=full --show-leak-kinds=all --log-file=DEBUG/valgrind.txt ./$(NAME)
 
 banner:
 	@echo "${BLUE}"
@@ -113,5 +124,5 @@ banner:
 	@echo "              BY: cofische | chuleung | sottori"
 	@echo "${NC}"
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re debug
 

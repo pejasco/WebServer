@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:03:14 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/10 11:24:44 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/17 12:31:20 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ Socket::Socket() {};
 
 Socket::Socket(const std::string &serverIP, const std::string &serverPort) : status_(-1), socket_fd_(-1), error_(1) {
 	//defining the add structure with info received from constructor
+	result_ = NULL;
 	memset(&hints_, 0, sizeof(hints_));
 	hints_.ai_family = AF_UNSPEC;      // Either IPv4 or IPv6
 	hints_.ai_socktype = SOCK_STREAM;  // TCP
@@ -25,12 +26,13 @@ Socket::Socket(const std::string &serverIP, const std::string &serverPort) : sta
 	status_ = getaddrinfo(serverIP.c_str(), serverPort.c_str(), &hints_, &result_);
 	if (status_ == 0) {
 		if (!setSocketFd()) {
-			std::cout << strerror(errno) << std::endl;
+			std::cerr << BOLD RED "Error: " << strerror(errno) << RESET << std::endl;
 			error_ = 0;
 		}
 			
 	}
-	freeaddrinfo(result_);
+	if (result_)
+		freeaddrinfo(result_);
 };
 
 Socket::~Socket() {
@@ -45,36 +47,27 @@ Socket::~Socket() {
 int Socket::setSocketFd() {
 	for (rp_ = result_; rp_ != NULL; rp_ = rp_->ai_next) {
 		if (rp_ == NULL) {
-			std::cout << BOLD RED "Binding impossible" << RESET "\n";
+			std::cerr << BOLD RED "Error: Binding impossible\n" << RESET;
 			return 0;
 		}
 		socket_fd_ = socket(rp_->ai_family, rp_->ai_socktype, rp_->ai_protocol);
-		/*DEBUGGING FOR IP VERSION*/
-		// if (rp_->ai_family == AF_INET) {
-			// std::cout << "Creating IPv4 socket" << std::endl;
-			// IPv4-specific code if needed
-		// } else if (rp_->ai_family == AF_INET6) {
-			// std::cout << "Creating IPv6 socket" << std::endl;
-			// IPv6-specific code if needed
-		// }
-		/*DEBUGGING FOR IP VERSION*/
 		if (socket_fd_ == -1) {
-			std::cout << "socketing failed\n";
+			std::cerr << BOLD RED "Error: socketing failed\n" RESET;
 			return 0;
 		}
 		int opt = 1;
 		if (setsockopt(socket_fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) > 0) {
 				close(socket_fd_);
-				std::cout << "setsockopt failed\n";
+				std::cerr << BOLD RED "Error: setsockopt failed\n" RESET;
 				return 0;
 		}
 		if (bind(socket_fd_, rp_->ai_addr, rp_->ai_addrlen) < 0) {
-			std::cerr << "binding failed " << strerror(errno) << "\n";
+			std::cerr << BOLD RED "Error: binding failed\n" RESET;
 			return 0;
 		}
 		if (listen(socket_fd_, 1000000) < 0) {
 			close(socket_fd_);
-			std::cout << "listening failed\n";
+			std::cerr << BOLD RED "Error: listening failed\n" RESET;
 			return 0; 
 		}
 	}
