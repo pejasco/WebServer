@@ -1,2 +1,0 @@
-curl -i -s --connect-timeout 2 --max-time 2 http://localhost:3021/
---END-REQUEST--
