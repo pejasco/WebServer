@@ -71,13 +71,25 @@ print("""
 			color: limegreen;
 			margin-top: 6px;
 		}
+		.homepage {
+			position: absolute;
+			top: 10px;
+			left: 10px; /* Or use right: 10px; for right side */
+			padding: 10px 16px;
+			background-color: #003344;
+			color: #00ffe7;
+			border: 1px solid #00ffe7;
+			border-radius: 8px;
+			font-size: 1rem;
+			cursor: pointer;
+		}
 	</style>
 </head>
 <body>
 	<br><br><br><br><br><br><br><br><br>
 	<h1>🎂 Birthday Countdown 🎉</h1>
 	<div class="method">GET</div>
-	<button onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button>
+	<button class="homepage"<button onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button></button>
 	<br><br><br>
 """)
 
@@ -97,6 +109,7 @@ if day and month:
 		<img src="https://media2.giphy.com/media/RkN33Se0a99r6pMiZi/giphy.gif" class="confettir" alt="Celebration" />
 		</div>
 		<img src="https://media.giphy.com/media/l0IyaxKjZqenpMIQ8/giphy.gif" class="shaq" alt="Floating cake" />
+		<button class="homepage"<button onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button></button>
 		""")
 	except ValueError:
 		print("<p style='color: red;'>Invalid date. Please try again.</p>")
