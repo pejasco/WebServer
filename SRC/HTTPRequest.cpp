@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/17 12:45:23 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/18 08:52:55 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,10 @@ Accept::~Accept(){}
 
 //<<HTTPRequest>>
 HTTPRequest::HTTPRequest() : instance_index_(global_index_++),
-	cgi_flag_(false), content_length_(0), with_file_flag_(false) {}
+	cgi_flag_(false), content_length_(0), with_file_flag_(false) {
+	boundary_ = "";
+	open_boundary_ = "";
+}
 
 HTTPRequest::~HTTPRequest(){}
 
@@ -36,7 +39,7 @@ HTTPRequest::~HTTPRequest(){}
 //Setters
 
 void HTTPRequest::setContentLength(int length) {
-    content_length_ = length;
+	content_length_ = length;
 }
 
 void HTTPRequest::setContentFlag(const bool flag){
@@ -255,27 +258,27 @@ void HTTPRequest::setBoundary(const std::string& boundary){
 	DEBUG_PRINT("setBoundary() called");
 	boundary_ = boundary;
 	DEBUG_PRINT("Printing boundary: " << boundary);
-    setOpenBoundary(("--" + boundary_));
-    setCloseBoundary((open_boundary_ + "--"));
+	setOpenBoundary(("--" + boundary_));
+	setCloseBoundary((open_boundary_ + "--"));
 	DEBUG_PRINT("Open_boundary: " << open_boundary_ << ", close_boundary: " << close_boundary_);
 
-    content_.setBoundary(boundary_);
-    content_.setOpenBoundary(open_boundary_);
-    content_.setCloseBoundary(close_boundary_);
+	content_.setBoundary(boundary_);
+	content_.setOpenBoundary(open_boundary_);
+	content_.setCloseBoundary(close_boundary_);
 
 }
 
 
 void HTTPRequest::setContentType(std::string contentType){
-    std::istringstream ss(contentType);
-    std::string type;
-    std::string value;
+	std::istringstream ss(contentType);
+	std::string type;
+	std::string value;
 
-    std::getline(ss, type, '/');
-    std::getline(ss, value);
-    content_type_[type] = value;
+	std::getline(ss, type, '/');
+	std::getline(ss, value);
+	content_type_[type] = value;
 	DEBUG_PRINT("setContentType() called\ncontent_type_[" << type << "] = " << value);
-    
+	
 }
 
 void HTTPRequest::setCDFlag(bool flag){
@@ -329,7 +332,7 @@ const std::pair<std::string, std::string>& HTTPRequest::getAuthorisation(){
 }
 
 Content& HTTPRequest::getContent() {
-    return content_;
+	return content_;
 }
 
 const Content& HTTPRequest::getContent() const{
@@ -349,15 +352,15 @@ bool HTTPRequest::getIsInTheBody() {
 }
 
 const std::string HTTPRequest::getBoundary() const{
-    return boundary_;
+	return boundary_;
 }
 
 const std::string HTTPRequest::getOpenBoundary() const{
-    return open_boundary_;
+	return open_boundary_;
 }
 
 const std::string HTTPRequest::getCloseBoundary() const{
-    return close_boundary_;
+	return close_boundary_;
 }
 
 bool  HTTPRequest::getCDFlag(){
@@ -365,7 +368,7 @@ bool  HTTPRequest::getCDFlag(){
 }
 
 std::string HTTPRequest::getRawBody() const {
-    return raw_body_;
+	return raw_body_;
 }
 
 //Parser
@@ -537,96 +540,95 @@ std::string HTTPRequest::getRawBody() const {
 // }
 
 void HTTPRequest::parseContent(const std::string& body) {
-	DEBUG_PRINT(BOLD UNDERLINE BLACK BG_WHITE "PARSE CONTENT CALLED" RESET);
 
-    if (open_boundary_.empty()){
+	DEBUG_PRINT(BOLD UNDERLINE BLACK BG_WHITE "PARSE CONTENT CALLED" RESET);
+	
+	if (open_boundary_.empty()){
 		content_.setBodyWithNoCD(body);
 		DEBUG_PRINT("no boundary");
 		return;
 	}
+	
 	size_t pos = 0;
-    while (true) {
-        size_t boundary_start = body.find(open_boundary_, pos);
-        if (boundary_start == std::string::npos)
-            break;
-        boundary_start += open_boundary_.size();
+	while (true) {
+		size_t boundary_start = body.find(open_boundary_, pos);
+		if (boundary_start == std::string::npos)
+			break;
+		boundary_start += open_boundary_.size();
+		if (body.substr(boundary_start, 2) == "\r\n")
+			boundary_start += 2;
+		size_t headers_end = body.find("\r\n\r\n", boundary_start);
+		if (headers_end == std::string::npos)
+			break;
+		std::string headers = body.substr(boundary_start, headers_end - boundary_start);
+		std::istringstream header_stream(headers);
+		std::string header_line;
+		content_.addContentDisposition();
+		ContentDisposition_ &last_cd = content_.getCDs().back();
+		with_file_flag_ = false;
+		while (std::getline(header_stream, header_line)) {
+			if (header_line.find("Content-Disposition:") != std::string::npos) {
+				size_t pos_begin, pos_end;
+				if ((pos_begin = header_line.find(':')) != std::string::npos) {
+					pos_begin++;
+					pos_begin = header_line.find_first_not_of(" \t", pos_begin);
+					if (pos_begin != std::string::npos) {
+						pos_end = header_line.find(";", pos_begin);
+						std::string type;
+						if (pos_end != std::string::npos)
+							type = trimString(header_line.substr(pos_begin, pos_end - pos_begin));
+						else
+							type = trimString(header_line.substr(pos_begin));
+						last_cd.CD_type_ = type;
+					}
+				}
+				if (header_line.find("name") != std::string::npos) {
+					if ((pos_begin = header_line.find("name")) != std::string::npos) {
+						pos_begin = (header_line.find("\"", pos_begin)) + 1;
+						pos_end = (header_line.find("\"", pos_begin));
+						std::string name = trimString(header_line.substr(pos_begin, pos_end - pos_begin));
+						last_cd.name_ = name;
+					}
+				}
+				if (header_line.find("filename") != std::string::npos) {
+					if ((pos_begin = header_line.find("filename")) != std::string::npos) {
+						pos_begin = (header_line.find("\"", pos_begin)) + 1;
+						pos_end = (header_line.find("\"", pos_begin));
+						std::string filename = trimString(header_line.substr(pos_begin, pos_end - pos_begin));
+						last_cd.filename_ = filename;
+						with_file_flag_ = true;
+					}
+				}
+			}
+			else if (header_line.find("Content-Type:") != std::string::npos) {
+				size_t pos_begin, pos_end;
+				if ((pos_begin = header_line.rfind(":")) != std::string::npos) {
+					pos_begin = header_line.find_first_not_of(" \t", pos_begin + 1);
+					pos_end = header_line.find(";", pos_begin);
+					std::string inner_cttype = trimString(header_line.substr(pos_begin, pos_end - pos_begin));
+					last_cd.inner_content_type_ = inner_cttype;
+				}
+			}
+		}
 
-        if (body.substr(boundary_start, 2) == "\r\n")
-            boundary_start += 2;
+		size_t content_start = headers_end + 4;
+		size_t next_boundary = body.find(open_boundary_, content_start);
+		if (next_boundary == std::string::npos)
+			next_boundary = body.size();
 
-        size_t headers_end = body.find("\r\n\r\n", boundary_start);
-        if (headers_end == std::string::npos)
-            break;
-        std::string headers = body.substr(boundary_start, headers_end - boundary_start);
+		std::string part_content = body.substr(content_start, next_boundary - content_start);
+		if (part_content.size() >= 2 && part_content.substr(part_content.size() - 2) == "\r\n")
+			part_content.resize(part_content.size() - 2);
 
-        std::istringstream header_stream(headers);
-        std::string header_line;
-        content_.addContentDisposition();
-        ContentDisposition_ &last_cd = content_.getCDs().back();
-        with_file_flag_ = false;
-        while (std::getline(header_stream, header_line)) {
-            if (header_line.find("Content-Disposition:") != std::string::npos) {
-                size_t pos_begin, pos_end;
-                if ((pos_begin = header_line.find(':')) != std::string::npos) {
-                    pos_begin++;
-                    pos_begin = header_line.find_first_not_of(" \t", pos_begin);
-                    if (pos_begin != std::string::npos) {
-                        pos_end = header_line.find(";", pos_begin);
-                        std::string type;
-                        if (pos_end != std::string::npos)
-                            type = trimString(header_line.substr(pos_begin, pos_end - pos_begin));
-                        else
-                            type = trimString(header_line.substr(pos_begin));
-                        last_cd.CD_type_ = type;
-                    }
-                }
-                if (header_line.find("name") != std::string::npos) {
-                    if ((pos_begin = header_line.find("name")) != std::string::npos) {
-                        pos_begin = (header_line.find("\"", pos_begin)) + 1;
-                        pos_end = (header_line.find("\"", pos_begin));
-                        std::string name = trimString(header_line.substr(pos_begin, pos_end - pos_begin));
-                        last_cd.name_ = name;
-                    }
-                }
-                if (header_line.find("filename") != std::string::npos) {
-                    if ((pos_begin = header_line.find("filename")) != std::string::npos) {
-                        pos_begin = (header_line.find("\"", pos_begin)) + 1;
-                        pos_end = (header_line.find("\"", pos_begin));
-                        std::string filename = trimString(header_line.substr(pos_begin, pos_end - pos_begin));
-                        last_cd.filename_ = filename;
-                        with_file_flag_ = true;
-                    }
-                }
-            }
-            else if (header_line.find("Content-Type:") != std::string::npos) {
-                size_t pos_begin, pos_end;
-                if ((pos_begin = header_line.rfind(":")) != std::string::npos) {
-                    pos_begin = header_line.find_first_not_of(" \t", pos_begin + 1);
-                    pos_end = header_line.find(";", pos_begin);
-                    std::string inner_cttype = trimString(header_line.substr(pos_begin, pos_end - pos_begin));
-                    last_cd.inner_content_type_ = inner_cttype;
-                }
-            }
-        }
+		if (with_file_flag_)
+			last_cd.file_content_ = part_content;
+		else
+			last_cd.content_ = part_content;
 
-        size_t content_start = headers_end + 4;
-        size_t next_boundary = body.find(open_boundary_, content_start);
-        if (next_boundary == std::string::npos)
-            next_boundary = body.size();
-
-        std::string part_content = body.substr(content_start, next_boundary - content_start);
-        if (part_content.size() >= 2 && part_content.substr(part_content.size() - 2) == "\r\n")
-            part_content.resize(part_content.size() - 2);
-
-        if (with_file_flag_)
-            last_cd.file_content_ = part_content;
-        else
-            last_cd.content_ = part_content;
-
-        pos = next_boundary;
-        if (body.substr(pos, close_boundary_.size()) == close_boundary_)
-            break; 
-    }
+		pos = next_boundary;
+		if (body.substr(pos, close_boundary_.size()) == close_boundary_)
+			break; 
+	}
 	DEBUG_PRINT(BOLD UNDERLINE BLACK BG_WHITE "END PARSE CONTENT" RESET);
 }
 
@@ -636,117 +638,117 @@ void HTTPRequest::parseContent(const std::string& body) {
 
 void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
 	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "PARSE REQUEST HEADER CALLED" RESET);
-    std::string line;
-    size_t pos_begin;
-    size_t pos_end;
-    // size_t pos_end;
+	std::string line;
+	size_t pos_begin;
+	size_t pos_end;
+	// size_t pos_end;
 	
 
-    while (std::getline(stream, line)) {
+	while (std::getline(stream, line)) {
 		trimString(line);
-        if (line.empty()) {
-            return;        
-        } 
+		if (line.empty()) {
+			return;        
+		} 
 		else if (line.find("Host") != std::string::npos) {
-            if ((pos_begin = line.find(":")) != std::string::npos) {
-                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string host = line.substr(pos_begin, std::string::npos);
-                setHost(host);
-                DEBUG_PRINT("Host: " << host);
-            }
-        } 
+			if ((pos_begin = line.find(":")) != std::string::npos) {
+				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+				std::string host = line.substr(pos_begin, std::string::npos);
+				setHost(host);
+				DEBUG_PRINT("Host: " << host);
+			}
+		} 
 		else if (line.find("Connection") != std::string::npos) {
-            if ((pos_begin = line.rfind(":")) != std::string::npos) {
-                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string connection = line.substr(pos_begin, std::string::npos);
-                setConnection(connection);
-                DEBUG_PRINT("connection: " << connection);
-            }
-        } 
+			if ((pos_begin = line.rfind(":")) != std::string::npos) {
+				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+				std::string connection = line.substr(pos_begin, std::string::npos);
+				setConnection(connection);
+				DEBUG_PRINT("connection: " << connection);
+			}
+		} 
 		else if (line.find("User-Agent") != std::string::npos) {   
-            if ((pos_begin = line.rfind(":")) != std::string::npos) {
-                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string agents = line.substr(pos_begin, std::string::npos);
-                setUserAgent(agents);
-                DEBUG_PRINT("agents: " << agents);
-            }
-        } 
+			if ((pos_begin = line.rfind(":")) != std::string::npos) {
+				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+				std::string agents = line.substr(pos_begin, std::string::npos);
+				setUserAgent(agents);
+				DEBUG_PRINT("agents: " << agents);
+			}
+		} 
 		else if (line.find("Accept") != std::string::npos) {
-            if ((pos_begin = line.rfind(":")) != std::string::npos) {
-                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string accept = line.substr(pos_begin, std::string::npos);
-                setAccept(accept);
-                DEBUG_PRINT("accept: " << accept);
-            }
-        } 
+			if ((pos_begin = line.rfind(":")) != std::string::npos) {
+				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+				std::string accept = line.substr(pos_begin, std::string::npos);
+				setAccept(accept);
+				DEBUG_PRINT("accept: " << accept);
+			}
+		} 
 		else if (line.find("Referer") != std::string::npos) {
-            if ((pos_begin = line.rfind(":")) != std::string::npos) {
-                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string referer = line.substr(pos_begin, std::string::npos);
-                setReferer(referer);
-                DEBUG_PRINT("referer: " << referer);
-            }
-        } 
+			if ((pos_begin = line.rfind(":")) != std::string::npos) {
+				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+				std::string referer = line.substr(pos_begin, std::string::npos);
+				setReferer(referer);
+				DEBUG_PRINT("referer: " << referer);
+			}
+		} 
 		else if (line.find("Accept-Encoding") != std::string::npos) {
-            if ((pos_begin = line.rfind(":")) != std::string::npos) {
-                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string encoding = line.substr(pos_begin, std::string::npos);
-                setAcceptEncoding(encoding);
-                DEBUG_PRINT("encoding: " << encoding);
-            }
-        } 
+			if ((pos_begin = line.rfind(":")) != std::string::npos) {
+				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+				std::string encoding = line.substr(pos_begin, std::string::npos);
+				setAcceptEncoding(encoding);
+				DEBUG_PRINT("encoding: " << encoding);
+			}
+		} 
 		else if (line.find("Accept-Language") != std::string::npos) {
-            if ((pos_begin = line.rfind(":")) != std::string::npos) {
-                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string languages = line.substr(pos_begin, std::string::npos);
-                setAcceptLanguage(languages);
-                DEBUG_PRINT("languages: " << languages);
-            }
-        } 
-        // content related (only applicable to POST and DEL)
-        else if (line.find("Content-Type") != std::string::npos) {
-            if ((pos_begin = line.rfind(":")) != std::string::npos) {
-                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                pos_end = line.find(";");
-                std::string cttype = trimString(line.substr(pos_begin, pos_end - pos_begin));
-                setContentType(cttype);
-                if (line.find("boundary") != std::string::npos) {
-                    pos_begin = line.find("boundary") + 8;
-                    pos_begin = line.find_first_of("=", pos_begin);
-                    if (pos_begin != std::string::npos) {
-                        pos_begin++;
-                        pos_begin = line.find_first_not_of(" \t", pos_begin); 
-                        std::string boundary = trimString(line.substr(pos_begin, std::string::npos));
-                        if (!boundary.empty() && (boundary[0] == '"' || boundary[0] == '\'')) {
-                            size_t quote_end = boundary.find_first_of("\"'", 1);
-                            if (quote_end != std::string::npos) {
-                                boundary = trimString(boundary.substr(1, quote_end - 1));
-                            } else {
-                                boundary = trimString(boundary.substr(1));
-                            }
-                        }
-                        
-                        size_t end_pos = boundary.find_last_not_of(" \t;");
-                        if (end_pos != std::string::npos) {
-                            boundary = trimString(boundary.substr(0, end_pos + 1));
-                        }
-                        setBoundary(boundary);
+			if ((pos_begin = line.rfind(":")) != std::string::npos) {
+				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+				std::string languages = line.substr(pos_begin, std::string::npos);
+				setAcceptLanguage(languages);
+				DEBUG_PRINT("languages: " << languages);
+			}
+		} 
+		// content related (only applicable to POST and DEL)
+		else if (line.find("Content-Type") != std::string::npos) {
+			if ((pos_begin = line.rfind(":")) != std::string::npos) {
+				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+				pos_end = line.find(";");
+				std::string cttype = trimString(line.substr(pos_begin, pos_end - pos_begin));
+				setContentType(cttype);
+				if (line.find("boundary") != std::string::npos) {
+					pos_begin = line.find("boundary") + 8;
+					pos_begin = line.find_first_of("=", pos_begin);
+					if (pos_begin != std::string::npos) {
+						pos_begin++;
+						pos_begin = line.find_first_not_of(" \t", pos_begin); 
+						std::string boundary = trimString(line.substr(pos_begin, std::string::npos));
+						if (!boundary.empty() && (boundary[0] == '"' || boundary[0] == '\'')) {
+							size_t quote_end = boundary.find_first_of("\"'", 1);
+							if (quote_end != std::string::npos) {
+								boundary = trimString(boundary.substr(1, quote_end - 1));
+							} else {
+								boundary = trimString(boundary.substr(1));
+							}
+						}
+						
+						size_t end_pos = boundary.find_last_not_of(" \t;");
+						if (end_pos != std::string::npos) {
+							boundary = trimString(boundary.substr(0, end_pos + 1));
+						}
+						setBoundary(boundary);
 						setCDFlag(true);
-                    }
-                }
-            }
-        } 
+					}
+				}
+			}
+		} 
 		else if (line.find("Content-Length") != std::string::npos) {
-            if ((pos_begin = line.rfind(":")) != std::string::npos) {
-                pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
-                std::string length = trimString(line.substr(pos_begin));
-                int len = atoi(length.c_str());
+			if ((pos_begin = line.rfind(":")) != std::string::npos) {
+				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
+				std::string length = trimString(line.substr(pos_begin));
+				int len = atoi(length.c_str());
 				setContentLength(len);
 				DEBUG_PRINT("content_length: " << len);
 				content_.setContentLength(len);
-            }
-        } 
-    }
+			}
+		} 
+	}
 	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "PARSE REQUEST HEADER EXITED" RESET);
 }
 
