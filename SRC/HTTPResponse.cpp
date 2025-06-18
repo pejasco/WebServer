@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/17 18:26:51 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/18 11:21:49 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,7 +186,7 @@ int HTTPResponse::createUploadFile(std::string& upload_dir, Content& content){
 	std::string filename = it->filename_;
 	std::string file_content = it->file_content_;
 	std::string filepath = upload_dir + "/" + filename;
-	DEBUG_PRINT("new filename from CDs: " << filename << ", file_content: " << file_content);
+	DEBUG_PRINT("new filename from CDs: " << filename << ", file_content: " << file_content.size());
 	DEBUG_PRINT("File upload created at: " << filepath);
 	
 	std::ofstream file(filepath.c_str(), std::ios::binary);
@@ -319,7 +319,7 @@ void HTTPResponse::setErrorResponse(int error_code) {
 }
 
 void HTTPResponse::draftRedirectResponse() {
-	std::cout << "error: error-file " << body_filename_ << " doesn't exist\n";
+	DEBUG_PRINT("error: error-file " << body_filename_ << " doesn't exist");
 	status_line_ = current_request_.getVersion() + " 301 Moved Permanently\r\n";
 	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: 0\r\nConnection: close\r\nLocation: " + location_->getRedirectURL() + "\r\n";
 	response_ = status_line_ + header_ + empty_line_;
@@ -328,7 +328,7 @@ void HTTPResponse::draftRedirectResponse() {
 }
 
 void HTTPResponse::draftErrorResponse() {
-	std::cout << "error: error-file " << body_filename_ << " doesn't exist\n";
+	DEBUG_PRINT("error: error-file " << body_filename_ << " doesn't exist");
 	body_msg_ = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
 	status_line_ = current_request_.getVersion() + " 500 Internal server error\r\n";
 	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(body_msg_.size()) + "\r\nConnection: close\r\n";
@@ -484,7 +484,7 @@ void HTTPResponse::CGI_Body() {
 		return;
 	}
 
-	std::cout << "uri: " << scriptPath << ", script name: " << script_name <<std::endl;
+	DEBUG_PRINT("uri: " << scriptPath << ", script name: " << script_name);
 	// Strip query string from URI to get actual script file path
 	size_t qmark = scriptPath.find('?');
 	if (qmark != std::string::npos) {
@@ -541,7 +541,7 @@ void HTTPResponse::CGI_Body() {
 		body_filename_.clear();
 	} else {
 		// fallback response, in case headers were missing
-		std::cout << "[CGI] headers not available\n";
+		DEBUG_PRINT(" headers not available");
 		response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;
 	}
 	_response_ready_ = true;

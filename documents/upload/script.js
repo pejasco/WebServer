@@ -11,17 +11,18 @@ fileInput.onchange = ({target}) =>{
     // console.log(target.files);
     let file = target.files[0]; //getting file and [0] this means if user has selected multiples files the
     if (file){ //if file is selected
-        let fileName = file.name; //getting selected file name
-        if(fileName.length >= 12){ //if filename length is greater or equal to 12 the split that name and add ...
-            let splitName = fileName.split('.');
-            fileName = splitName[0].substring(0, 12) + "... ." + splitName[1];
+        let shortFileName = file.name; //getting selected file name
+        let fullFileName = file.name;
+        if(fullFileName.length >= 12){ //if filename length is greater or equal to 12 the split that name and add ...
+            let splitName = shortFileName.split('.');
+            shortFileName = splitName[0].substring(0, 12) + "... ." + splitName[1];
 
         }
-        uploadFile(fileName);//calling uploadFile with passing file name as an argument
+        uploadFile(fullFileName, shortFileName);//calling uploadFile with passing file name as an argument
     }
 }
 
-function uploadFile(name){
+function uploadFile(fullName, shortName){
     let xhr = new XMLHttpRequest(); //creating new xml obj (AJAX)
     xhr.open("POST", "http://localhost:9000/upload"); //sending post request to the specified URL/File
 
@@ -37,7 +38,7 @@ function uploadFile(name){
                                     <i class="fas fa-exclamation-triangle" style="color: red;"></i>
                                     <div class="content">
                                         <div class="details">
-                                            <span class="name" style="color: red;">${name} · File Too Large!</span>
+                                            <span class="name" style="color: red;">${shortName} · File Too Large!</span>
                                         </div>
                                     </div>
                                 </li>`;
@@ -68,7 +69,7 @@ function uploadFile(name){
                                 <i class="fas fa-file-alt"></i>
                                 <div class="content">
                                 <div class="details">
-                                    <span class="name">${name} · Uploading</span>
+                                    <span class="name">${shortName} · Uploading</span>
                                     <span class="percent">${fileLoaded}</span>
                                 </div>
                                 <div class="progress-bar">
@@ -85,11 +86,11 @@ function uploadFile(name){
                                     <div class="content">
                                         <i class="fas fa-file-alt"></i>
                                         <div class="details">
-                                            <span class="name">${name} · Uploaded</span>
+                                            <span class="name">${shortName} · Uploaded</span>
                                             <span class="size">${fileSize}</span>
                                         </div>
                                     </div>
-                                            <button class="delete-btn" data-filename="${name}" title="Delete">Del</button>
+                                            <button class="delete-btn" data-filename="${fullName}" title="Delete">Del</button>
                                 </li>`;
             
             // uploadedArea.innerHTML = uploadedHTML; yoyo
@@ -122,6 +123,7 @@ uploadedArea.addEventListener("click", function(e) {
                 if (res.ok) {
                     btn.closest(".row").remove();
                     console.log("Delete success");
+                    fileInput.value = '';
                     alert("Delete success!");
                 } else {
                     throw new Error("Failed to delete file");

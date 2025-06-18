@@ -3,14 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   returnOutput.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/17 22:08:37 by ssottori          #+#    #+#             */
-/*   Updated: 2025/05/21 16:50:46 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/18 11:08:32 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "returnOutput.hpp"
+#include "../../INC/utils/Debug.hpp"
+#include "../../INC/utils/Colors.hpp"
 
 void ReturnOutput::parseOutput()
 {
