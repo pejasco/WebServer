@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 14:32:36 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/18 21:41:55 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/Server.hpp"
+#include "../INC/MasterHeader.hpp"
 
 /************************/
 /*CONSTRUCTOR/DESTRUCTOR*/
@@ -36,14 +37,21 @@ void Server::setIP(const std::string &input_IP) {
 	else
 		IP_ = input_IP;
 };
+
 void Server::setPort(const std::string &input_port) {
 	std::stringstream ss(input_port);
 	std::string token;
 
 	while (std::getline(ss, token, ' ')) {
+		// for (std::vector<std::string>::iterator it = port_.begin(); 
+		// 	it !=port_.end(); ++it){
+		// 		if (*it == token){
+		// 			exit(1); 
+		// }  
 		port_.push_back(token);
 	}
 };
+
 void Server::setErrorList(const std::string &input_error_directory) {
 	std::stringstream ss(input_error_directory);
 	std::string directory;
