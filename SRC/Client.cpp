@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 11:54:15 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/17 16:17:09 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/18 08:20:36 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,20 +47,20 @@ Client::~Client() {
 }
 
 void Client::setResponse(HTTPResponse* response) {
-	if (current_response) {
+	if (current_response != response) {
 		delete current_response;
+		current_response = response;
 	}
-	current_response = response;
 	file_sending_complete = true;
 }
 
 void Client::setRequest(HTTPRequest *request) {
-	if (current_request) {
-		delete current_request;
-	}
-	current_request = request;
-	
+    if (current_request != request) {
+        delete current_request;
+        current_request = request;
+    }
 }
+
 
 int Client::getClientFd() {
 	return client_fd_;
@@ -84,10 +84,6 @@ bool Client::getError() {
 
 void Client::resetForNextRequest() {
     DEBUG_PRINT(BOLD RED "Client::resetForNextRequest() called" RESET);
-	// if (current_request)
-	// 	delete current_request;
-	// if (current_response)
-	// 	delete current_request;
     header_buffer.clear();
     body_buffer.clear();
     headers_string.clear();

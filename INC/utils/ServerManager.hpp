@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/16 15:42:00 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/18 08:02:44 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ class ServerManager {
 		int readRequestBody(size_t content_length, size_t max_body_size);
 		void processAndSendResponse(Server *server_requested, Location *location_requested);
 		bool sendResponseBodyFile();
-		
+		void cleanHTTPElement(int current_fd_);
 
 		
 	private:

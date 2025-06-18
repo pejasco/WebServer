@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/10 15:04:25 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/18 08:53:12 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,14 +120,13 @@ class HTTPRequest {
 		std::map<std::string, std::string> getHeaders() const;
 		void setQueryStr(const std::string& query);
 
-
-
+		//debug
+		
 	private:
 		static int global_index_; //dun know if it is useful
 		int instance_index_;
 		MET method_;
 		; //new only in Http request
-
 
 	// Common (GET, DELETE)
 		std::string path_; // / //path/file.html

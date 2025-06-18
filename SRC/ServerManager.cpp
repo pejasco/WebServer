@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/17 18:00:33 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/18 08:50:28 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -458,6 +458,10 @@ void ServerManager::existingClientConnection() {
 		DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
 		return;
 	}
+
+	if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
+    	DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
+	}	
 	
 	uint32_t current_events = events_[client_id_].events;
 	DEBUG_PRINT("Client [" << client_id_ << "]: " << client->state << ", file_sending_complete: " << client->file_sending_complete);
@@ -485,6 +489,7 @@ void ServerManager::existingClientConnection() {
 			DEBUG_PRINT( BOLD YELLOW "EPOLLOUT ready" RESET);
 			if (sendResponseBodyFile()) {
 				DEBUG_PRINT("File sending completed, resetting client");
+				cleanHTTPElement(current_fd_);
 				client->resetForNextRequest();
 			}
 			DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
@@ -538,6 +543,7 @@ void ServerManager::existingClientConnection() {
 			int epoll_result = epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, current_fd_, &event);
 			DEBUG_PRINT("epoll_ctl result: " << epoll_result);
 			(void)epoll_result;
+			cleanHTTPElement(current_fd_);
 			client->resetForNextRequest();
 			DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
             return;
@@ -559,6 +565,7 @@ void ServerManager::existingClientConnection() {
 			DEBUG_PRINT("epoll_ctl result: " << epoll_result);
 			(void)epoll_result;
 			DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
+			cleanHTTPElement(current_fd_);
             client->resetForNextRequest();
         }
         return;
@@ -588,12 +595,17 @@ void ServerManager::existingClientConnection() {
 					DEBUG_PRINT("Header parsing failed, closing connection");
 					if (current_fd_ > 0) 
 						close(current_fd_);
+					cleanHTTPElement(current_fd_);
+					client->resetForNextRequest();
 					DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
 					return;
 				}
 				
 				int content_length = client->current_request->getContentLength();
 				DEBUG_PRINT("Content-Length: " << content_length);
+				if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
+    				DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
+				}	
 				if (content_length > 0 && error_code_ < 0) {
 					client->expected_content_length = content_length;
 					client->state = CLIENT_READING_BODY;
@@ -611,6 +623,9 @@ void ServerManager::existingClientConnection() {
 				
 			case CLIENT_READING_BODY: {
 				DEBUG_PRINT(BOLD CYAN "State: CLIENT_READING_BODY" RESET);
+				if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
+    				DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
+				}	
 				int result = readRequestBody(client->expected_content_length, client->max_body_size);
 				DEBUG_PRINT("readRequestBody() returned: " << result);
 				if (result == 1) {
@@ -622,6 +637,8 @@ void ServerManager::existingClientConnection() {
 					DEBUG_PRINT("Error reading body, closing connection");
 					if (current_fd_ > 0) 
 						close(current_fd_);
+					cleanHTTPElement(current_fd_);
+					client->resetForNextRequest();
 					DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
 					return;
 				} else
@@ -636,14 +653,6 @@ void ServerManager::existingClientConnection() {
 		}
 	} else {
 		DEBUG_PRINT(BOLD "No EPOLLIN event, nothing to process" RESET);
-	}
-	if (client->current_request) {
-		delete client->current_request;
-		client->current_request = NULL;
-	}
-	if (client->current_response) {
-		delete client->current_response;
-		client->current_response = NULL;
 	}
 	DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
 }
@@ -688,7 +697,7 @@ bool ServerManager::readClientHeaders() {
 	// Check for end of headers
 	size_t header_end = client->header_buffer.find("\r\n\r\n");
 	if (header_end != std::string::npos) {
-		DEBUG_PRINT("Found end of headers at position: " << header_end);
+		DEBUG_PRINT("Found end of headers at position: " BOLD << header_end << RESET);
 		client->headers_string = client->header_buffer.substr(0, header_end + 4);
 		size_t body_start = header_end + 4;
 		if (body_start < client->header_buffer.length()) {
@@ -727,8 +736,9 @@ bool ServerManager::parseHeadersAndCheckBodySize() {
 		return false;
 	}
 	HTTPRequest* http_request = new HTTPRequest();
-	http_request->parseRequest(client->headers_string);
 	client->setRequest(http_request);
+	client->current_request->parseRequest(client->headers_string);
+	
 	
 	// Server/location resolution - done once here
 	DEBUG_PRINT(BOLD GREEN "URL MATCHING INFORMATION FOR HEADER SENDING" RESET);
@@ -773,6 +783,9 @@ bool ServerManager::parseHeadersAndCheckBodySize() {
 	
 	DEBUG_PRINT("parseHeadersAndCheckBodySize() completed successfully");
 	DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "parseHeadersAndCheckBodySize() exited" RESET);
+	if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
+    	DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
+	}	
 	return true;
 }
 
@@ -837,6 +850,10 @@ int ServerManager::readRequestBody(size_t content_length, size_t max_body_size) 
 	
 	if (client->body_bytes_read >= content_length) {
 		DEBUG_PRINT("Body reading complete");
+		if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
+    		DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
+		}
+		DEBUG_PRINT("body_buffer size to confirm: " BOLD << client->body_buffer.size() << RESET);
 		client->current_request->parseContent(client->body_buffer);
 		DEBUG_PRINT(BOLD GREEN"URL MATCHING INFORMATION FOR BODY SENDING" RESET);
 		std::string server_IP = getServerIP(current_fd_);
@@ -1080,14 +1097,7 @@ bool ServerManager::cleanClient(int current_fd_) {
 		if (epoll_result == -1) {
 			std::cerr << BOLD RED "Error: epoll_ctl DEL failed: " << strerror(errno) << RESET;
 		}
-		if (delete_client->current_request) {
-			delete delete_client->current_request;
-			delete_client->current_request = NULL;
-		}
-		if (delete_client->current_response) {
-			delete delete_client->current_response;
-			delete_client->current_response = NULL;
-		}
+		cleanHTTPElement(current_fd_);
 		delete delete_client;
 		clients_list_.erase(current_fd_);
 		close(current_fd_);
@@ -1110,4 +1120,16 @@ void ServerManager::shutdown() {
 /* BLOCKING PROBLEMATIC CLIENT ++ OPTION COUNTING STRIKE ATTEMPT*/
 bool ServerManager::isBlocked(const void *IP) {
 	return blocked_clients_list_.find(IP) != blocked_clients_list_.end();
+}
+
+void ServerManager::cleanHTTPElement(int current_fd_) {
+	Client* client = clients_list_[current_fd_];
+	if (client->current_request) {
+		delete client->current_request;
+		client->current_request = NULL;
+	}
+	if (client->current_response) {
+		delete client->current_response;
+		client->current_response = NULL;
+	}
 }
