@@ -6,7 +6,7 @@
 #    By: cofische <cofische@student.42london.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/24 01:20:10 by ssottori          #+#    #+#              #
-#    Updated: 2025/06/17 18:33:02 by cofische         ###   ########.fr        #
+#    Updated: 2025/06/18 11:27:34 by cofische         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -111,7 +111,7 @@ fclean: clean
 re: fclean all
 
 leaks:
-	valgrind --leak-check=full --show-leak-kinds=all --log-file=DEBUG/valgrind.txt ./$(NAME)
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=DEBUG/valgrind.txt ./$(NAME)
 
 banner:
 	@echo "${BLUE}"

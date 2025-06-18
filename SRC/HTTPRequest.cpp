@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/18 08:52:55 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/18 11:19:00 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,7 @@ void HTTPRequest::setPath(const std::string& path) {
 	path_ = path;
 	if (path_.find("cgi-bin") != std::string::npos) // not a good flag as it will considere any pathname that include cgi as a cgi request
 		setCGIFlag(true);
+	path_ = urlDecoder(path_);
 }
 
 void HTTPRequest::setVersion(const std::string& version){
@@ -771,6 +772,7 @@ void HTTPRequest::parseRequestLine(const std::string& request_line) {
 	} else {
 		setPath(request_uri);
 		setQueryStr("");
+		DEBUG_PRINT("Path: " << path_ << ", Query: empty");
 	}
 	setMet(method);
 	setVersion(version);

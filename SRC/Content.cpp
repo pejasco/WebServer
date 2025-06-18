@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 15:10:35 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/18 07:14:49 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/18 09:55:00 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -265,7 +265,7 @@ void Content::printCDsList() const
         DEBUG_PRINT("  filename: [" << it->filename_ << "]");
         DEBUG_PRINT("  inner_content: [" << it->inner_content_type_ << "]");
         DEBUG_PRINT("  content_: [" << it->content_ << "]");
-        DEBUG_PRINT("  file_content_: [" << it->file_content_ << "]");
+        DEBUG_PRINT("  file_content_: [" << it->file_content_.size() << "]");
     }
     DEBUG_PRINT("printCDsList() exited");
 }

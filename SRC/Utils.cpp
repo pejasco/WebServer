@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/17 17:07:26 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/18 10:36:31 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,6 +268,57 @@ std::string getContentType(const std::string &input_extension) {
 			
 	}
 	return "application/octet-stream";
+}
+
+std::string urlDecoder(std::string &url_string) {
+	std::map<std::string, char> url_code;
+	DEBUG_PRINT("ulrDecoder() called");
+	if (url_code.empty()) {
+		url_code["%20"] = ' ';   // Space (most important!)
+        url_code["%21"] = '!';   // Exclamation mark
+        url_code["%22"] = '"';   // Double quote
+        url_code["%23"] = '#';   // Hash/pound
+        url_code["%25"] = '%';   // Percent sign
+        url_code["%26"] = '&';   // Ampersand
+        url_code["%27"] = '\'';  // Single quote/apostrophe
+        url_code["%28"] = '(';   // Left parenthesis
+        url_code["%29"] = ')';   // Right parenthesis
+        url_code["%2B"] = '+';   // Plus sign
+        url_code["%2C"] = ',';   // Comma
+        url_code["%2F"] = '/';   // Forward slash
+        url_code["%3A"] = ':';   // Colon
+        url_code["%3B"] = ';';   // Semicolon
+        url_code["%3D"] = '=';   // Equal sign
+        url_code["%3F"] = '?';   // Question mark
+        url_code["%40"] = '@';   // At symbol
+        url_code["%5B"] = '[';   // Left square bracket
+        url_code["%5D"] = ']';   // Right square bracket
+        url_code["%7B"] = '{';   // Left curly brace
+        url_code["%7D"] = '}';   // Right curly brace
+	}
+	DEBUG_PRINT("url_code map -- checking size and 1st line: " BOLD << url_code.size() << RESET ", " << url_code.begin()->first);
+	std::string ascii_string;
+    for (size_t i = 0; i < url_string.length(); ++i) {
+    	if (url_string[i] == '%' && i + 2 < url_string.length()) {
+    	    std::string code = url_string.substr(i, 3);
+    	    if (code.length() == 3) {
+    	        code[1] = toupper(code[1]);
+    	        code[2] = toupper(code[2]);
+    	    }
+    	    std::map<std::string, char>::const_iterator it = url_code.find(code);
+    	    if (it != url_code.end()) {
+    	        ascii_string += it->second;
+    	        i += 2;
+    	    } else
+    	        ascii_string += url_string[i];
+    	} else if (url_string[i] == '+')
+    	    ascii_string += ' ';
+    	else
+    	    ascii_string += url_string[i];
+    }
+	DEBUG_PRINT("ascii_string: " << ascii_string);
+	DEBUG_PRINT("ulrDecoder() exited");
+    return ascii_string;
 }
 
 std::string getServerIP(int socket_fd) {

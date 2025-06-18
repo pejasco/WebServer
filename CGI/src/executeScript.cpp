@@ -3,14 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   executeScript.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 16:26:00 by ssottori          #+#    #+#             */
-/*   Updated: 2025/06/03 21:40:31 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/18 11:34:10 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "executeScript.hpp"
+#include "../../INC/utils/Debug.hpp"
+#include "../../INC/utils/Colors.hpp"
 
 ScriptExecutor::ScriptExecutor(const std::string &scriptPath, const RequestData &request) : _scriptPath(scriptPath), _request(request) {}
 
@@ -55,13 +57,13 @@ void ScriptExecutor::runChild()
 		// Create a pipe for sending POST body to stdin
 		int postPipe[2];
 		if (pipe(postPipe) == -1) {
-			std::cerr << "Failed to create POST pipe\n";
+			std::cerr << BOLD RED "Failed to create POST pipe\n" RESET;
 			_exit(1);
 		}
 
-		pid_t grandchild = fork();
+		pid_t grandchild = fork(); // for testing
 		if (grandchild < 0) {
-			std::cerr << "Failed to fork grandchild for CGI\n";
+			std::cerr << BOLD RED "Failed to fork grandchild for CGI\n" RESET;
 			_exit(1);
 		}
 
@@ -81,7 +83,7 @@ void ScriptExecutor::runChild()
 			// Child: writes POST body into pipe, waits for grandchild
 			close(postPipe[0]);
 			std::string body = _request.getBody();
-			std::cerr << "[DEBUG] POST body: [" << body << "]\n";
+			DEBUG_PRINT("POST body: [" << body);
 			write(postPipe[1], body.c_str(), body.size());
 			close(postPipe[1]);
 			waitpid(grandchild, NULL, 0);
@@ -129,6 +131,7 @@ std::string ScriptExecutor::runParent(pid_t pid)
 
 	close(_pipe[0]);
 	waitpid(pid, NULL, 0);
+	DEBUG_PRINT(BOLD UNDERLINE BG_BLUE WHITE "CGI HANDLER CALLED" RESET);
 	return _response;
 }
 
@@ -138,7 +141,7 @@ void ScriptExecutor::execveScript()
 	char** envp = envBuilder.buildEnvArray();
 	char** av = createArgv();
 	execve(av[0], av, envp);
-	std::cerr << "execve failed: " << strerror(errno) << std::endl;
+	std::cerr << BOLD RED "execve failed: " << strerror(errno) << RESET << std::endl;
 	envBuilder.freeEnvArray(envp);
 	for (int i = 0; av[i]; ++i)
 		delete[] av[i];
@@ -149,6 +152,7 @@ void ScriptExecutor::execveScript()
 
 std::string ScriptExecutor::errorResponse()
 {
+	DEBUG_PRINT(BOLD UNDERLINE BG_BLUE WHITE "CGI HANDLER CALLED" RESET);
 	return "Status: 500 Internal Server Error\n\n";
 }
 
@@ -159,7 +163,9 @@ std::string ScriptExecutor::getInterpreter() const
 		return "";
 
 	std::string ext = _scriptPath.substr(dot);
-
+	
+	DEBUG_PRINT(BOLD UNDERLINE BG_BLUE WHITE "CGI HANDLER EXITED" RESET);
+	
 	if (ext == ".py")
 		return "/usr/bin/python3";
 	if (ext == ".sh")

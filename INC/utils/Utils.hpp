@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/17 17:04:50 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/18 10:25:52 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,5 +54,6 @@ Location *getCurrentLocation(const HTTPRequest &inputRequest, Server &currentSer
 bool isFdOpen(int fd);
 std::string getFilenameFromPath(const std::string& path);
 std::string trimString(const std::string& s);
+std::string urlDecoder(std::string &url_string);
 
 #endif

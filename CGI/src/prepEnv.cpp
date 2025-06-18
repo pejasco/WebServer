@@ -3,15 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   prepEnv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 17:49:28 by ssottori          #+#    #+#             */
-/*   Updated: 2025/05/28 02:18:29 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/06/18 11:07:47 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "prepEnv.hpp"
 #include "../../INC/utils/Utils.hpp"
+#include "../../INC/utils/Debug.hpp"
+#include "../../INC/utils/Colors.hpp"
 
 EnvBuilder::EnvBuilder() {}
 
@@ -52,11 +54,11 @@ void EnvBuilder::initFromRequest(const RequestData& request) //building map of c
         _env["CONTENT_LENGTH"] = "0";
     }
 
-	std::cerr << "[CGI DEBUG] === ENVIRONMENT VARIABLES ===" << std::endl;
+	DEBUG_PRINT("=== ENVIRONMENT VARIABLES ===");
 	for (std::map<std::string, std::string>::const_iterator it = _env.begin(); it != _env.end(); ++it) {
-		std::cerr << it->first << "=" << it->second << std::endl;
+		DEBUG_PRINT("-" << it->first << "=" << it->second);
 	}
-	std::cerr << "[CGI DEBUG] ==============================" << std::endl;
+	DEBUG_PRINT("==============================");
 
 }
 
