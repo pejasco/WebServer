@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/18 08:50:28 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/19 10:30:15 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,12 @@ ServerManager::ServerManager(std::string &input_config_file) : running_(true), d
 	std::fstream config_file(input_config_file.c_str());
 
 	if (!readFile(config_file))
-		exit(EXIT_FAILURE); 
+		throw std::runtime_error("Failed to read config file / Error found when reading config file");
 	setHostPort();
 	if (!startSockets())
-		exit(EXIT_FAILURE);
+		throw std::runtime_error("Failed to setting up socket(s) / Error found when setting up socket(s)");
 	if (!startEpoll())
-		exit(EXIT_FAILURE);
+		throw std::runtime_error("Failed to setting up Epoll / Error found when setting up Epoll");
 	
 	//check on error of the config file (ex: incorrect format, missing essential elements) 
 	// --> can be place before the call of the object in main ??
@@ -146,10 +146,53 @@ int ServerManager::getEpollFd() {
 /****************/
 /* READFILE purpose is to read each line of the config_file and initiate a new Server Object when needed */
 /****************/
+
+bool ServerManager::checkDuplicatePort(std::fstream &config_file){
+	std::string line;
+	std::vector<std::string> ports;
+	
+	while (std::getline(config_file, line)){
+		//std::multimap<std::string, std::string> ports_of_each_server;
+		if (line.find("server") != std::string::npos)
+			ports.clear();
+		if (line.find("port") != std::string::npos)
+		{
+		
+			size_t pos_beg = line.find(":") + 1;
+			pos_beg = line.find_first_not_of(' ', pos_beg);
+			std::string ports_str = line.substr(pos_beg);
+			std::stringstream ss(ports_str);
+			std::string port;
+			//std::cout << "ports_str: " << ports_str << "\n";
+			while (ss >> port){
+				//std::cout << "ports: " << port << "\n";
+				if (std::find(ports.begin(), ports.end(), port) != ports.end()){
+					return true;
+				}
+				ports.push_back(port);
+				//for (std::vector<std::string>::iterator it = ports.begin(); it != ports.end(); it++)
+				//	std::cout << "ports_vector: " << *it << "\n";
+			}
+		}
+	}
+	return false;
+}	
+
 int	ServerManager::readFile(std::fstream &config_file) {
 	Server *current_server =  NULL;
 	std::string line;
 	int server_ID = 1000; //Set an ID for new servers (MAY NOT BE USEFUL?)
+	
+	if (config_file.is_open()){
+		if (checkDuplicatePort(config_file))
+		{
+			std::cerr << "Error: Duplicate port found\n";
+			config_file.close();
+			return (0);
+		}
+	}
+	config_file.clear();
+	config_file.seekg(0, std::ios::beg);
 	if (config_file.is_open()) {
 		while (std::getline(config_file, line)) {
 			if (line.find("server {") != std::string::npos || server_flag == true) {				

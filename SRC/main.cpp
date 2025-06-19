@@ -6,7 +6,7 @@
 /*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:48:24 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/18 21:33:42 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/19 10:38:14 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,12 +31,21 @@ int main(int ac, char **av) {
 		config_file = "configuration/default.conf";
 	signal(SIGINT, signal_handler);
 	signal(SIGQUIT, signal_handler);
-	ServerManager master_server(config_file);
-	master_server.serverMonitoring();
+    ServerManager* master_server = NULL;
+    try {
+        master_server = new ServerManager(config_file);
+    } catch (const std::exception& ex){
+        std::cerr << "Error: " << ex.what() << std::endl;
+		delete master_server;
+        return EXIT_FAILURE;
+    }
+	master_server->serverMonitoring();
 	if (g_sigStatus) {
-		master_server.setRunning(g_sigStatus);
+		master_server->setRunning(g_sigStatus);
+		delete master_server;
 		return 0;
 	}
-	master_server.shutdown();
+	master_server->shutdown();
+	delete master_server;
 	return 0;
 }

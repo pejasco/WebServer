@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/18 08:02:44 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/19 08:58:12 by chuleung         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ class ServerManager {
 		std::map<int,Client*> &getClients();
 		int getEpollFd();
 		
+		bool checkDuplicatePort(std::fstream &config_file);
 		int	readFile(std::fstream &config_file);
 		void parseServer(std::string &line, Server *current_server, std::fstream &config_file);
 		void parseLocation(std::string &line, Server *current_server, std::fstream &config_file);
