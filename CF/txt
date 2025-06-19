@@ -1,2 +1,0 @@
-c++ test.cpp http.cpp -o test
-./test go.txt
