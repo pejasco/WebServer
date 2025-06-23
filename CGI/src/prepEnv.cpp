@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 17:49:28 by ssottori          #+#    #+#             */
-/*   Updated: 2025/06/18 11:07:47 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/23 09:42:16 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,11 +54,11 @@ void EnvBuilder::initFromRequest(const RequestData& request) //building map of c
         _env["CONTENT_LENGTH"] = "0";
     }
 
-	DEBUG_PRINT("=== ENVIRONMENT VARIABLES ===");
+	// DEBUG_PRINT("=== ENVIRONMENT VARIABLES ===");
 	for (std::map<std::string, std::string>::const_iterator it = _env.begin(); it != _env.end(); ++it) {
-		DEBUG_PRINT("-" << it->first << "=" << it->second);
+		// DEBUG_PRINT("-" << it->first << "=" << it->second);
 	}
-	DEBUG_PRINT("==============================");
+	// DEBUG_PRINT("==============================");
 
 }
 

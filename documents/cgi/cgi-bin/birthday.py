@@ -6,7 +6,7 @@ from datetime import datetime, date
 
 cgitb.enable()  # For debugging
 
-print("Content-Type: text/html\n")
+print("Content-Type: text/html")
 
 form = cgi.FieldStorage()
 day = form.getfirst("day")
@@ -89,9 +89,9 @@ print("""
 	<br><br><br><br><br><br><br><br><br>
 	<h1>🎂 Birthday Countdown 🎉</h1>
 	<div class="method">GET</div>
-	<button class="homepage"<button onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button></button>
+	<button class="homepage" onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button>
 	<br><br><br>
-""")
+""", end='')
 
 if day and month:
 	try:
@@ -101,7 +101,7 @@ if day and month:
 		if days_left == 0:
 			print("""
 			<img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjQ0enJxYmp3ZnBvMWFlcG4wMzlxeW1oM242azNqM3k2djJ1bTBqeSZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/afYMsbuUWN2W1fM5S7/giphy.gif" width="300"/>
-			""")
+			""", end='')
 			print("""<br>""")
 			print(f"<h3>Here, have some cake!</h3>")
 		print("""
@@ -109,8 +109,8 @@ if day and month:
 		<img src="https://media2.giphy.com/media/RkN33Se0a99r6pMiZi/giphy.gif" class="confettir" alt="Celebration" />
 		</div>
 		<img src="https://media.giphy.com/media/l0IyaxKjZqenpMIQ8/giphy.gif" class="shaq" alt="Floating cake" />
-		<button class="homepage"<button onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button></button>
-		""")
+		<button class="homepage" onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button>
+		""", end='')
 	except ValueError:
 		print("<p style='color: red;'>Invalid date. Please try again.</p>")
 else:
@@ -122,9 +122,9 @@ else:
 		<input type="number" name="month" min="1" max="12" required><br>
 		<button type="submit">Submit</button>
 	</form>
-	""")
+	""", end='')
 
 print("""
 </body>
 </html>
-""")
+""", end='')

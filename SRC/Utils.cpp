@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/18 10:36:31 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/23 15:17:35 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,6 +179,7 @@ std::string getStatusStr(int status_code) {
 	status_messages.insert(std::make_pair(401, "Unauthorized"));
 	status_messages.insert(std::make_pair(404, "Not Found"));
 	status_messages.insert(std::make_pair(405, "Method Not Allowed"));
+	status_messages.insert(std::make_pair(413, "Payload Too Large"));
 	status_messages.insert(std::make_pair(415, "Unsupported Media Type"));
 	status_messages.insert(std::make_pair(500, "Internal Server Error"));
 	status_messages.insert(std::make_pair(502, "Bad Gateway"));

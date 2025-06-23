@@ -2,7 +2,6 @@ const form = document.querySelector("form"),
 fileInput = form.querySelector(".file-input"),
 progressArea = document.querySelector(".progress-area"),
 uploadedArea = document.querySelector(".uploaded-area");
-HasError = 0;
 
 form.addEventListener("click", ()=>{
     fileInput.click();
@@ -26,6 +25,9 @@ fileInput.onchange = ({target}) =>{
 function uploadFile(fullName, shortName){
     let xhr = new XMLHttpRequest();
     xhr.open("POST", "http://localhost:9000/upload");
+    HasError = 0;
+    const errorElements = uploadedArea.querySelectorAll('.error');
+    errorElements.forEach(element => element.remove());
 
     // Adding error handling
     xhr.onreadystatechange = function() {

@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 16:26:00 by ssottori          #+#    #+#             */
-/*   Updated: 2025/06/18 11:34:10 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/23 09:41:54 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ std::string ScriptExecutor::runParent(pid_t pid)
 
 	close(_pipe[0]);
 	waitpid(pid, NULL, 0);
-	DEBUG_PRINT(BOLD UNDERLINE BG_BLUE WHITE "CGI HANDLER CALLED" RESET);
+	// DEBUG_PRINT(BOLD UNDERLINE BG_BLUE WHITE "CGI HANDLER CALLED" RESET);
 	return _response;
 }
 
@@ -152,7 +152,7 @@ void ScriptExecutor::execveScript()
 
 std::string ScriptExecutor::errorResponse()
 {
-	DEBUG_PRINT(BOLD UNDERLINE BG_BLUE WHITE "CGI HANDLER CALLED" RESET);
+	// DEBUG_PRINT(BOLD UNDERLINE BG_BLUE WHITE "CGI HANDLER CALLED" RESET);
 	return "Status: 500 Internal Server Error\n\n";
 }
 
@@ -164,7 +164,7 @@ std::string ScriptExecutor::getInterpreter() const
 
 	std::string ext = _scriptPath.substr(dot);
 	
-	DEBUG_PRINT(BOLD UNDERLINE BG_BLUE WHITE "CGI HANDLER EXITED" RESET);
+	// DEBUG_PRINT(BOLD UNDERLINE BG_BLUE WHITE "CGI HANDLER EXITED" RESET);
 	
 	if (ext == ".py")
 		return "/usr/bin/python3";

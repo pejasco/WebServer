@@ -11,12 +11,13 @@ method = os.environ.get('REQUEST_METHOD', 'GET')
 name = ""
 post_data = ""
 
-if method == 'POST':
-	content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-	if content_length > 0:
-		post_data = sys.stdin.read(content_length)
-		params = urllib.parse.parse_qs(post_data)
-		name = params.get('name', [''])[0].capitalize()
+#Better to calculate the body size just before sending the response as can be mismatch character from python to C++
+#if method == 'POST':
+	#content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+	#if content_length > 0:
+	#	post_data = sys.stdin.read(content_length)
+	#	params = urllib.parse.parse_qs(post_data)
+	#	name = params.get('name', [''])[0].capitalize()
 
 body = """
 <!DOCTYPE html>
@@ -111,12 +112,12 @@ body = """
 # append the greeting if there's a name
 if name:
 	body += f"<h1>Hello cadet {name}! POST works!</h1>"
-	body+= f"<img src='https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExcWY5YW5nbjZ0eXRqeTJpYWZpbjRocHZvemdiM2VqYTIwN2c0bXhxYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IThjAlJnD9WNO/giphy.gif' class='wave' alt='WAVE' />"
+	body += f"<img src='https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExcWY5YW5nbjZ0eXRqeTJpYWZpbjRocHZvemdiM2VqYTIwN2c0bXhxYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IThjAlJnD9WNO/giphy.gif' class='wave' alt='WAVE' />"
 
 body += "</body></html>"
 # body += f"<p>[DEBUG] Post Data Raw: {post_data}</p>"
 
 print("Content-Type: text/html")
-print(f"Content-Length: {len(body.encode('utf-8'))}")
+#print(f"Content-Length: {len(body.encode('utf-8'))}")
 print()
 print(body)

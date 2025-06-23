@@ -4,20 +4,19 @@ import os
 import sys
 import urllib.parse
 
-print("Content-Type: text/html; charset=utf-8\r\n")
-print()
+print("Content-Type: text/html; charset=utf-8")
 
 method = os.environ.get("REQUEST_METHOD", "GET")
 mood = ""
 post_data = ""
 
 # we onlyyy read stdin if it's a POST request
-if method == "POST":
-	content_length = int(os.environ.get("CONTENT_LENGTH", 0))
-	if content_length > 0:
-		post_data = sys.stdin.read(content_length)
-		params = urllib.parse.parse_qs(post_data)
-		mood = params.get("mood", [""])[0]
+#if method == "POST":
+#	content_length = int(os.environ.get("CONTENT_LENGTH", 0))
+#	if content_length > 0:
+#		post_data = sys.stdin.read(content_length)
+#		params = urllib.parse.parse_qs(post_data)
+#		mood = params.get("mood", [""])[0]
 
 print("""
 <!DOCTYPE html>
@@ -97,7 +96,7 @@ print("""
 	</form>
 	<button class="homepage" onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button>
 	<div id="emoji-container"></div>
-""")
+""", end='')
 
 if mood:
 	print(f"<h2>You feel: {mood}</h2>")
@@ -119,6 +118,6 @@ if mood:
 </script>
 </body>
 </html>
-""")
-
-# print("</body></html>")
+""", end='')
+else:
+	print("</body></html>")

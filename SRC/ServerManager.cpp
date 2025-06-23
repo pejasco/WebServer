@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ServerManager.cpp                                  :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/10 11:26:00 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/19 10:30:15 by chuleung         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../INC/utils/ServerManager.hpp"
 
 bool server_flag = false;
@@ -654,9 +642,16 @@ void ServerManager::existingClientConnection() {
 					client->state = CLIENT_READING_BODY;
 					DEBUG_PRINT("Transitioning to CLIENT_READING_BODY");
 					// Fall through to read body
+				} else if (content_length > 0 && error_code_ > 0) {
+					client->state = CLIENT_READY_TO_RESPOND;
+					DEBUG_PRINT("No body to large, sending error to client, transitioning to CLIENT_READY_TO_RESPOND");
+					// Server/location resolution happens in parseHeadersAndCheckBodySize
+					// and response is prepared there for requests without body
+					DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
+					return;
 				} else {
 					client->state = CLIENT_READY_TO_RESPOND;
-					DEBUG_PRINT("No body to read, transitioning to CLIENT_READY_TO_RESPOND");
+					DEBUG_PRINT("No body to send, transitioning to CLIENT_READY_TO_RESPOND");
 					// Server/location resolution happens in parseHeadersAndCheckBodySize
 					// and response is prepared there for requests without body
 					DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
@@ -721,6 +716,12 @@ bool ServerManager::readClientHeaders() {
 	ssize_t byte_received = recv(current_fd_, received_, sizeof(received_) - 1, 0);    
 	DEBUG_PRINT("recv() returned: " BOLD << byte_received << RESET " bytes");
 	
+	if (byte_received > 0 && client && client->getLastStatusCode() == 413) {
+        DEBUG_PRINT("Client sending data after 413 error - closing connection");
+        cleanClient(current_fd_);
+        return false;
+    }
+
     if (byte_received <= 0) {
         if (byte_received == 0) {
             DEBUG_PRINT("Client disconnected gracefully - cleaning up connection");
@@ -736,6 +737,7 @@ bool ServerManager::readClientHeaders() {
 	DEBUG_PRINT("Header buffer size before append: " BOLD << client->header_buffer.size() << RESET);
 	client->header_buffer.append(received_, byte_received);
 	DEBUG_PRINT("Header buffer size after append: " BOLD << client->header_buffer.size() << RESET);
+	DEBUG_PRINT("Header received: " << client->header_buffer);
 	
 	// Check for end of headers
 	size_t header_end = client->header_buffer.find("\r\n\r\n");
@@ -927,6 +929,8 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 	DEBUG_PRINT("Creating HTTP response");
 	HTTPResponse* http_response = new HTTPResponse((*client->current_request), default_server_, server_requested, location_requested, error_code_);
 	client->setResponse(http_response);
+	client->setLastStatusCode(client->current_response->getStatusCode());
+	DEBUG_PRINT("Client status code saved before sending: " << client->getLastStatusCode());
 	
 	client->header_buffer = client->current_response->getResponse();
 	DEBUG_PRINT("Response headers size: " << client->header_buffer.size());
@@ -1021,7 +1025,7 @@ bool ServerManager::sendResponseBodyFile() {
 		DEBUG_PRINT("Opening file for reading");
 		client->file_stream.open(body_file.c_str(), std::ios::binary);
 		if (!client->file_stream.is_open()) {
-			// std::cerr << "Failed to open body file: " << body_file);
+			std::cerr << "Failed to open body file: " << body_file;
 			error_code_ = 500;
 			DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "sendResponseBodyFile() exited" RESET);
 			return false;
