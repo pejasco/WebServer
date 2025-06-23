@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/18 11:21:49 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/23 16:27:03 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,12 @@
 
 bool cgi_flag = false;
 
-HTTPResponse::HTTPResponse(const HTTPRequest &input_request, Server *default_server, Server *server_requested, Location *location_requested, int error_flag) : 
+HTTPResponse::HTTPResponse(const HTTPRequest &input_request, Server *default_server, Server *server_requested, Location *location_requested, int error_flag) : status_code_(0),
 current_request_(input_request), server_(server_requested), location_(location_requested), default_server_(default_server), default_location_(default_server->getLocationsList().front()), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
 	DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE RESPONSE STARTED\n---------------------\n---------------------\n" RESET);
 	if (error_flag > 0) {
-		setErrorResponse(error_flag);
+		status_code_ = error_flag;
+		setErrorResponse(status_code_);
 		return ;
 	}
 	if (checkRedirection()) {
@@ -30,18 +31,21 @@ current_request_(input_request), server_(server_requested), location_(location_r
 	switch (current_request_.getMethod()) {
 	case GET:
 		DEBUG_PRINT("Method called: GET");
-		if (checkMethod() != 200) {
-			setErrorResponse(405);
+		status_code_ = checkMethod();
+		if (status_code_ != 200) {
+			setErrorResponse(status_code_);
 			DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE REQUEST EXITED\n---------------------\n---------------------\n" RESET);
 			return ;
 		}
 		setGetResponse();
+		status_code_ = 200;
 		cgi_flag = false;
 		break;
 	case POST:
 		DEBUG_PRINT("Method called: POST");
-		if (checkMethod() != 200) {
-			setErrorResponse(405);
+		status_code_ = checkMethod();
+		if (status_code_ != 200) {
+			setErrorResponse(status_code_);
 			DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE REQUEST EXITED\n---------------------\n---------------------\n" RESET);
 			return;
 		}
@@ -51,12 +55,14 @@ current_request_(input_request), server_(server_requested), location_(location_r
 		break;
 	case DELETE:
 		DEBUG_PRINT("Method called: DELETE");
-		if (checkMethod() != 200) {
-			setErrorResponse(405);
+		status_code_ = checkMethod();
+		if (status_code_ != 200) {
+			setErrorResponse(status_code_);
 			DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE REQUEST EXITED\n---------------------\n---------------------\n" RESET);
 			return;
 		}
 		setDeleteResponse();
+		DEBUG_PRINT("DELETE response: " << response_);
 		cgi_flag = false; // is it useful ?
 		break;
 	default:
@@ -80,6 +86,7 @@ void HTTPResponse::setAutoIndex(bool newValue) {
 // GETTER
 const std::string &HTTPResponse::getResponse() {
 	return response_;
+	DEBUG_PRINT("Response that's going to be sent: " << response_);
 };
 
 bool HTTPResponse::isReady() const {
@@ -93,6 +100,10 @@ std::string &HTTPResponse::getBodyFilename() {
 
 bool HTTPResponse::isAutoIndex() {
 	return is_autoindex_;
+}
+
+int HTTPResponse::getStatusCode() {
+	return status_code_;
 }
 
 //METHOD
@@ -217,7 +228,7 @@ void HTTPResponse::setPostResponse() {
 	default_path.erase(std::remove(default_path.begin(), default_path.end(), '/'), default_path.end());
 	// Switch or if statement to see if it is an upload request (CD --> filename)
 		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload
-	int status_code = checkFile();
+	status_code_ = checkFile();
 	// 2 OPTIONS --> either a POST CGI request or a REQUEST for upload file
 	cgi_flag = current_request_.getCGIFlag();
 	DEBUG_PRINT("is CGI POst request? " << cgi_flag);
@@ -235,26 +246,26 @@ void HTTPResponse::setPostResponse() {
 		upload_dir = default_path + location_->getUploadDir();		  // upload_dir
 	Content &content = current_request_.getContent(); // content
 	DEBUG_PRINT("upload_dir: " << upload_dir);
-	status_code = checkDirectory(upload_dir);
-	if (status_code != 200)
+	status_code_ = checkDirectory(upload_dir);
+	if (status_code_ != 200)
 	{
 		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET POST RESPONSE EXITED" RESET);
-		setErrorResponse(status_code);
+		setErrorResponse(status_code_);
 		return;
 	}
-	status_code = createUploadFile(upload_dir, content);
-	if (status_code == 200)
+	status_code_ = createUploadFile(upload_dir, content);
+	if (status_code_ == 200)
 	{
-		prepareStatusLine(status_code);
+		prepareStatusLine(status_code_);
 		body_msg_ = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
-		content_length_ = body_msg_.length();
-		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length_) + "\r\n";
+		content_length_ = body_msg_.size();
+		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length_) + "\r\nConnection: close\r\n";
 		response_ = status_line_ + header_ + empty_line_ + body_msg_;
 	}
 	else
 	{
 		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET POST RESPONSE EXITED" RESET);
-		setErrorResponse(status_code);
+		setErrorResponse(status_code_);
 	}
 	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET POST RESPONSE EXITED" RESET);
 }
@@ -264,23 +275,31 @@ void HTTPResponse::setDeleteResponse() { // NOT good as rely only on hardcoding 
     std::string reqPath = current_request_.getPath(); //  "/upload/rose.jpg"
 	std::string default_path = default_location_->getRoot(); // "documents/"
 	DEBUG_PRINT("reqPath: " << reqPath << ", default_path: " << default_path);
-	if (checkFile() != 200) {
+	status_code_ = checkFile();
+	if (status_code_ != 200) {
 		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
-        setErrorResponse(404);
+        setErrorResponse(status_code_);
+	}
+	if (body_filename_.find(location_->getUploadDir()) == std::string::npos) {
+		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
+        setErrorResponse(status_code_);
 	}
 	DEBUG_PRINT("body_filename_: " << body_filename_);
     if (fileExists(body_filename_)) {
 		// ADD A CHECK TO ENSURE THE FILE IS IN A FOLDER THAT ALLOWED DELETE --> example when error_file is call 
         if (!std::remove(body_filename_.c_str())) {
-            response_ = current_request_.getVersion() + " 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\nFile deleted";
+            response_ = current_request_.getVersion() + " 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nFile deleted";
             _response_ready_ = true;
+			status_code_ = 200;
         } else {
 			DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
-            setErrorResponse(500);
+			status_code_ = 500;
+            setErrorResponse(status_code_);
         }
     } else {
 		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
-        setErrorResponse(404);
+		status_code_ = 404;
+        setErrorResponse(status_code_);
     }
 	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
 }
@@ -302,19 +321,21 @@ void HTTPResponse::setErrorResponse(int error_code) {
 	// std::cout << "body_filename_ found via map lookup: " << body_filename_ << std::endl;
 	// std::cerr << "[DEBUG hellooo] setErrorResponse: using body_filename_ = " << body_filename_ << std::endl;
 	if (fileExists(body_filename_)) {
-		// std::cout << "error_file exist " << body_filename_ << std::endl;
+		DEBUG_PRINT("File error found: " << body_filename_);
 		prepareStatusLine(error_code);
 		content_length_ = calculateFileSize(body_filename_);
 		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length_) + "\r\nConnection: close\r\n";
 		if (!location_->getRedirectURL().empty())
-			header_ += "Location: " + location_->getRedirectURL() + "\r\n";
+			header_ += "Location: " + location_->getRedirectURL();
 		response_ = status_line_ + header_ + empty_line_;
+		DEBUG_PRINT("Error response: " << response_);
 	} else {
 		if (!location_->getRedirectURL().empty())
 			draftRedirectResponse();
 		else
 			draftErrorResponse();
 	}
+	// _response_ready_ = true;
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "SET ERROR RESPONSE EXITED" RESET);
 }
 
@@ -334,6 +355,7 @@ void HTTPResponse::draftErrorResponse() {
 	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(body_msg_.size()) + "\r\nConnection: close\r\n";
 	response_ = status_line_ + header_ + empty_line_ + body_msg_;
 	body_filename_ = "";
+	status_code_ = 500;
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "SET ERROR RESPONSE EXITED" RESET);
 }
 
@@ -397,6 +419,7 @@ int HTTPResponse::checkFile() {
 
 int HTTPResponse::checkMethod() {
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CHECK METHOD CALLED" RESET);
+	DEBUG_PRINT("location_: " << location_->getName());
 	std::vector<MET>::iterator begM;
 	std::vector<MET>::iterator endM;
 	if (location_->getMethod().empty()) {
@@ -480,7 +503,8 @@ void HTTPResponse::CGI_Body() {
 	if (script_name == scriptPath) {
 		DEBUG_PRINT("Unexpected URI, return 404");
 		DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "CGI_BODY EXITED" RESET);
-		setErrorResponse(404);  // unexpected URI
+		status_code_ = 404;
+		setErrorResponse(status_code_);  // unexpected URI
 		return;
 	}
 
@@ -494,13 +518,15 @@ void HTTPResponse::CGI_Body() {
 	if (access(scriptPath.c_str(), F_OK) != 0) {
 		DEBUG_PRINT("CGI script not found, return 404");
 		DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "CGI_BODY EXITED" RESET);
-		setErrorResponse(404);
+		status_code_ = 404;
+		setErrorResponse(status_code_);
 		return;
 	}
 	if (access(scriptPath.c_str(), X_OK) != 0) {
 		DEBUG_PRINT("CGI script not executable, return 403");
 		DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "CGI_BODY EXITED" RESET);
-		setErrorResponse(403);
+		status_code_ = 403;
+		setErrorResponse(status_code_);
 		return;
 	}
 
@@ -529,23 +555,20 @@ void HTTPResponse::CGI_Body() {
 	size_t headerEnd = cgiOutput.find("\n\n");
 	if (headerEnd != std::string::npos) {
 		std::string headers = cgiOutput.substr(0, headerEnd);
-		std::string body = cgiOutput.substr(headerEnd + 1);
-
+		std::string body = cgiOutput.substr(headerEnd + 4);
 		if (headers.find("Content-Type:") == std::string::npos)
-			headers = "Content-Type: text/html\r\n" + headers;
-
-		if (headers.find("Connection:") == std::string::npos)
-			headers += "\r\nConnection: close";
-
-		response_ = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
+		 	headers = "Content-Type: text/html";
+		response_ = "HTTP/1.1 200 OK\r\n" + headers + "\r\nContent-Length: " + convertToStr(body.size()) + "\r\n\r\n" + body;
+		DEBUG_PRINT("[CGI] printing the body size: " << body.size());
 		body_filename_.clear();
 	} else {
 		// fallback response, in case headers were missing
 		DEBUG_PRINT(" headers not available");
-		response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + cgiOutput;
+		response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + convertToStr(cgiOutput.length()) + "\r\n" + cgiOutput;
+		DEBUG_PRINT("[CGI] printing the body size: " << cgiOutput.size());
 	}
 	_response_ready_ = true;
-	DEBUG_PRINT("[CGI] printing the response:\n" << response_ << "\n");
+	DEBUG_PRINT("[CGI] printing the response: " << response_);
 	DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "CGI_BODY EXITED" RESET);
 }
 
@@ -637,18 +660,16 @@ void HTTPResponse::autoIndexRequest() {
 	size_t pos = 0;
 	if ((pos = default_folder.find("/")) != std::string::npos)
 		default_folder = default_folder.substr(pos + 1);
-	int status_code = 0;
-	status_code = structureInfo(dir_path, current_request_.getPath(), default_folder);
+	status_code_ = structureInfo(dir_path, current_request_.getPath(), default_folder);
 	body_filename_ = default_folder + "/auto_index.html";
-	if (status_code != 200) {
+	if (status_code_ != 200) {
 		if (!std::remove(body_filename_.c_str())) {
 			this->setAutoIndex(false);
 		}
 		DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "AUTO INDEX REQUEST EXITED" RESET);
-		setErrorResponse(status_code);
+		setErrorResponse(status_code_);
 		return ;
 	}
 	DEBUG_PRINT("autoIndex body_filename path: " << body_filename_);
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "AUTO INDEX REQUEST EXITED" RESET);
 }
-

@@ -3,7 +3,7 @@
 import random
 import html
 
-print("Content-Type: text/html; charset=utf-8\n")
+print("Content-Type: text/html; charset=utf-8")
 
 memes = [
 	"https://s3.amazonaws.com/rails-camp-tutorials/blog/programming+memes/works-doesnt-work.jpg",
@@ -88,4 +88,4 @@ print(f"""
 	<button class="homepage"<button onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button></button>
 </body>
 </html>
-""")
+""", end='')

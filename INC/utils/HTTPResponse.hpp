@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/08 00:37:12 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/23 15:30:24 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class HTTPResponse {
 		const std::string &getResponse();
 		std::string &getBodyFilename();
 		bool isAutoIndex();
+		int getStatusCode();
 			
 		//METHOD
 		void setGetResponse();
@@ -55,6 +56,7 @@ class HTTPResponse {
 	
 	private:
 		//PREPARING RESPONSE
+		int status_code_;
 		HTTPRequest current_request_;
 		Server *server_;
 		Location *location_;

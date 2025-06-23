@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 11:54:18 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/08 01:54:46 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/23 15:46:05 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class Client {
 
 		void setResponse(HTTPResponse* response);
 		void setRequest(HTTPRequest *request);
+		void setLastStatusCode(int status_code);
 
 		int getClientFd();
 		const void* getClientIP();
@@ -41,6 +42,7 @@ class Client {
 		socklen_t getClientAddrLen();
 		bool getError();
 		void resetForNextRequest();
+		int getLastStatusCode();
 		
 		//siev:
 		std::string body_buffer;
@@ -58,6 +60,7 @@ class Client {
     	size_t expected_content_length;
     	ClientState state;
 	private:
+		int last_status_code_;
 		bool error_;
 		int client_fd_;
 		struct sockaddr_storage client_addr_;

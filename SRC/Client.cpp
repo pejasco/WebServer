@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 11:54:15 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/18 08:20:36 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/23 15:46:30 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 Client::Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, socklen_t inputClientAddrLen): header_completed(false), file_sending_complete(false), 
 	current_response(NULL), current_request(NULL), body_bytes_read(0), max_body_size(0), expected_content_length(0),
-	state(CLIENT_READING_HEADERS), error_(false), client_fd_(inputClientFd), client_addr_(inputClientAddr), client_addr_len_(inputClientAddrLen) {
+	state(CLIENT_READING_HEADERS), last_status_code_(0), error_(false), client_fd_(inputClientFd), client_addr_(inputClientAddr), client_addr_len_(inputClientAddrLen) {
 	header_buffer = "";
 	body_buffer = "";
 	headers_string = "";
@@ -61,6 +61,10 @@ void Client::setRequest(HTTPRequest *request) {
     }
 }
 
+void Client::setLastStatusCode(int status_code) {
+	last_status_code_ = status_code;
+}
+
 
 int Client::getClientFd() {
 	return client_fd_;
@@ -77,9 +81,11 @@ struct sockaddr_storage &Client::getClientAddr() {
 socklen_t Client::getClientAddrLen() {
 	return client_addr_len_;
 }
-
 bool Client::getError() {
 	return error_;
+}
+int Client::getLastStatusCode() {
+	return last_status_code_;
 }
 
 void Client::resetForNextRequest() {
