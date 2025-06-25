@@ -2,10 +2,10 @@
 
 echo "Content-Type: text/html; charset=UTF-8"
 echo ""
+echo ""
 
-# Begin HTML
 cat << "EOF"
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -18,14 +18,35 @@ cat << "EOF"
             white-space: pre;
             padding: 20px;
         }
+        button {
+			      font-size: 5rem;
+			      padding: 10px;
+			      margin: 5px;
+			      cursor: pointer;
+			      border: none;
+			      background: transparent;
+		    }
+        .homepage {
+			      position: absolute;
+			      top: 10px;
+			      left: 10px;
+			      padding: 10px 16px;
+			      background-color: #003344;
+			      color: #00ffe7;
+			      border: 1px solid #00ffe7;
+			      border-radius: 8px;
+			      font-size: 1rem;
+			      cursor: pointer;
+		    }
     </style>
 </head>
+<button class="homepage" onclick="window.location.href='http://localhost:3501/cgi'">Homepage</button>
 <body>
 <pre>
 EOF
 
 cat << "EOF"
-(
+
 
                                                                                                                                  
                                                                                                                                  
@@ -102,7 +123,7 @@ cat << "EOF"
                                      ██████████████████████████████████████████████████████████████████████         
 
                                                         By: ssottori | cofische | chuleung                                                                           
-)
+
 
 EOF
 

@@ -55,5 +55,6 @@ bool isFdOpen(int fd);
 std::string getFilenameFromPath(const std::string& path);
 std::string trimString(const std::string& s);
 std::string urlDecoder(std::string &url_string);
+int checkExtensions(Location *current_location,std::string &script_name);
 
 #endif

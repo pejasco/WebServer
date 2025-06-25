@@ -1,0 +1,392 @@
+# Webserv Comprehensive Test Checklist
+
+## Basic Server Functionality
+
+### Configuration File Tests
+- [ ] Server starts with default configuration when no file provided
+- [ ] Server starts with custom configuration file
+- [ ] Server handles invalid configuration file gracefully
+- [ ] Multiple servers with different host:port combinations
+- [ ] Default server selection for host:port
+- [ ] Server names configuration (with and without)
+
+### HTTP Methods
+- [ ] **GET requests**
+  - Static files (HTML, CSS, JS, images)
+  - Directory requests
+  - Non-existent files (404)
+  - Root directory access
+- [ ] **POST requests**
+  - Form data submission
+  - File uploads
+  - Large request bodies
+  - Request body size limits
+- [ ] **DELETE requests**
+  - Delete existing files
+  - Delete non-existent files
+  - Permission denied scenarios
+
+### Error Handling & Status Codes
+- [ ] 200 OK - Successful requests
+- [ ] 301/302 - HTTP redirects
+- [ ] 400 Bad Request - Malformed requests
+- [ ] 403 Forbidden - Permission denied
+- [ ] 404 Not Found - Missing resources
+- [ ] 405 Method Not Allowed - Unsupported methods
+- [ ] 413 Payload Too Large - Oversized requests
+- [ ] 500 Internal Server Error - Server errors
+- [ ] Default error pages when none configured
+- [ ] Custom error pages when configured
+
+## Advanced Features
+
+### Static Website Serving
+- [ ] Serve complete static website
+- [ ] Directory listing (when enabled)
+- [ ] Directory listing disabled (when configured)
+- [ ] Default index files (index.html, etc.)
+- [ ] MIME type handling for different file extensions
+- [ ] Large file serving
+- [ ] Binary file serving (images, PDFs, etc.)
+
+### File Upload Tests
+- [ ] Single file upload via POST
+- [ ] Multiple file upload
+- [ ] Large file upload (within limits)
+- [ ] File upload size limit enforcement
+- [ ] Upload to configured directory
+- [ ] Invalid upload attempts
+
+### CGI (Common Gateway Interface)
+- [ ] PHP-CGI execution (.php files)
+- [ ] Python CGI execution (.py files)
+- [ ] CGI with GET method
+- [ ] CGI with POST method
+- [ ] CGI environment variables (PATH_INFO, etc.)
+- [ ] CGI working directory
+- [ ] CGI timeout handling
+- [ ] CGI error handling
+- [ ] Chunked request unchunking for CGI
+- [ ] CGI output without Content-Length
+
+### Routing & URL Handling
+- [ ] Route matching with different HTTP methods
+- [ ] Route-specific configurations
+- [ ] URL redirection
+- [ ] Root directory mapping
+- [ ] Nested path resolution
+- [ ] URL encoding/decoding
+- [ ] Query string handling
+
+## Performance & Reliability Tests
+
+### Non-blocking Behavior
+- [ ] Multiple simultaneous connections
+- [ ] Server remains responsive under load
+- [ ] Proper client disconnection handling
+- [ ] No hanging requests
+- [ ] Resource cleanup after client disconnect
+
+### Stress Testing
+- [ ] High concurrent connection count
+- [ ] Rapid successive requests
+- [ ] Large number of file uploads
+- [ ] Memory usage stability
+- [ ] Server uptime under stress
+- [ ] Recovery from resource exhaustion
+
+### Browser Compatibility
+- [ ] Chrome/Chromium compatibility
+- [ ] Firefox compatibility
+- [ ] Safari compatibility (if on macOS)
+- [ ] Standard HTTP/1.1 compliance
+- [ ] Proper header handling
+
+## Network & Protocol Tests
+
+### HTTP Protocol Compliance
+- [ ] HTTP/1.1 request parsing
+- [ ] HTTP headers handling
+- [ ] Keep-alive connections
+- [ ] Connection close handling
+- [ ] Proper response formatting
+- [ ] Chunked transfer encoding
+- [ ] Content-Length accuracy
+
+### Multi-port & Multi-host
+- [ ] Server listening on multiple ports
+- [ ] Different configurations per port
+- [ ] Host-based virtual server selection
+- [ ] Default server fallback
+
+### Security & Edge Cases
+- [ ] Path traversal attempts (../ attacks)
+- [ ] Malformed HTTP requests
+- [ ] Extremely long URLs
+- [ ] Extremely long headers
+- [ ] Binary data in requests
+- [ ] Null bytes in requests
+- [ ] Incomplete requests
+- [ ] Timeout handling
+
+## Configuration-Specific Tests
+
+### Request Body Size Limits
+- [ ] Requests within size limit
+- [ ] Requests exceeding size limit
+- [ ] Different limits per route/server
+
+### Directory Listing
+- [ ] Enabled directory listing display
+- [ ] Disabled directory listing returns error
+- [ ] Empty directory listing
+
+### Default Files
+- [ ] Index file serving for directory requests
+- [ ] Multiple index file priorities
+- [ ] Missing index file handling
+
+## Integration Tests
+
+### Real-world Scenarios
+- [ ] Complete website browsing session
+- [ ] Form submission workflows
+- [ ] File download/upload workflows
+- [ ] Multi-page navigation
+- [ ] Resource loading (CSS, JS, images)
+- [ ] AJAX requests handling
+
+### Comparison with NGINX
+- [ ] Response headers comparison
+- [ ] Status code behavior matching
+- [ ] Error page format comparison
+- [ ] Performance benchmarking
+
+## Automated Test Categories
+
+### Unit Tests (per feature)
+- Configuration parsing
+- HTTP request parsing
+- Response generation
+- Route matching
+- File operations
+
+### Integration Tests
+- Full request-response cycles
+- Multi-client scenarios
+- Configuration reloading
+- Error recovery
+
+### Load Tests
+- Concurrent user simulation
+- Memory leak detection
+- Performance degradation monitoring
+- Resource exhaustion recovery
+
+## Test Implementation Notes
+
+### Test Tools & Methods
+- **HTTP clients**: curl, wget, custom Python/Go scripts
+- **Load testing**: Apache Bench (ab), wrk, custom tools
+- **Browser testing**: Selenium/automated browser testing
+- **Network testing**: telnet for raw HTTP
+- **File operations**: Various file sizes and types
+
+### Validation Criteria
+- Correct HTTP status codes
+- Proper response headers
+- Expected response body content
+- No server crashes or hangs
+- Memory stability
+- Response time requirements
+- Resource cleanup verification
+
+### Test Data Requirements
+- Various file types and sizes
+- Malformed HTTP requests
+- Edge case URLs and paths
+- Different configuration files
+- CGI scripts for testing
+- Large datasets for stress testing
+
+# Webserv Test Checklist: Mandatory vs Nice-to-Have
+
+## 🔴 MANDATORY TESTS (Required to Pass)
+
+### Basic Server Functionality
+- [ ] **Server starts with configuration file argument** ✅ MANDATORY
+- [ ] **Server uses default path when no config provided** ✅ MANDATORY
+- [ ] **Multiple servers with different host:port combinations** ✅ MANDATORY
+- [ ] **Default server selection for host:port** ✅ MANDATORY
+- [ ] **Server names setup (optional in config, but must handle when present)** ✅ MANDATORY
+
+### HTTP Methods (All Required)
+- [ ] **GET requests** ✅ MANDATORY
+  - Static files (HTML, CSS, JS, images)
+  - Directory requests
+  - Non-existent files (404)
+  - Root directory access
+- [ ] **POST requests** ✅ MANDATORY
+  - Form data submission
+  - File uploads
+  - Request body size limits
+- [ ] **DELETE requests** ✅ MANDATORY
+  - Delete existing files
+  - Delete non-existent files
+
+### Error Handling & Status Codes
+- [ ] **Accurate HTTP response status codes** ✅ MANDATORY
+- [ ] **Default error pages when none provided** ✅ MANDATORY
+- [ ] 200 OK - Successful requests ✅ MANDATORY
+- [ ] 400 Bad Request - Malformed requests ✅ MANDATORY
+- [ ] 404 Not Found - Missing resources ✅ MANDATORY
+- [ ] 405 Method Not Allowed - Unsupported methods ✅ MANDATORY
+- [ ] 500 Internal Server Error - Server errors ✅ MANDATORY
+
+### 🟡 NICE TO HAVE (Configuration Options)
+- [ ] Custom error pages (when configured) 🟡 OPTIONAL
+- [ ] HTTP redirects (when configured) 🟡 OPTIONAL
+- [ ] 403 Forbidden 🟡 DEPENDS ON IMPLEMENTATION
+- [ ] 413 Payload Too Large 🟡 DEPENDS ON CONFIG
+
+## Static Website Serving
+- [ ] **Serve fully static website** ✅ MANDATORY
+- [ ] **File serving (HTML, CSS, JS, images)** ✅ MANDATORY
+- [ ] **Large file serving** ✅ MANDATORY
+- [ ] **Binary file serving** ✅ MANDATORY
+
+### 🟡 NICE TO HAVE (Configuration-Dependent)
+- [ ] Directory listing (when enabled in config) 🟡 OPTIONAL
+- [ ] Default index files (when configured) 🟡 OPTIONAL
+- [ ] MIME type handling 🟡 NICE TO HAVE
+
+### File Upload Tests
+- [ ] **Clients must be able to upload files** ✅ MANDATORY
+- [ ] **File upload via POST** ✅ MANDATORY
+- [ ] **Upload to configured directory** ✅ MANDATORY
+
+### 🟡 NICE TO HAVE
+- [ ] Multiple file upload 🟡 NICE TO HAVE
+- [ ] Large file upload limits 🟡 DEPENDS ON CONFIG
+
+### CGI (Common Gateway Interface)
+- [ ] **At least one CGI support (PHP, Python, etc.)** ✅ MANDATORY
+- [ ] **CGI with GET method** ✅ MANDATORY
+- [ ] **CGI with POST method** ✅ MANDATORY
+- [ ] **CGI working directory (correct directory for relative paths)** ✅ MANDATORY
+- [ ] **CGI called with file as first argument** ✅ MANDATORY
+- [ ] **PATH_INFO as full path** ✅ MANDATORY
+- [ ] **Chunked request unchunking for CGI** ✅ MANDATORY
+- [ ] **CGI output handling (EOF when no Content-Length)** ✅ MANDATORY
+
+### 🟡 NICE TO HAVE
+- [ ] Multiple CGI types 🟡 NICE TO HAVE
+- [ ] CGI environment variables (beyond basics) 🟡 NICE TO HAVE
+- [ ] CGI timeout handling 🟡 NICE TO HAVE
+
+## 🔴 MANDATORY PERFORMANCE & RELIABILITY
+
+### Non-blocking Behavior (CRITICAL)
+- [ ] **Server must remain non-blocking at all times** ✅ MANDATORY
+- [ ] **Only 1 poll() (or equivalent) for all I/O operations** ✅ MANDATORY
+- [ ] **Never read/write without poll()** ✅ MANDATORY
+- [ ] **Monitor reading and writing simultaneously** ✅ MANDATORY
+- [ ] **Proper client disconnection handling** ✅ MANDATORY
+- [ ] **No hanging requests (never hang indefinitely)** ✅ MANDATORY
+
+### Browser Compatibility
+- [ ] **Compatible with standard web browsers** ✅ MANDATORY
+- [ ] **HTTP/1.1 compliance (compare with NGINX)** ✅ MANDATORY
+
+### Multi-port Support
+- [ ] **Listen to multiple ports** ✅ MANDATORY
+
+## 🔴 MANDATORY CONFIGURATION FEATURES
+
+### Route Configuration
+- [ ] **List of accepted HTTP methods per route** ✅ MANDATORY
+- [ ] **Directory/file location mapping** ✅ MANDATORY
+
+### 🟡 OPTIONAL CONFIGURATION FEATURES
+- [ ] HTTP redirect definition 🟡 OPTIONAL (if configured)
+- [ ] Directory listing enable/disable 🟡 OPTIONAL (if configured)
+- [ ] Default file for directory requests 🟡 OPTIONAL (if configured)
+- [ ] Maximum client request body size 🟡 OPTIONAL (if configured)
+- [ ] CGI execution by file extension 🟡 OPTIONAL (if configured)
+- [ ] Upload file location configuration 🟡 OPTIONAL (if configured)
+
+## 🟡 NICE TO HAVE / BONUS TESTS
+
+### Stress Testing (Good Practice)
+- [ ] Multiple simultaneous connections 🟡 GOOD PRACTICE
+- [ ] Server uptime under load 🟡 GOOD PRACTICE
+- [ ] Memory leak detection 🟡 GOOD PRACTICE
+- [ ] Resource cleanup verification 🟡 GOOD PRACTICE
+
+### Security & Edge Cases (Bonus)
+- [ ] Path traversal attempts (../ attacks) 🟡 SECURITY BONUS
+- [ ] Malformed HTTP requests handling 🟡 ROBUSTNESS BONUS
+- [ ] Extremely long URLs/headers 🟡 ROBUSTNESS BONUS
+- [ ] Binary data in requests 🟡 ROBUSTNESS BONUS
+
+### Advanced Protocol Features (Nice to Have)
+- [ ] Keep-alive connections 🟡 NICE TO HAVE
+- [ ] Chunked transfer encoding 🟡 NICE TO HAVE
+- [ ] Complex header handling 🟡 NICE TO HAVE
+- [ ] Query string parsing 🟡 NICE TO HAVE
+
+## ❌ EXPLICITLY FORBIDDEN / NOT REQUIRED
+
+### What You DON'T Need to Implement
+- ❌ **Virtual host feature** (explicitly out of scope)
+- ❌ **Complete RFC implementation** (only subset required)
+- ❌ **Using execve for web server** (forbidden)
+- ❌ **Using fork except for CGI** (forbidden)
+- ❌ **RegExp for routes** (routes won't use regexp)
+- ❌ **Custom configuration syntax** (can inspire from NGINX)
+
+## 🎯 MINIMUM VIABLE TESTS (Core MVP)
+
+### Essential Tests for Basic Functionality
+1. **Server startup** with config file
+2. **GET request** for static HTML file
+3. **POST request** with file upload
+4. **DELETE request** for file removal
+5. **404 error** with default error page
+6. **CGI execution** (one script type)
+7. **Multiple clients** connecting simultaneously
+8. **Browser compatibility** (load a webpage)
+9. **Non-blocking behavior** (no server hang)
+10. **Multiple ports** listening
+
+### Configuration Tests (Minimum)
+1. **Multiple servers** in config
+2. **Route with HTTP method restrictions**
+3. **File/directory location mapping**
+4. **Default server selection**
+
+## 📋 Test Implementation Priority
+
+### Phase 1: Core Functionality
+- Basic HTTP methods (GET, POST, DELETE)
+- Static file serving
+- Default error pages
+- Configuration parsing
+
+### Phase 2: Advanced Features
+- CGI implementation
+- File uploads
+- Multi-port/multi-server
+- Non-blocking validation
+
+### Phase 3: Polish & Edge Cases
+- Browser compatibility
+- Stress testing
+- Security edge cases
+- Performance optimization
+
+### Phase 4: Bonus Features
+- Advanced configuration options
+- Multiple CGI types
+- Enhanced error handling
+- Performance benchmarking

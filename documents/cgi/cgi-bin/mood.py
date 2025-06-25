@@ -11,12 +11,12 @@ mood = ""
 post_data = ""
 
 # we onlyyy read stdin if it's a POST request
-#if method == "POST":
-#	content_length = int(os.environ.get("CONTENT_LENGTH", 0))
-#	if content_length > 0:
-#		post_data = sys.stdin.read(content_length)
-#		params = urllib.parse.parse_qs(post_data)
-#		mood = params.get("mood", [""])[0]
+if method == "POST":
+	content_length = int(os.environ.get("CONTENT_LENGTH", 0))
+	if content_length > 0:
+		post_data = sys.stdin.read(content_length)
+		params = urllib.parse.parse_qs(post_data)
+		mood = params.get("mood", [""])[0]
 
 print("""
 <!DOCTYPE html>

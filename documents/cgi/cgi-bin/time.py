@@ -49,4 +49,4 @@ print(f"""
 	<h1>{now}</h1>
 </body>
 </html>
-""")
+""",end='')

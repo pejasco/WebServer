@@ -83,7 +83,6 @@ void ScriptExecutor::runChild()
 			// Child: writes POST body into pipe, waits for grandchild
 			close(postPipe[0]);
 			std::string body = _request.getBody();
-			DEBUG_PRINT("POST body: [" << body);
 			write(postPipe[1], body.c_str(), body.size());
 			close(postPipe[1]);
 			waitpid(grandchild, NULL, 0);
