@@ -12,7 +12,7 @@
 
 #include "../INC/utils/Client.hpp"
 
-Client::Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, socklen_t inputClientAddrLen): header_completed(false), file_sending_complete(false), 
+Client::Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, socklen_t inputClientAddrLen): header_completed(false), file_sending_complete(true), 
 	current_response(NULL), current_request(NULL), body_bytes_read(0), max_body_size(0), expected_content_length(0),
 	state(CLIENT_READING_HEADERS), last_status_code_(0), error_(false), client_fd_(inputClientFd), client_addr_(inputClientAddr), client_addr_len_(inputClientAddrLen) {
 	header_buffer = "";

@@ -544,6 +544,7 @@ void ServerManager::existingClientConnection() {
         if (!client->header_buffer.empty()) {
             DEBUG_PRINT("Header bytes to send: " BOLD << client->header_buffer.size() << RESET " bytes");
             ssize_t bytes_sent = send(current_fd_, client->header_buffer.c_str(), client->header_buffer.length(), 0);
+			//DEBUG_PRINT("Header sent to client: " << client->header_buffer);
 			DEBUG_PRINT("send() returned: " BOLD << bytes_sent << RESET" bytes");
             
             if (bytes_sent <= 0) {
@@ -585,9 +586,9 @@ void ServerManager::existingClientConnection() {
         if (client->current_response && !client->current_response->getBodyFilename().empty()) {
             DEBUG_PRINT("Response has body file: " << client->current_response->getBodyFilename());
             client->file_sending_complete = false;
-			DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
             sendResponseBodyFile();
-        } else {
+			DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
+		} else {
             DEBUG_PRINT("No body file, resetting client for next request");
 			DEBUG_PRINT(BOLD MAGENTA "Switching epoll back to EPOLLIN" RESET);
 			struct epoll_event event;
@@ -635,21 +636,22 @@ void ServerManager::existingClientConnection() {
 				
 				int content_length = client->current_request->getContentLength();
 				DEBUG_PRINT("Content-Length: " << content_length);
+				DEBUG_PRINT("Client error code: " << client->getLastStatusCode() << ", error_flag: " << error_flag);
 				if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
     				DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
-				}	
-				if (content_length > 0 && !error_flag) {
-					client->expected_content_length = content_length;
-					client->state = CLIENT_READING_BODY;
-					DEBUG_PRINT("Transitioning to CLIENT_READING_BODY");
-					// Fall through to read body
-				} else if (error_flag) {
+				}
+				if (client->getLastStatusCode() == 431 || client->getLastStatusCode() == 413) {
 					client->state = CLIENT_READY_TO_RESPOND;
 					DEBUG_PRINT("body or header too large, sending error to client, transitioning to CLIENT_READY_TO_RESPOND");
 					// Server/location resolution happens in parseHeadersAndCheckBodySize
 					// and response is prepared there for requests without body
 					DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
 					return;
+				} else if (content_length > 0 && !error_flag) {
+					client->expected_content_length = content_length;
+					client->state = CLIENT_READING_BODY;
+					DEBUG_PRINT("Transitioning to CLIENT_READING_BODY");
+					// Fall through to read body
 				} else {
 					client->state = CLIENT_READY_TO_RESPOND;
 					DEBUG_PRINT("No body to send, transitioning to CLIENT_READY_TO_RESPOND");
@@ -818,6 +820,7 @@ bool ServerManager::parseHeadersAndCheckBodySize() {
 			error_flag = true;
 			DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "parseHeadersAndCheckBodySize() exited" RESET);
 			processAndSendResponse(server_requested, location_requested);
+			return true;
 		}
 		// Store max_body_size for later use in body reading
 		client->max_body_size = max_body_size;
@@ -967,6 +970,7 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 	
 	DEBUG_PRINT("Socket ready for writing, sending " BOLD << client->header_buffer.length() << RESET " bytes");
 	ssize_t bytes_sent = send(current_fd_, client->header_buffer.c_str(), client->header_buffer.length(), 0);
+	//DEBUG_PRINT("Header sent to client: " << client->header_buffer);
 	DEBUG_PRINT("send() returned: " BOLD << bytes_sent << RESET " bytes");
 	
 	// DON'T CHECK ERRNO - per requirements
@@ -1064,6 +1068,7 @@ bool ServerManager::sendResponseBodyFile() {
 			DEBUG_PRINT("Sending " BOLD << bytes_read << RESET " bytes to client");
 			ssize_t bytes_sent = send(current_fd_, buffer_, bytes_read, 0);
 			std::string debug_content(buffer_, bytes_read);
+			//DEBUG_PRINT("Body sent to client: " << debug_content);
 			DEBUG_PRINT("send() returned: " BOLD << bytes_sent << RESET " bytes");
 			
 			if (bytes_sent <= 0) {
@@ -1108,7 +1113,6 @@ bool ServerManager::sendResponseBodyFile() {
 				DEBUG_PRINT("Failed to remove auto-generated file");
 			}
 		}
-		
 		// Switch back to EPOLLIN for next request
 		DEBUG_PRINT(BOLD YELLOW "Switching epoll back to EPOLLIN" RESET);
 		struct epoll_event event;
@@ -1121,9 +1125,10 @@ bool ServerManager::sendResponseBodyFile() {
 		if (error_code_ > 0) {
 			error_code_ = -1;
 		}
-		
-		// clean request and response ibject
-        client->resetForNextRequest();
+		if (client->getLastStatusCode() != 200)
+			cleanClient(current_fd_);
+		else
+			client->resetForNextRequest();
 		DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "sendResponseBodyFile() exited" RESET);
 		return true;
 	}

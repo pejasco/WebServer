@@ -157,6 +157,10 @@ int HTTPResponse::checkDirectory(std::string& location){
 		if (S_ISDIR(st.st_mode)){
 			DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CHECK DIRECTORY EXITED" RESET);
 			return 200;
+		} else if (errno == EACCES) {
+			DEBUG_PRINT("Path exist but permission denied, return 403");
+			DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CHECK DIRECTORY EXITED" RESET);
+			return 403;
 		} else {
 			DEBUG_PRINT("Path exist but not a directory, return 404");
 			DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CHECK DIRECTORY EXITED" RESET);
@@ -191,9 +195,9 @@ int HTTPResponse::createUploadFile(std::string& upload_dir, Content& content){
 	}
 	
 	if (it == allCDs.end()){
-		DEBUG_PRINT("No filename found in CDs, return 500");
+		DEBUG_PRINT("No filename found in CDs, return 400");
 		DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CREATE UPLOAD FILE EXITED" RESET);
-		return 500;
+		return 400;
 	}
 	
 	std::string filename = it->filename_;
@@ -350,6 +354,7 @@ void HTTPResponse::draftRedirectResponse() {
 	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: 0\r\nConnection: close\r\nLocation: " + location_->getRedirectURL() + "\r\n";
 	response_ = status_line_ + header_ + empty_line_;
 	body_filename_ = "";
+	status_code_ = 301;
 	_response_ready_ = true;
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "SET ERROR RESPONSE EXITED" RESET);
 }
@@ -409,16 +414,32 @@ int HTTPResponse::checkFile() {
 				return 200;
 			} else {
 				body_file.close();
-				std::cerr << BOLD RED "Error in checkFile() with custom filename: " << strerror(errno) << RESET << std::endl;
-				DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CHECK FILE EXITED" RESET);
-				return 500;	
+    			switch(errno) {
+    			    case ENOENT:
+    			        DEBUG_PRINT("File not found: " << strerror(errno));
+    			        return 404;
+    			    case EACCES:
+    			        DEBUG_PRINT("Permission denied: " << strerror(errno));
+    			        return 403;
+    			    case EISDIR:
+    			        DEBUG_PRINT("Path is directory: " << strerror(errno));
+    			        return 409;
+    			    case ENOSPC:
+    			        DEBUG_PRINT("No space left: " << strerror(errno));
+    			        return 507;
+    			    case ENAMETOOLONG:
+    			        DEBUG_PRINT("Filename too long: " << strerror(errno));
+    			        return 414;
+    			    default:
+    			        DEBUG_PRINT("Unknown file error: " << strerror(errno));
+    			        return 500;
+    			}
 			}
 		} else {
 			DEBUG_PRINT("File doesn't exist, return 404");
 			DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CHECK FILE EXITED" RESET);
 			return 404;
-		}
-			
+		}	
 	}
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CHECK FILE EXITED" RESET);
 	return 500;	
