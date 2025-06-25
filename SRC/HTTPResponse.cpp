@@ -16,11 +16,11 @@
 
 bool cgi_flag = false;
 
-HTTPResponse::HTTPResponse(const HTTPRequest &input_request, Server *default_server, Server *server_requested, Location *location_requested, int error_flag) : status_code_(0),
+HTTPResponse::HTTPResponse(const HTTPRequest &input_request, Server *default_server, Server *server_requested, Location *location_requested, int error_flag, int error_code) : status_code_(0),
 current_request_(input_request), server_(server_requested), location_(location_requested), default_server_(default_server), default_location_(default_server->getLocationsList().front()), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
 	DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE RESPONSE STARTED\n---------------------\n---------------------\n" RESET);
 	if (error_flag > 0) {
-		status_code_ = error_flag;
+		status_code_ = error_code;
 		setErrorResponse(status_code_);
 		return ;
 	}
@@ -50,6 +50,7 @@ current_request_(input_request), server_(server_requested), location_(location_r
 			return;
 		}
 		setPostResponse();
+		DEBUG_PRINT("status code after post request handling: " << status_code_);
 		// SM got a array of server > setPostResponse(); // main > SM::serverMonitoring() > SM::existingClientConnection > HTTPRequest current_request_ > HTTPResponse constructor(current_request_, *the pointer of serverManger, string serverIP)
 		cgi_flag = false;
 		break;
@@ -131,10 +132,11 @@ void HTTPResponse::setGetResponse() {
 		if (cgi_flag) {
 			DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET GET RESPONSE EXITED" RESET);
 			CGI_Body(); // Run CGI handler, which builds full HTTP response
-			_response_ready_ = true;
+			if (status_code_ == 200)
+				_response_ready_ = true;
 			return ;
 		} else {
-			prepareStatusLine(status_code);
+			prepareStatusLine();
 			prepareHeader();
 			headerResponse();
 		}
@@ -256,7 +258,7 @@ void HTTPResponse::setPostResponse() {
 	status_code_ = createUploadFile(upload_dir, content);
 	if (status_code_ == 200)
 	{
-		prepareStatusLine(status_code_);
+		prepareStatusLine();
 		body_msg_ = "<!DOCTYPE html><html><head><title>Success</title><meta http-equiv=\"refresh\" content=\"3;url=/\"></head><body><h1>Upload Successful!!!!!!!</h1></body></html>";
 		content_length_ = body_msg_.size();
 		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length_) + "\r\nConnection: close\r\n";
@@ -305,24 +307,27 @@ void HTTPResponse::setDeleteResponse() { // NOT good as rely only on hardcoding 
 }
 
 void HTTPResponse::setErrorResponse(int error_code) {
+	status_code_ = error_code;
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "SET ERROR RESPONSE CALLED" RESET);
 	if (!server_->getErrorList().empty()) {
 		DEBUG_PRINT("Error code exist inside server");
 		std::map<int, std::string>::iterator begEr = server_->getErrorList().begin();
 		std::map<int, std::string>::iterator endEr = server_->getErrorList().end();
 		for (; begEr != endEr; ++begEr) {
-			if (begEr->first == error_code)
+			if (begEr->first == status_code_)
 				body_filename_ = begEr->second;
 		}
 		if (begEr == endEr)
-			body_filename_ = server_->getErrorDirectory() + convertToStr(error_code) + ".html";
+			body_filename_ = server_->getErrorDirectory() + convertToStr(status_code_) + ".html";
 	} else 
-		body_filename_ = default_server_->getErrorDirectory() + convertToStr(error_code) + ".html";
+		body_filename_ = default_server_->getErrorDirectory() + convertToStr(status_code_) + ".html";
 	// std::cout << "body_filename_ found via map lookup: " << body_filename_ << std::endl;
 	// std::cerr << "[DEBUG hellooo] setErrorResponse: using body_filename_ = " << body_filename_ << std::endl;
 	if (fileExists(body_filename_)) {
 		DEBUG_PRINT("File error found: " << body_filename_);
-		prepareStatusLine(error_code);
+		prepareStatusLine();
+		DEBUG_PRINT("Status code: " << status_code_);
+		DEBUG_PRINT("Status line with error code info: " << status_line_);
 		content_length_ = calculateFileSize(body_filename_);
 		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length_) + "\r\nConnection: close\r\n";
 		if (!location_->getRedirectURL().empty())
@@ -345,17 +350,19 @@ void HTTPResponse::draftRedirectResponse() {
 	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: 0\r\nConnection: close\r\nLocation: " + location_->getRedirectURL() + "\r\n";
 	response_ = status_line_ + header_ + empty_line_;
 	body_filename_ = "";
+	_response_ready_ = true;
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "SET ERROR RESPONSE EXITED" RESET);
 }
 
 void HTTPResponse::draftErrorResponse() {
 	DEBUG_PRINT("error: error-file " << body_filename_ << " doesn't exist");
 	body_msg_ = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
-	status_line_ = current_request_.getVersion() + " 500 Internal server error\r\n";
-	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent_Length: " + convertToStr(body_msg_.size()) + "\r\nConnection: close\r\n";
+	status_line_ = "HTTP/1.1 500 Internal Server Error\r\n";
+	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: 167\r\nConnection: close\r\n";
 	response_ = status_line_ + header_ + empty_line_ + body_msg_;
 	body_filename_ = "";
 	status_code_ = 500;
+	_response_ready_ = true;
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "SET ERROR RESPONSE EXITED" RESET);
 }
 
@@ -452,10 +459,13 @@ int HTTPResponse::checkMethod() {
 	}
 }
 
-void HTTPResponse::prepareStatusLine(int status_code) {
-	status_line_ += current_request_.getVersion();
-	status_line_ += " " + convertToStr(status_code);
-	status_line_ += " " + getStatusStr(status_code);
+void HTTPResponse::prepareStatusLine() {
+	if (!current_request_.getVersion().empty())
+		status_line_ += current_request_.getVersion() + " ";
+	else 
+		status_line_ += "HTTP/1.1 ";
+	status_line_ += convertToStr(status_code_) + " ";
+	status_line_ += getStatusStr(status_code_);
 	status_line_ += "\r\n";
 	
 	/****DEBUGGING***/
@@ -500,6 +510,13 @@ void HTTPResponse::CGI_Body() {
 	else
 		scriptPath = current_request_.getPath();
 	std::string script_name = getFilenameFromPath(body_filename_);
+	status_code_ = checkExtensions(location_, script_name);
+	if (status_code_ != 200) {
+		DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "CGI_BODY EXITED" RESET);
+		setErrorResponse(status_code_);
+		return;
+	}
+
 	if (script_name == scriptPath) {
 		DEBUG_PRINT("Unexpected URI, return 404");
 		DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "CGI_BODY EXITED" RESET);
@@ -549,10 +566,19 @@ void HTTPResponse::CGI_Body() {
 
 	CgiHandler handler(data, scriptPath); // pass to CGI engine
 	std::string cgiOutput = handler.run();
-	// std::cout << "cgiOutput: " << cgiOutput << std::endl;
+	
 
 	// Try to parse headers from CGI output
+	if (cgiOutput.empty()) {
+		status_code_ = 500;
+		DEBUG_PRINT("Internal server error identify after CGI");
+		DEBUG_PRINT("cgiOutput: " << cgiOutput);
+		DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "CGI_BODY EXITED" RESET);
+		setErrorResponse(status_code_);
+		return;
+	}
 	size_t headerEnd = cgiOutput.find("\n\n");
+	DEBUG_PRINT("CGIoutput: " << cgiOutput);
 	if (headerEnd != std::string::npos) {
 		std::string headers = cgiOutput.substr(0, headerEnd);
 		std::string body = cgiOutput.substr(headerEnd + 4);
@@ -673,3 +699,4 @@ void HTTPResponse::autoIndexRequest() {
 	DEBUG_PRINT("autoIndex body_filename path: " << body_filename_);
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "AUTO INDEX REQUEST EXITED" RESET);
 }
+

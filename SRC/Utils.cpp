@@ -181,6 +181,7 @@ std::string getStatusStr(int status_code) {
 	status_messages.insert(std::make_pair(405, "Method Not Allowed"));
 	status_messages.insert(std::make_pair(413, "Payload Too Large"));
 	status_messages.insert(std::make_pair(415, "Unsupported Media Type"));
+	status_messages.insert(std::make_pair(431, "Request Header Fields Too Large"));
 	status_messages.insert(std::make_pair(500, "Internal Server Error"));
 	status_messages.insert(std::make_pair(502, "Bad Gateway"));
 	
@@ -320,6 +321,34 @@ std::string urlDecoder(std::string &url_string) {
 	DEBUG_PRINT("ascii_string: " << ascii_string);
 	DEBUG_PRINT("ulrDecoder() exited");
     return ascii_string;
+}
+
+int checkExtensions(Location *current_location, std::string &script_name) {
+	std::string extension_requested;
+	size_t pos = 0;
+	if ((pos = script_name.find(".")) != std::string::npos) {
+		extension_requested = script_name.substr(pos, (script_name.size() - pos));
+		DEBUG_PRINT("extension identify in script_name: " << extension_requested);
+	}
+	if (!current_location->getCGIExt().empty()) {
+		std::vector<std::string>::iterator begEx = current_location->getCGIExt().begin();
+		std::vector<std::string>::iterator endEx = current_location->getCGIExt().end();
+		for (; begEx != endEx; ++ begEx) {
+			if (*begEx == extension_requested) {
+				DEBUG_PRINT("Extension requested is in the list of authorize extension");
+				return 200;
+			}
+		}
+		if (begEx == endEx) {
+			DEBUG_PRINT("Extension requested not in the list -- return error code");
+			return 405;
+		}
+	} else {
+		DEBUG_PRINT("No extension available -- CGI wrong configuration or bad URI");
+		return 405;
+	}
+	DEBUG_PRINT("Error in the function -- return 500");
+	return 500;
 }
 
 std::string getServerIP(int socket_fd) {

@@ -22,7 +22,7 @@ class Server;
 
 class HTTPResponse {
 	public:
-		HTTPResponse(const HTTPRequest &input_request, Server *default_server, Server *server_requested, Location *location_requested, int error_flag); //get information like the path, method and version via HTTPrequest class 
+		HTTPResponse(const HTTPRequest &input_request, Server *default_server, Server *server_requested, Location *location_requested, int error_flag, int error_code); //get information like the path, method and version via HTTPrequest class 
 		~HTTPResponse();
 		
 		//SETTER
@@ -41,7 +41,7 @@ class HTTPResponse {
 		void setErrorResponse(int error_code);
 		int checkFile();
 		int checkMethod() ;
-		void prepareStatusLine(int status_code);
+		void prepareStatusLine();
 		int prepareHeader();
 		void headerResponse();
 		void CGI_Body();

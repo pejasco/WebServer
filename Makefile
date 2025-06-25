@@ -15,6 +15,7 @@ MAKEFLAGS += --silent
 GREEN = \033[1;32m
 RED = \033[1;31m
 BLUE = \033[1;34m
+YELLOW = \033[1;33m
 NC = \033[0m
 
 # ======================= COMPILER ======================
@@ -106,12 +107,21 @@ clean:
 
 fclean: clean
 	@$(RM) $(NAME)
+	@echo "" > output
+	@echo "" > DEBUG/valgrind.txt
 	@echo "[${RED}webserv${NC}] Executable $(NAME) removed."
 
 re: fclean all
 
 leaks:
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=DEBUG/valgrind.txt ./$(NAME)
+
+tester: 
+	@make debug
+	@echo "[${YELLOW}webserv tester${NC}] starting python tester..."
+	@ ./webserv > output 2>/dev/null & SERVER_PID=$$!; sleep 1; \
+	  python3 TESTER/webserv_tester.py; \
+	  kill -INT $$SERVER_PID; rm -f test.txt
 
 banner:
 	@echo "${BLUE}"

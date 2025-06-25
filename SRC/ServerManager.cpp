@@ -1,6 +1,7 @@
 #include "../INC/utils/ServerManager.hpp"
 
 bool server_flag = false;
+bool error_flag = false;
 
 /************************/
 /*CONSTRUCTOR/DESTRUCTOR*/
@@ -637,14 +638,14 @@ void ServerManager::existingClientConnection() {
 				if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
     				DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
 				}	
-				if (content_length > 0 && error_code_ < 0) {
+				if (content_length > 0 && !error_flag) {
 					client->expected_content_length = content_length;
 					client->state = CLIENT_READING_BODY;
 					DEBUG_PRINT("Transitioning to CLIENT_READING_BODY");
 					// Fall through to read body
-				} else if (content_length > 0 && error_code_ > 0) {
+				} else if (error_flag) {
 					client->state = CLIENT_READY_TO_RESPOND;
-					DEBUG_PRINT("No body to large, sending error to client, transitioning to CLIENT_READY_TO_RESPOND");
+					DEBUG_PRINT("body or header too large, sending error to client, transitioning to CLIENT_READY_TO_RESPOND");
 					// Server/location resolution happens in parseHeadersAndCheckBodySize
 					// and response is prepared there for requests without body
 					DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
@@ -759,7 +760,8 @@ bool ServerManager::readClientHeaders() {
 	// Header size check 
 	if (client->header_buffer.size() > MAX_HEADER_SIZE) {
 		DEBUG_PRINT("Header size exceeded: " BOLD << client->header_buffer.size() << RESET " > " << MAX_HEADER_SIZE);
-		error_code_ = 431;
+		client->setLastStatusCode(431);
+		error_flag = true;
 		client->header_completed = true;
 		DEBUG_PRINT("Headers too large -- sending HTTP error");
 		DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "readClientHeaders() exited" RESET);
@@ -812,7 +814,8 @@ bool ServerManager::parseHeadersAndCheckBodySize() {
 	if (content_length > 0) {
 		if (max_body_size > 0 && content_length > max_body_size) {
 			DEBUG_PRINT("Request body size " BOLD << content_length << RESET " exceeds limit " BOLD << max_body_size << RESET);
-			error_code_ = 413;
+			client->setLastStatusCode(413);
+			error_flag = true;
 			DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "parseHeadersAndCheckBodySize() exited" RESET);
 			processAndSendResponse(server_requested, location_requested);
 		}
@@ -927,9 +930,11 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 	}
 	
 	DEBUG_PRINT("Creating HTTP response");
-	HTTPResponse* http_response = new HTTPResponse((*client->current_request), default_server_, server_requested, location_requested, error_code_);
+	HTTPResponse* http_response = new HTTPResponse((*client->current_request), default_server_, server_requested, location_requested, error_flag, client->getLastStatusCode());
 	client->setResponse(http_response);
+	DEBUG_PRINT("status code of response: " << http_response->getStatusCode());
 	client->setLastStatusCode(client->current_response->getStatusCode());
+	error_flag = false;
 	DEBUG_PRINT("Client status code saved before sending: " << client->getLastStatusCode());
 	
 	client->header_buffer = client->current_response->getResponse();
