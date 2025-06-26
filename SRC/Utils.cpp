@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/23 15:17:35 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/26 17:44:32 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,9 +195,18 @@ std::string getStatusStr(int status_code) {
 }
 
 bool fileExists(const std::string& filename) {
-	std::ifstream file(filename.c_str());
-	DEBUG_PRINT("Does file " << filename << " exist? " << file.good());
-	return file.good();
+    struct stat buffer;
+    bool exists = (stat(filename.c_str(), &buffer) == 0);
+    DEBUG_PRINT("Does file " << filename << " exist? " << exists);
+    return exists;
+}
+
+int URILength(const std::string &uri) {
+	if (uri.length() > MAX_URI_LENGTH) {
+        DEBUG_PRINT("URI too long: " << uri.length() << " characters (max: " << MAX_URI_LENGTH << ")");
+        return 414;
+    }
+	return 200;
 }
 
 std::string getContentType(const std::string &input_extension) {
@@ -351,7 +360,7 @@ int checkExtensions(Location *current_location, std::string &script_name) {
 	return 500;
 }
 
-std::string getServerIP(int socket_fd) {
+std::string getServerIPPort(int socket_fd) {
 	struct sockaddr_in server_addr;
 	socklen_t server_addr_len = sizeof(server_addr);
 	
@@ -359,7 +368,10 @@ std::string getServerIP(int socket_fd) {
 	if (getsockname(socket_fd, (struct sockaddr*)&server_addr, &server_addr_len) == 0) {
 		char ipStr[INET_ADDRSTRLEN];
 		if (inet_ntop(AF_INET, &server_addr.sin_addr, ipStr, INET_ADDRSTRLEN)) {
-			return std::string(ipStr);
+			int port = ntohs(server_addr.sin_port);
+            std::string ip_port = ipStr;
+			ip_port += ":" + convertToStr(port);
+			return ip_port;
 		}
 	}
 	return "unknown";
@@ -406,22 +418,24 @@ size_t getMaxSize(const std::string &input_size) {
 
 Server *getCurrentServer(const HTTPRequest &input_request, ServerManager &server_manager, const std::string &server_IP) {
     std::string host_header = input_request.getHost();
-    std::string hostname;
+    std::string host;
     std::string request_port;
-    
-    size_t colon_pos = host_header.find(':');
+	
+    DEBUG_PRINT("IP-Port server: " << server_IP);
+    size_t colon_pos = server_IP.find(':');
     if (colon_pos != std::string::npos) {
         // Host header contains port (e.g., "localhost:8080")
-        hostname = host_header.substr(0, colon_pos);           // "localhost"
-        request_port = host_header.substr(colon_pos + 1);
+        host = server_IP.substr(0, colon_pos);           // "localhost"
+        request_port = server_IP.substr(colon_pos + 1);
 	}
+	DEBUG_PRINT("host_header: " << host_header << ", host: " << host << ", request_port: " << request_port);
     // Step 1: Collect all servers that match IP and port
     std::vector<Server*> matching_servers;
     std::vector<Server*>::iterator begSe = server_manager.getServers().begin();
     std::vector<Server*>::iterator endSe = server_manager.getServers().end();
     
     for (; begSe != endSe; ++begSe) {
-        if ((*begSe)->getIP() == server_IP) {
+        if ((*begSe)->getIP() == host) {
             DEBUG_PRINT("Checking server IP: " << (*begSe)->getIP());
             
             std::vector<std::string> server_ports = (*begSe)->getPort();
@@ -456,8 +470,8 @@ Server *getCurrentServer(const HTTPRequest &input_request, ServerManager &server
         std::vector<std::string>::iterator name_end = server_names.end();
         
         for (; name_it != name_end; ++name_it) {
-            DEBUG_PRINT("Checking server_name: " << *name_it << " against hostname: " << hostname);
-            if (*name_it == hostname) {
+            DEBUG_PRINT("Checking server_name: " << *name_it << " against hostname: " << host_header);
+            if (*name_it == host_header) {
                 DEBUG_PRINT("Found exact server_name match!");
                 return *matching_it;
             }
@@ -478,16 +492,8 @@ Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_s
 	if (request_path == "/") {
 		// Look for exact root location match first
 		// DEBUG_PRINT("it is a default location\n";
-		std::vector<Location*>::iterator begLo = current_server.getLocationsList().begin();
-		std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
-		for (; begLo != endLo; ++begLo) {
-			if ((*begLo)->getName() == "/") {
-				DEBUG_PRINT("found begLo: " << (*begLo)->getName() << " - " << (*begLo)->getRoot());
-				return *begLo;
-			}
-		}
+		return current_server.getLocationsList().front();
 		// DEBUG_PRINT("is returning the default location\n";
-		return NULL; // or return default location if you prefer
 	}
 	Location *best_location_name = NULL;
 	size_t name_length_track = 0;
@@ -560,3 +566,33 @@ std::string trimString(const std::string& s){
 	return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);	
 }
 
+int fileDeletable(const std::string &body_filename, Location *location, Location *default_location) {
+	DEBUG_PRINT("file to check before deleting: " << body_filename);
+	DEBUG_PRINT("location requested initially: " << location->getName());
+	DEBUG_PRINT("Root folder on location: " << location->getRoot());
+	DEBUG_PRINT("default location: " << default_location->getName());
+	// we accidentally arrive on the defualt server/default location, avoid deleting any delete file from this section
+	if (location && default_location) {
+		if (location->getName() == default_location->getName()) {
+			DEBUG_PRINT("We are in the default location");
+			std::vector<MET>::iterator begM = location->getMethod().begin();
+			std::vector<MET>::iterator endM = location->getMethod().end();
+			for (; begM != endM; ++begM) {
+				if (*begM == DELETE) {
+					DEBUG_PRINT("File requested is in a DELETE environment: 200");
+					return 200;
+				}
+				DEBUG_PRINT("File requested isn't in a DELETE environment: 405");
+				return 405;
+			}
+		}
+		if (body_filename.find(location->getRoot()) != std::string::npos) {
+			DEBUG_PRINT("Trying to delete a root file -- unauthorise: 403");
+			return 403;
+		}
+		if (body_filename.find(location->getName()) != std::string::npos)
+			return 200;
+	}
+	DEBUG_PRINT("No default location saved -- returning error per security: 403");
+	return 403;	
+}

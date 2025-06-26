@@ -5,3 +5,4 @@ output
 /OBJ
 webserv
 /documents/upload/storage/*
+!/documents/upload/storage/unauthorise.txt

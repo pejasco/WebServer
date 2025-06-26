@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/18 10:25:52 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/26 17:29:14 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ std::string getContentType(const std::string &inputExtension);
 bool is_file_empty(const std::string &config_file);
 bool fileExists(const std::string &filename);
 std::string toLowerCase(const std::string &input);
-std::string getServerIP(int socketFd);
+std::string getServerIPPort(int socket_fd);
 int calculateFileSize(std::string &filename);
 size_t getMaxSize(const std::string &inputSize);
 Server *getCurrentServer(const HTTPRequest &inputRequest, ServerManager &serverManager, const std::string &serverIP);
@@ -56,5 +56,7 @@ std::string getFilenameFromPath(const std::string& path);
 std::string trimString(const std::string& s);
 std::string urlDecoder(std::string &url_string);
 int checkExtensions(Location *current_location,std::string &script_name);
+int URILength(const std::string &uri);
+int fileDeletable(const std::string &body_filename, Location *location, Location *default_location);
 
 #endif
