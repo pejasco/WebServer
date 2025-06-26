@@ -15,7 +15,7 @@
 > - ✅ CGI implementation
 > - ✅  Autoindex management
 > - ✅ Redirection
-> - 🔄 Advanced error handling
+> - ✅ Advanced error handling
 > - ✅ File upload functionality
 > - ✅ Static Webserv website to display functionality
 > - ✅ Signal handling and graceful shutdown
@@ -147,7 +147,12 @@ ab -n 1000 -c 10 http://localhost:8080/
 ### Available Test Scripts
 
 ```bash
-In Progress...
+# standard tester script
+make tester
+
+# tester script + debbuging output available
+# !! The debugger limits the loops to 2000 !!
+make tester-debug
 ```
 
 ## 🔧 Building and Compilation
@@ -271,9 +276,4 @@ This project demonstrates mastery of:
 - [ ] Performance optimization
 - [ ] Testing edge cases
 
-### Phase 3: Extended Features (optional) ❌
-- [ ] Security feature (loggin system)
-- [ ] Database connection
-- [ ] WebSocket support
-
-**Last Updated:** 17/06/2025
+**Last Updated:** 26/06/2025
