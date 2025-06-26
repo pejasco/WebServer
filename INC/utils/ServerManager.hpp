@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/19 08:58:12 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/06/26 10:24:20 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@
 
 #define MAX_EVENTS 42
 #define MAX_HEADER_SIZE 8192
+#define MAX_URI_LENGTH 2048
+#define EPOLL_TIMEOUT 10000
+#define CLIENT_TIMEOUT 29
 
 // typedef typename std::vector<Server*>::iterator Iterator;
 class Server;
@@ -64,6 +67,8 @@ class ServerManager {
 		void processAndSendResponse(Server *server_requested, Location *location_requested);
 		bool sendResponseBodyFile();
 		void cleanHTTPElement(int current_fd_);
+		void checkClientTimeouts();
+		void send408ErrorResponse(int fd);
 
 		
 	private:

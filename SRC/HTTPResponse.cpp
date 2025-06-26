@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/23 16:27:03 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/26 18:04:03 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,11 @@ current_request_(input_request), server_(server_requested), location_(location_r
 	DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE RESPONSE STARTED\n---------------------\n---------------------\n" RESET);
 	if (error_flag > 0) {
 		status_code_ = error_code;
+		setErrorResponse(status_code_);
+		return ;
+	}
+	if (URILength(current_request_.getPath()) == 414) {
+		status_code_ = 414;
 		setErrorResponse(status_code_);
 		return ;
 	}
@@ -285,28 +290,42 @@ void HTTPResponse::setDeleteResponse() { // NOT good as rely only on hardcoding 
 	if (status_code_ != 200) {
 		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
         setErrorResponse(status_code_);
+		return ;
 	}
-	if (body_filename_.find(location_->getUploadDir()) == std::string::npos) {
-		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
-        setErrorResponse(status_code_);
-	}
+	// if (body_filename_.find(location_->getUploadDir()) == std::string::npos) {
+	// 	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
+    //     setErrorResponse(status_code_);
+	// 	return ;
+	// }
 	DEBUG_PRINT("body_filename_: " << body_filename_);
-    if (fileExists(body_filename_)) {
-		// ADD A CHECK TO ENSURE THE FILE IS IN A FOLDER THAT ALLOWED DELETE --> example when error_file is call 
-        if (!std::remove(body_filename_.c_str())) {
-            response_ = current_request_.getVersion() + " 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nFile deleted";
-            _response_ready_ = true;
+	int authorise_code = fileDeletable(body_filename_, location_, default_location_);
+	if (authorise_code == 200) {
+       	if (!std::remove(body_filename_.c_str())) {
+       	    response_ = current_request_.getVersion() + " 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nFile deleted";
+       	    _response_ready_ = true;
 			status_code_ = 200;
-        } else {
+       	} else if (errno == EACCES){
+			DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
+			status_code_ = 403;
+       	    setErrorResponse(status_code_);
+			return ;
+       	} else {
 			DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
 			status_code_ = 500;
-            setErrorResponse(status_code_);
-        }
-    } else {
+       	    setErrorResponse(status_code_);
+			return;
+		}
+	} else if (authorise_code == 403){
 		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
-		status_code_ = 404;
-        setErrorResponse(status_code_);
-    }
+		status_code_ = 403;
+       	setErrorResponse(status_code_);
+		return ;
+	} else if (authorise_code == 405) {
+		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
+		status_code_ = 405;
+       	setErrorResponse(status_code_);
+		return ;
+	}
 	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
 }
 
@@ -377,9 +396,15 @@ int HTTPResponse::checkFile() {
 	std::string default_path = default_location_->getRoot();
 	default_path.erase(std::remove(default_path.begin(), default_path.end(), '/'), default_path.end());
 	DEBUG_PRINT("default path: " << default_path);
+	DEBUG_PRINT("location: " << location_->getIndex() << ", default_location: " << default_location_->getIndex());
 	if (current_request_.getPath() == "/") {
-		body_filename_ = default_path + "/" + default_location_->getIndex();
-		DEBUG_PRINT("body_filename path: " << body_filename_);
+		if (location_ && location_ != default_location_) {
+			body_filename_ = default_path + location_->getRoot() + "/" + location_->getIndex();
+			DEBUG_PRINT("body_filename from server matching: " << body_filename_);
+		} else {
+			body_filename_ = default_path + "/" + default_location_->getIndex();
+			DEBUG_PRINT("body_filename from default server: " << body_filename_);
+		}
 		std::ifstream body_file(body_filename_.c_str(), std::ios::binary);
 		if (body_file.is_open()) {
 			body_file.close();
@@ -490,7 +515,7 @@ void HTTPResponse::prepareStatusLine() {
 	status_line_ += "\r\n";
 	
 	/****DEBUGGING***/
-	DEBUG_PRINT("Response status_line: " << status_line_);
+	// DEBUG_PRINT("Response status_line: " << status_line_);
 }
 
 

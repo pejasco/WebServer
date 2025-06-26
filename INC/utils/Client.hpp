@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 11:54:18 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/23 15:46:05 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/26 09:44:15 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ class Client {
 		size_t max_body_size; 
     	size_t expected_content_length;
     	ClientState state;
+		time_t last_activity;
 	private:
 		int last_status_code_;
 		bool error_;

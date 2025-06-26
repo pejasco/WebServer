@@ -3,301 +3,297 @@ import tempfile
 import socket
 import urllib3
 import os
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-print("\n=====================================")
-print("BASIC TEST FOR METHOD GET, POST, DELETE")
-print("=====================================\n")
+'''GET 
+function param needed => url, timeout, 
+#POST with UPLOAD with filename
+#CGI with data
+#DELETE with filename
 '''
-#Basic GET request
-try:
-	get_check = requests.get('http://localhost:8080', timeout=5, stream=False)
-	print(f"[GET] => ✅ Success! Status Code: {get_check.status_code}")
-except Exception as e:
-	print(f"[GET] => ❌ failed: {e}")
 
-#Basic POST request
+def test_get_request(url, time, filename):
+	try:
+		if (filename is not None):
+			get_check = requests.get(url + filename, timeout=time)
+		else:
+			get_check = requests.get(url, timeout=time)
+		return True, get_check.status_code
+	except Exception as e:
+		return False, str(e)
 
-# POST for upload
-try:
-	with open('test.txt', 'w') as f:
-		f.write('This is an upload test file for POST request')
-	with open('test.txt', 'rb') as f:
-		file = {'file': f}
-		post_check = requests.post('http://localhost:9000/upload', files=file, timeout=5)
-	print(f"[POST upload] => ✅ Success! Status Code: {post_check.status_code}")
-except Exception as e:
-	print(f"[POST upload] => ❌ failed: {e}")
+def test_upload_request(url, time, filename):
+	try:
+		if filename is not None:
+			upload_check = requests.post(url, files=filename, timeout=time)
+		else:
+			with open('test.txt', 'w') as f:
+				f.write('This is an upload test file for POST request')
+			with open('test.txt', 'rb') as f:
+				file = {'file': f}
+				upload_check = requests.post(url + "/upload", files=file, timeout=time)    
+		return True, upload_check.status_code
+	except Exception as e:
+		return False, str(e)
 
+def test_delete_request(url, time, filename):
+	try:
+		if (filename is not None):
+			delete_check = requests.delete(url + filename, timeout=time)
+		else:
+			delete_check = requests.delete(url, timeout=time)
+		return True, delete_check.status_code
+	except Exception as e:
+		return False, str(e)
 
-#Basic DELETE request
-try:
-	file = 'test.txt'
-	delete_check = requests.delete(f'http://localhost:9000/upload/storage/{file}', timeout=5)	
-	print(f"[DELETE] => ✅ Success! Status code: {delete_check.status_code}")
-except Exception as e:
-	print(f"[DELETE] => ❌ failed: {e}")
-
-print()
-
-###OTHER TESTS TO CREATE###
-
-# Test of CGI
-print("\n======================================")
-print("BASIC TEST FOR METHOD GET, POST with CGI")
-print("======================================\n")
-
-# GET for CGI
-print(" -- GET with CGI -- ")
-print("## SCRIPT with py")
-try:
-	response = requests.get(
-		'http://localhost:3501/cgi/cgi-bin/birthday.py?day=6&month=4',
-		timeout=5,
-		stream=False  # Don't stream the response
-	)       
-	print(f"[GET CGI] => ✅ Success! Status: {response.status_code}")
-except Exception as e:
-	print(f"[GET CGI] => ❌ Failed: {e}")
-
-try:
-	get_cgi_check = requests.get('http://localhost:3501/cgi/cgi-bin/meme.py', timeout=5)
-	print(f"[GET CGI] => ✅ Success! Status: {get_cgi_check.status_code}")
-except Exception as e:
-	print(f"[GET CGI] => ❌ failed: {e}")
-
-try:
-	get_cgi_check = requests.get('http://localhost:3501/cgi/cgi-bin/env.py', timeout=5)
-	print(f"[GET CGI] => ✅ Success! Status: {get_cgi_check.status_code}")
-except Exception as e:
-	print(f"[GET CGI] => ❌ failed: {e}")
-
-print("## SCRIPT with sh")
-try:
-	get_cgi_check = requests.get('http://localhost:3501/cgi/cgi-bin/webserv.sh', timeout=5)
-	print(f"[GET CGI] => ✅ Success! Status: {get_cgi_check.status_code}")
-except Exception as e:
-	print(f"[GET CGI] => ❌ failed: {e}")
-
-# POST for CGI
-print(" -- POST with CGI -- ")
-try:
-	data = {'name': 'username'}
-	post_cgi_check = requests.post('http://localhost:3501/cgi/cgi-bin/say_hello.py', data=data, timeout=5)
-	print(f"[POST CGI] => ✅ Success! Status: {post_cgi_check.status_code}")
-except Exception as e:
-	print(f"[POST CGI] => ❌ failed: {e}")
-
-try:
-	data = {'mood': "%F0%9F%98%8A"}
-	post_cgi_check = requests.post('http://localhost:3501/cgi/cgi-bin/mood.py', data=data, timeout=5)
-	print(f"[POST CGI] => ✅ Success! Status: {post_cgi_check.status_code}")
-except Exception as e:
-	print(f"[POST CGI] => ❌ failed: {e}")
-
-
-# test of Error handling
-print("\n===========")
-print("ERROR TESTING")
-print("===========\n")
-
-print(" -- Config File Error --")
-print( "In progress...")
-
-print(" -- HTTP error code matching")
-try:
-	get_error_check = requests.get('http://localhost:8080/tanzania/home.html', timeout=5)
-	if (get_error_check.status_code == 404):
-		print(f"[ERROR -- wrong file name] => ✅ Success! Status: {get_error_check.status_code}")
-	else:
-		print(f"[ERROR -- wrong file name] => ❌ failed: Error code incorrect: {get_error_check.status_code}")
-except Exception as e:
-	print(f"[ERROR -- wrong file name] => ❌ failed: {e}")
-
-try:
-	get_error_check = requests.get('http://localhost:9000/upload/up.html', timeout=5)
-	if (get_error_check.status_code == 404):
-		print(f"[ERROR -- wrong file name] => ✅ Success! Status: {get_error_check.status_code}")
-	else:
-		print(f"[ERROR -- wrong file name] => ❌ failed: Error code incorrect: {get_error_check.status_code}")
-except Exception as e:
-	print(f"[ERROR -- wrong file name] => ❌ failed: {e}")
-
-try:
-	get_error_check = requests.delete('http://localhost:8080', timeout=5)
-	if (get_error_check.status_code == 405):
-		print(f"[ERROR -- method not allow] => ✅ Success! Status: {get_error_check.status_code}")
-	else:
-		print(f"[ERROR -- method not allow] => ❌ failed: Error code incorrect: {get_error_check.status_code}")
-except Exception as e:
-	print(f"[ERROR -- method not allow] => ❌ failed: {e}")
-
-try:
-	get_error_check = requests.delete('http://localhost:8080/tanzania/homepage.html', timeout=5)
-	if (get_error_check.status_code == 405):
-		print(f"[ERROR -- method not allow] => ✅ Success! Status: {get_error_check.status_code}")
-	else:
-		print(f"[ERROR -- method not allow] => ❌ failed: Error code incorrect: {get_error_check.status_code}")
-except Exception as e:
-	print(f"[ERROR -- method not allow] => ❌ failed: {e}")
-
-
-try:
-	with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-		# Write 50MB of data
-		chunk = b'F' * (1024 * 1024)  # 1MB chunk
-		for _ in range(50):  # Write 50 chunks = 50MB
-			tmp_file.write(chunk)
-		tmp_file_path = tmp_file.name
+def test_cgi_request(url, time, filename, data):
+	try:
+		if (data is None):
+			cgi_check = requests.get(url + filename, timeout=time)
+		else:
+			cgi_check = requests.post(url + filename, data=data, timeout=time)
+		return True, cgi_check.status_code
+	except Exception as e:
+		return False, str(e)
 	
-	with open(tmp_file_path, 'rb') as f:
-		files = {'file': ('large_file.txt', f, 'text/plain')}
-		get_error_check = requests.post('http://localhost:9000/upload', 
-								   files=files, 
-								   timeout=60)
-	if (get_error_check.status_code == 413):
-		print(f"[ERROR -- file too large] => ✅ Success! Status: {get_error_check.status_code}")
-	else:
-		print(f"[ERROR -- file too large] => ❌ failed: Error code incorrect: {get_error_check.status_code}")
-except requests.exceptions.ConnectionError as e:
-	error_str = str(e)
-	if "Connection aborted" in error_str and "104" in error_str:
-		print("[ERROR -- file too large] => ✅ Success! Connection reset as usual per Python Client after 413 error code")
-	else:
-		print(f"Connection error: {e}")
-except Exception as e:
-	print(f"[POST upload -- file too large] => ❌ failed: {e}")
+def test_error_code(url, time, filename, error_code, request_type):
+	try:
+		full_url = url + filename if filename is not None else url
+		methods = {
+			"get": requests.get,
+			"post": requests.post,
+			"delete": requests.delete,
+			"put": requests.put,
+			"head": requests.head
+		}
+		method = methods.get(request_type.lower())
+		if not method:
+			return False, f"Unsupported request type: {request_type}"
+		
+		error_check = method(full_url, timeout=time)
+		
+		if error_check.status_code == error_code:
+			return True, error_check.status_code
+		else:
+			return False, error_check.status_code         
+	except Exception as e:
+		return False, str(e)
 
-try:
-	huge_value = 'H' * 20000 
-	get_error_check = requests.get('http://localhost:9000/upload/', headers={'X-Large-Header': huge_value},timeout=5)
-	if (get_error_check.status_code == 431):
-		print(f"[ERROR -- header too large] => ✅ Success! Status: {get_error_check.status_code}")
-	else:
-		print(f"[ERROR]  -- header too large => ❌ failed: Error code incorrect: {get_error_check.status_code}")
-except requests.exceptions.ConnectionError as e:
-	# This is actually expected for 413 errors!
-	if "Connection reset by peer" in str(e):
-		print(f"[ERROR -- header too large] => ✅ Success! Status: {get_error_check.status_code}")
-	else:
-		print(f"[ERROR -- header too large] => ❌ Connection error: {e}")
-except Exception as e:
-	print(f"[ERROR  -- header too large] => ❌ failed: {e}")
-
-print(" -- Timeout -- ")
-try:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(15)  # Wait longer than server timeout
-    sock.connect(('localhost', 8080))
-    
-    # Send incomplete request
-    incomplete_request = b"GET /test HTTP/1.1\r\n"
-    sock.send(incomplete_request)
-    
-    # Wait for server timeout
-    response = sock.recv(1024).decode('utf-8', errors='ignore')
-    sock.close()
-    
-    if "408" in response:
-        print(f"[ERROR 408 -- Request timeout] => ✅ Success! Response contains 408")
-    else:
-        print(f"[ERROR 408 -- Request timeout] => ❌ failed: Response: {response[:100]}")
-        
-except socket.timeout:
-    print(f"[ERROR 408 -- Request timeout] => ❌ failed: Socket timed out before server responded")
-except Exception as e:
-    print(f"[ERROR 408 -- Request timeout] => ❌ failed: {e}")
-
-print(" -- Default error page -- ")
-'''
-try:
-    get_error_check = requests.post('http://localhost:9000/upload', 
-                                   data="test data",
-                                   headers={'Content-Type': 'application/x-fake-type'}, 
-                                   timeout=5)
-    if (get_error_check.status_code == 500):
-        print(f"[ERROR -- Unsupported media type] => ✅ Success! Using the default error page Status: {get_error_check.status_code}")
-    else:
-        print(f"[ERROR -- Unsupported media type] => ❌ failed: Error code incorrect: {get_error_check.status_code}")
-except Exception as e:
-    print(f"[ERROR -- Unsupported media type] => ❌ failed: {e}")
-
-print(" -- Error on CGI execution -- ")
-try:
-	get_error_check = requests.get('http://localhost:3501/cgi/cgi-bin/fail_500.py', timeout=5)
-	if (get_error_check.status_code == 500):
-		print(f"[ERROR CGI -- CGI crash] => ✅ Success! Status: {get_error_check.status_code}")
-	else:
-		print(f"[ERROR CGI -- CGI crash] => ❌ failed: Error code incorrect: {get_error_check.status_code}")
-except Exception as e:
-	print(f"[ERROR CGI -- CGI crash] => ❌ failed: {e}")
-
-try:
-	get_error_check = requests.get('http://localhost:3501/cgi/cgi-bin/color.py', timeout=5)
-	if (get_error_check.status_code == 404):
-		print(f"[ERROR CGI-- unexisting file] => ✅ Success! Status: {get_error_check.status_code}")
-	else:
-		print(f"[ERROR CGI -- unexisting file] => ❌ failed: Error code incorrect: {get_error_check.status_code}")
-except Exception as e:
-	print(f"[ERROR CGI -- unexisting file] => ❌ failed: {e}")
- 
-# Stress test 
-
-# Use another script to create fake config file to use to test server setup 
-
-
-
-
-
-# OLD
-
-'''
-def test_large_file_urllib3():
-	"""Test using urllib3 for more control over the request"""
-	http = urllib3.PoolManager()
-	
+def test_error_max_body_size(url, time):
 	try:
 		with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-			chunk = b'F' * (1024 * 1024)
-			for _ in range(50):
+			# Write 50MB of data
+			chunk = b'F' * (1024 * 1024)  # 1MB chunk
+			for _ in range(50):  # Write 50 chunks = 50MB
 				tmp_file.write(chunk)
 			tmp_file_path = tmp_file.name
-		
-		# Read file as bytes
+
 		with open(tmp_file_path, 'rb') as f:
-			file_data = f.read()
-		
-		# urllib3 with bytes data
-		response = http.request('POST', 'http://localhost:8080/upload',
-							  fields={'file': ('large_file.txt', file_data, 'text/plain')},
-							  timeout=60)
-		
-		print(f"[ERROR -- file too large] => ✅ Status: {response.status}")
-		return response.status
-		
-	except urllib3.exceptions.ProtocolError as e:
-		# Check if the error message contains 413 or indicates payload too large
-		error_msg = str(e)
-		if "413" in error_msg or "Payload Too Large" in error_msg:
-			print(f"[ERROR -- file too large] => ✅ Protocol error (413 detected): {error_msg}")
-			return 413
+			files = {'file': ('large_file.txt', f, 'text/plain')}
+			get_error_check = requests.post(url, 
+									   files=files, 
+									   timeout=time)
+		if (get_error_check.status_code == 413):
+			print(f"[ERROR -- file too large] => ✅ Success! Status: {get_error_check.status_code}")
 		else:
-			print(f"[ERROR -- file too large] => Protocol error (other): {error_msg}")
-			return "protocol_error_other"
-			
-	except urllib3.exceptions.MaxRetryError as e:
-		error_msg = str(e)
-		if "413" in error_msg or "Payload Too Large" in error_msg:
-			print(f"[ERROR -- file too large] => ✅ Max retry error (413 detected): {error_msg}")
-			return 413
+			print(f"[ERROR -- file too large] => ❌ failed: Error code incorrect: {get_error_check.status_code}")
+	except requests.exceptions.ConnectionError as e:
+		error_str = str(e)
+		if "Connection aborted" in error_str and "104" in error_str:
+			print("[ERROR -- file too large] => ✅ Success! Connection reset as usual per Python Client after 413 error code")
 		else:
-			print(f"[ERROR -- file too large] => Max retry error (other): {error_msg}")
-			return "max_retry_other"
+			print(f"Connection error: {e}")
 	except Exception as e:
-		print(f"[ERROR -- file too large] => ❌ urllib3 failed: {e}")
-		return None
+		print(f"[POST upload -- file too large] => ❌ failed: {e}")
+
+def test_error_max_header_size(url, time):
+	try:
+		huge_value = 'H' * 20000 
+		get_error_check = requests.get(url, headers={'X-Large-Header': huge_value},timeout=time)
+		if (get_error_check.status_code == 431):
+			print(f"[ERROR -- header too large] => ✅ Success! Status: {get_error_check.status_code}")
+		else:
+			print(f"[ERROR]  -- header too large => ❌ failed: Error code incorrect: {get_error_check.status_code}")
+	except requests.exceptions.ConnectionError as e:
+		# This is actually expected for 413 errors!
+		if "Connection reset by peer" in str(e):
+			print(f"[ERROR -- header too large] => ✅ Success! Status: {get_error_check.status_code}")
+		else:
+			print(f"[ERROR -- header too large] => ❌ Connection error: {e}")
+	except Exception as e:
+		print(f"[ERROR  -- header too large] => ❌ failed: {e}")
+
+def test_error_timeout(url, timeout):
+	try:
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sock.connect((url, 8080))
+		
+		# Send incomplete request
+		sock.send(b"GET /test HTTP/1.1\r\nHost: localhost\r\n")
+		sock.settimeout(timeout)
+		get_error_check = sock.recv(1024).decode()
+		if "408" in get_error_check:
+			print(f"[ERROR 408 -- Request timeout] => ✅ Success! - Status: 408")
+		else:
+			print(f"[ERROR 408 -- Request timeout] => ❌ failed")
+	except Exception as e:
+		print(f"Test failed: {e}")
 	finally:
-		if 'tmp_file_path' in locals():
-			os.unlink(tmp_file_path)
-print(test_large_file_urllib3())'''
+		sock.close()
+	
+def test_error_default(url, time):
+	try:
+		long_path = "a" * 8000 + ".html"
+		get_error_check = requests.get(url + "/" + long_path, timeout=time)
+		if (get_error_check.status_code == 500):
+			print(f"[ERROR default -- URI too long (414)] => ✅ Success! Status: {get_error_check.status_code}")
+		else:
+			print(f"[ERROR default -- URI too long (414)] => ❌ failed: Error code incorrect: {get_error_check.status_code}")
+	except Exception as e:
+		print(f"[ERROR default -- URI too long (414)] => ❌ failed: {e}")
+
+def individual_test(test_function, *args, **kwargs):
+	success, status_or_error = test_function(*args, **kwargs)
+	if success:
+		print(f"[TESTER] => ✅ Success! Status Code: {status_or_error}")
+	else:
+		print(f"[TESTER] => ❌ failed: {status_or_error}")
+
+def concurrent_test(test_function, num_concurrent, *args, **kwargs):
+	"""Run the same test function multiple times simultaneously"""
+	results = []
+	def run_single_test():
+		return test_function(*args, **kwargs)
+	start_time = time.time()
+
+	with ThreadPoolExecutor(max_workers=num_concurrent) as executor:
+		futures = [executor.submit(run_single_test) for _ in range(num_concurrent)]
+		for future in futures:
+			results.append(future.result())
+	end_time = time.time()
+	
+	successful = sum(1 for result in results if result[0] == True)
+	total_time = end_time - start_time
+	print(f"Concurrent test: {successful}/{num_concurrent} succeeded in {total_time:.2f}s")
+	
+	# Debug print when not all tests succeed
+	if successful != num_concurrent:
+		failed_count = num_concurrent - successful
+		print(f"🚨 DEBUG: {failed_count} out of {num_concurrent} concurrent tests FAILED")
+		failed_results = [result for result in results if result[0] == False]
+		print("Failed test details:")
+		for i, (success, error_detail) in enumerate(failed_results):
+			print(f"  Failed test #{i+1}: {error_detail}")
+		
+		success_rate = (successful / num_concurrent) * 100
+		print(f"Success rate: {success_rate:.1f}%")
+		if success_rate < 50:
+			print("⚠️  CRITICAL: Less than 50% success rate - possible server blocking or instability!")
+		elif success_rate < 80:
+			print("⚠️  WARNING: Less than 80% success rate - server may have issues under load")
+			
+	else:
+		print("✅ All concurrent tests passed!")
+	
+	return successful, num_concurrent, total_time
+
+def test_server_names():
+	test_cases = [
+		("8080", "WebServer.com", ""),
+		("8080", "tanzania", "tanzania/homepage.html"), 
+		("9000", "upload", ""),
+		("4001", "tooling.com", "tools/welcome.html"),
+		("3501", "cgi.com", "cgi/cgi-bin/meme.py"),
+		("3501", "cgi.com", "cgi/cgi-bin/birthday.py?day=6&month=4"),
+		("3501", "cgi.com", "cgi/cgi-bin/webserv.sh"),
+	]
+	
+	for port, server_name, filename in test_cases:
+		try:
+			# Send request to localhost:8080 but with different Host header
+			headers = {'Host': server_name}
+			response = requests.get(f"http://localhost:{port}/{filename}", 
+								  headers=headers, timeout=5)
+			if (response.status_code == 200):
+				print(f"✅ Host: '{server_name}' → Status: {response.status_code}")
+				print(f"Webpage sent from server : {response.url}")
+			else:
+				print(f"❌ Host: '{server_name}' → Status: {response.status_code}")
+		except Exception as e:
+			print(f"❌ Host: '{server_name}' failed: {e}")
+
+def test_server_multiports():
+	test_cases_get = ["8080", "8081", "8082"]
+	test_cases_cgi_post = ["3501", "3502", "6000"]
+
+	for port in test_cases_get:
+		try:
+			response = requests.get(f"http://localhost:{port}", timeout=5)
+			if (response.status_code == 200):
+				print(f"✅ Port: '{port}' → Status: {response.status_code}")
+			else:
+				print(f"❌ Port: '{port}' → Status: {response.status_code}")
+		except Exception as e:
+			print(f"❌ Host: '{port}' failed: {e}")
+	for port in test_cases_cgi_post:
+		try:
+			response = requests.post(f"http://localhost:{port}/cgi/cgi-bin/say_hello.py", data={"name": "coco"}, timeout=5)
+			if (response.status_code == 200):
+				print(f"✅ Port: '{port}' → Status: {response.status_code}")
+			else:
+				print(f"❌ Port: '{port}' → Status: {response.status_code}")
+		except Exception as e:
+			print(f"❌ Host: '{port}' failed: {e}")
+
+def simple_test():
+	# print("\n=====================================")
+	# print("BASIC TEST FOR METHOD GET, POST, DELETE")
+	# print("=====================================\n")
+	#individual_test(test_get_request, 'http://localhost:8080', 5, None)
+	#individual_test(test_upload_request, 'http://localhost:9000', 5, None)
+	# individual_test(test_delete_request, 'http://localhost:9000', 5, '/upload/storage/test.txt')
+	
+	# print("\n======================================")
+	# print("BASIC TEST FOR METHOD GET, POST with CGI")
+	# print("======================================\n")
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/birthday.py?day=6&month=4', None)
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/meme.py', None)
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/env.py', None)
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/webserv.sh', None)
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/say_hello.py', {'name': 'username'})
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/mood.py', {'mood': "%F0%9F%98%8A"})
+	
+	# print("\n===========")
+	# print("ERROR TESTING")
+	# print("===========\n")
+	# individual_test(test_error_code, 'http://localhost:8080', 5, '/tanzania/home.html', 404, "get")
+	# individual_test(test_error_code, 'http://localhost:9000', 5, '/upload/up.html', 404, "get")
+	# individual_test(test_error_code, 'http://localhost:8080', 5, None, 405, "delete")
+	# individual_test(test_error_code, 'http://localhost:8080', 5, '/tanzania/homepage.html', 405, "delete")
+	# individual_test(test_error_code, 'http://localhost:9000', 5, '/upload/storage/test.php', 404, "delete")
+	# individual_test(test_error_code, 'http://localhost:9000', 5, '/upload/upload.html', 405, "delete")
+	# individual_test(test_error_code, 'http://localhost:9000', 5, '/upload/storage/unauthorise.txt', 403, "delete")
+	# individual_test(test_error_code, 'http://localhost:4001', 5, '/tools/magic_guesser.html', 403, "get")
+	# individual_test(test_error_code, 'http://localhost:3501', 5, '/cgi/cgi-bin/fail_500.py', 500, "get")
+	# individual_test(test_error_code, 'http://localhost:3501', 5, '/cgi/cgi-bin/color.py', 404, "get")
+	# individual_test(test_error_code, 'http://localhost:3501', 5, '/cgi/cgi-bin/hello.php', 405, "get")
+	# test_error_default('http://localhost:8080', 5)
+	# test_error_timeout('localhost', 35)
+	# test_error_max_header_size('http://localhost:9000/upload/', 5)
+	# test_error_max_body_size('http://localhost:9000/upload/', 5)
+	
+	# print("\n===========")
+	# print("CONCURRENT TESTING")
+	# print("===========\n")
+	# concurrent_test(test_get_request, 200, 'http://localhost:8080', 7, None)
+	# concurrent_test(test_cgi_request, 200, 'http://localhost:3501', 7, '/cgi/cgi-bin/meme.py', None)
+	# concurrent_test(test_cgi_request, 100, 'http://localhost:3501', 10, '/cgi/cgi-bin/say_hello.py', {'name': 'username'})
+	test_server_names()
+	#test_server_multiports()
+
+print(simple_test())
+

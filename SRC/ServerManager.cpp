@@ -307,33 +307,33 @@ void ServerManager::parseLocation(std::string &line, Server *current_server, std
 /* Each of the socket_fd will start a Socket object that will test the IP address, bind it and start listening*/
 /****************/
 int ServerManager::startSockets() {
-    std::map<std::string, std::string>::iterator beg = IP_ports_list_.begin();
-    std::map<std::string, std::string>::iterator end = IP_ports_list_.end();
-    std::set<std::string> created_addresses;
-    
-    for (; beg != end; ++beg) {
-        // Create IP:port string for duplicate checking (display format)
-        std::string address = beg->second + ":" + beg->first;
-        
-        // Skip if this IP:port combination already exists
-        if (created_addresses.find(address) != created_addresses.end()) {
+	std::map<std::string, std::string>::iterator beg = IP_ports_list_.begin();
+	std::map<std::string, std::string>::iterator end = IP_ports_list_.end();
+	std::set<std::string> created_addresses;
+	
+	for (; beg != end; ++beg) {
+		// Create IP:port string for duplicate checking (display format)
+		std::string address = beg->second + ":" + beg->first;
+		
+		// Skip if this IP:port combination already exists
+		if (created_addresses.find(address) != created_addresses.end()) {
 			DEBUG_PRINT("startSockets() --> address does exist already");
-            continue;
-        }
-        
-        // Use your custom order: second element (IP) first, then first element (port)
-        sockets_list_.push_back(new Socket(beg->second, beg->first));
-        
-        if (!sockets_list_.back()->getSocketError()) {
-            delete sockets_list_.back();
-            sockets_list_.pop_back();
-            return 0;
-        } else {
-            sockets_fd_list_.push_back(sockets_list_.back()->getSocketFd());
-            created_addresses.insert(address);
-        }
-    }
-    return 1;
+			continue;
+		}
+		
+		// Use your custom order: second element (IP) first, then first element (port)
+		sockets_list_.push_back(new Socket(beg->second, beg->first));
+		
+		if (!sockets_list_.back()->getSocketError()) {
+			delete sockets_list_.back();
+			sockets_list_.pop_back();
+			return 0;
+		} else {
+			sockets_fd_list_.push_back(sockets_list_.back()->getSocketFd());
+			created_addresses.insert(address);
+		}
+	}
+	return 1;
 }
 
 /****************/
@@ -376,38 +376,44 @@ void ServerManager::serverMonitoring() {
 	#else
 		while (running_) {
 	#endif
-		
-		num_events_ = epoll_wait(epoll_fd_, events_, MAX_EVENTS, -1);
+		num_events_ = epoll_wait(epoll_fd_, events_, MAX_EVENTS, EPOLL_TIMEOUT);
 		DEBUG_PRINT("epoll_wait returned " << num_events_ << " events");
-		
-		if (num_events_ == -1) {
-			// std::cerr << "epoll_wait error: " << strerror(errno) << std::endl;
-			if (errno != EINTR)
-				std::cerr << BOLD RED "Error epoll_wait: " << strerror(errno) << RESET << std::endl;
+		if (num_events_ == 0) {
+			DEBUG_PRINT("Timeout detected");
+			checkClientTimeouts();
+		} else if (num_events_ == -1) {
+			#ifdef DEBUG
+			//FOR DEBBUGING ONLY
+				if (errno != EINTR)
+					std::cerr << BOLD RED "Error epoll_wait: " << strerror(errno) << RESET << std::endl;
+			// FOR DEBBUGING ONLY
+			#else
+				;
+			#endif
 			running_ = false;
 			break;
-		}
-		
-		for (client_id_ = 0; client_id_ < num_events_; client_id_++) {
-			current_fd_ = events_[client_id_].data.fd;
-			DEBUG_PRINT("Processing fd: " << current_fd_ << ", events: " << events_[client_id_].events);
-			
-			// Check if this is a server socket
-			bool is_server_socket = (std::find(sockets_fd_list_.begin(), sockets_fd_list_.end(), current_fd_) != sockets_fd_list_.end());
-			DEBUG_PRINT("Is server socket: " << (is_server_socket ? "YES" : "NO"));
-			
-			if (is_server_socket) {
-				createNewClientConnection();
-			} else {
-				DEBUG_PRINT("Looking for existing client for fd: " << current_fd_);
-				Client *current_client = clients_list_[current_fd_];
-				if (current_client == NULL) {
-					DEBUG_PRINT("No client found for fd: " << current_fd_ << ", cleaning up");
-					close(current_fd_);
-					epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, current_fd_, NULL);
+		} else {
+			for (client_id_ = 0; client_id_ < num_events_; client_id_++) {
+				current_fd_ = events_[client_id_].data.fd;
+				DEBUG_PRINT("Processing fd: " << current_fd_ << ", events: " << events_[client_id_].events);
+				
+				// Check if this is a server socket
+				bool is_server_socket = (std::find(sockets_fd_list_.begin(), sockets_fd_list_.end(), current_fd_) != sockets_fd_list_.end());
+				DEBUG_PRINT("Is server socket: " << (is_server_socket ? "YES" : "NO"));
+				if (is_server_socket) {
+					createNewClientConnection();
 				} else {
-					DEBUG_PRINT("Found client, calling existingClientConnection()");
-					existingClientConnection();
+					DEBUG_PRINT("Looking for existing client for fd: " << current_fd_);
+					Client *current_client = clients_list_[current_fd_];
+					if (current_client == NULL) {
+						DEBUG_PRINT("No client found for fd: " << current_fd_ << ", cleaning up");
+						close(current_fd_);
+						epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, current_fd_, NULL);
+					} else {
+						current_client->last_activity = time(NULL);
+						DEBUG_PRINT("Found client, calling existingClientConnection()");
+						existingClientConnection();
+					}
 				}
 			}
 		}
@@ -450,6 +456,8 @@ void ServerManager::createNewClientConnection() {
 		delete new_client;
 		return;
 	}
+
+	new_client->last_activity = time(0);
 	
 	int new_client_fd = new_client->getClientFd();
 	DEBUG_PRINT("Client fd: " << new_client_fd << ", IP: " << new_client->getClientIP());
@@ -471,7 +479,6 @@ void ServerManager::createNewClientConnection() {
 		DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "createNewClientConnection() existed" RESET);
 		return;
 	}
-	
 	DEBUG_PRINT("Successfully added client fd " << new_client_fd << " to epoll");
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "createNewClientConnection() existed" RESET);
 }
@@ -490,29 +497,27 @@ void ServerManager::existingClientConnection() {
 		DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
 		return;
 	}
-
-	if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
-    	DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
-	}	
-	
+	// if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
+	// 	DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
+	// }	
 	uint32_t current_events = events_[client_id_].events;
 	DEBUG_PRINT("Client [" << client_id_ << "]: " << client->state << ", file_sending_complete: " << client->file_sending_complete);
-    DEBUG_PRINT("=== EVENT ANALYSIS ===");
-    DEBUG_PRINT("EPOLLIN (1): " << (current_events & EPOLLIN ? "YES" : "NO"));
-    DEBUG_PRINT("EPOLLOUT (4): " << (current_events & EPOLLOUT ? "YES" : "NO"));
-    DEBUG_PRINT("EPOLLHUP (16): " << (current_events & EPOLLHUP ? "YES" : "NO"));
-    DEBUG_PRINT("EPOLLERR (8): " << (current_events & EPOLLERR ? "YES" : "NO"));
-    DEBUG_PRINT("EPOLLRDHUP (8192): " << (current_events & EPOLLRDHUP ? "YES" : "NO"));
-    DEBUG_PRINT("======================");
-    if (current_events & (EPOLLHUP | EPOLLERR)) {
-        if (current_events & EPOLLHUP)
-            DEBUG_PRINT("Client disconnected (EPOLLHUP) - fd: " << current_fd_);
-        else if (current_events & EPOLLERR)
-            DEBUG_PRINT("Error occurred (EPOLLERR) - fd: " << current_fd_);
-    	cleanClient(current_fd_);
+	DEBUG_PRINT("=== EVENT ANALYSIS ===");
+	DEBUG_PRINT("EPOLLIN (1): " << (current_events & EPOLLIN ? "YES" : "NO"));
+	DEBUG_PRINT("EPOLLOUT (4): " << (current_events & EPOLLOUT ? "YES" : "NO"));
+	DEBUG_PRINT("EPOLLHUP (16): " << (current_events & EPOLLHUP ? "YES" : "NO"));
+	DEBUG_PRINT("EPOLLERR (8): " << (current_events & EPOLLERR ? "YES" : "NO"));
+	DEBUG_PRINT("EPOLLRDHUP (8192): " << (current_events & EPOLLRDHUP ? "YES" : "NO"));
+	DEBUG_PRINT("======================");
+	if (current_events & (EPOLLHUP | EPOLLERR)) {
+		if (current_events & EPOLLHUP)
+			DEBUG_PRINT("Client disconnected (EPOLLHUP) - fd: " << current_fd_);
+		else if (current_events & EPOLLERR)
+			DEBUG_PRINT("Error occurred (EPOLLERR) - fd: " << current_fd_);
+		cleanClient(current_fd_);
 		DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
-        return;
-    }
+		return;
+	}
 	
 	// Handle file sending if in progress
 	if (!client->file_sending_complete) {
@@ -538,37 +543,37 @@ void ServerManager::existingClientConnection() {
 	}
 	
 	 if (client->state == CLIENT_READY_TO_RESPOND && (events_[client_id_].events & EPOLLOUT)) {
-        DEBUG_PRINT(BOLD YELLOW "Client ready to respond and EPOLLOUT available - sending response" RESET);
-        
-        // Handle pending response data first
-        if (!client->header_buffer.empty()) {
-            DEBUG_PRINT("Header bytes to send: " BOLD << client->header_buffer.size() << RESET " bytes");
-            ssize_t bytes_sent = send(current_fd_, client->header_buffer.c_str(), client->header_buffer.length(), 0);
+		DEBUG_PRINT(BOLD YELLOW "Client ready to respond and EPOLLOUT available - sending response" RESET);
+		
+		// Handle pending response data first
+		if (!client->header_buffer.empty()) {
+			DEBUG_PRINT("Header bytes to send: " BOLD << client->header_buffer.size() << RESET " bytes");
+			ssize_t bytes_sent = send(current_fd_, client->header_buffer.c_str(), client->header_buffer.length(), 0);
 			//DEBUG_PRINT("Header sent to client: " << client->header_buffer);
 			DEBUG_PRINT("send() returned: " BOLD << bytes_sent << RESET" bytes");
-            
-            if (bytes_sent <= 0) {
-                DEBUG_PRINT("Error sending pending response");
-                return; // Error or would block
-            }
-            
-            if (bytes_sent < static_cast<ssize_t>(client->header_buffer.length())) {
-                // Still partial - update pending data
-                DEBUG_PRINT("Still partial send: " BOLD << bytes_sent << RESET "/" BOLD << client->header_buffer.length() << RESET " bytes sent");
-                client->header_buffer = client->header_buffer.substr(bytes_sent);
+			
+			if (bytes_sent <= 0) {
+				DEBUG_PRINT("Error sending pending response");
+				return; // Error or would block
+			}
+			
+			if (bytes_sent < static_cast<ssize_t>(client->header_buffer.length())) {
+				// Still partial - update pending data
+				DEBUG_PRINT("Still partial send: " BOLD << bytes_sent << RESET "/" BOLD << client->header_buffer.length() << RESET " bytes sent");
+				client->header_buffer = client->header_buffer.substr(bytes_sent);
 				DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
-                return;
-            }
-            
-            // All pending data sent
-            DEBUG_PRINT(BOLD YELLOW "All pending response data sent, cleaning header_buffer from client" RESET);
-            client->header_buffer.clear();
-        }
-        
-        // Check if response is complete
-        if (client->current_response && client->current_response->isReady()) {
-            DEBUG_PRINT("Response has been sent, resetting client for next request");
-            // Switch back to EPOLLIN for next request
+				return;
+			}
+			
+			// All pending data sent
+			DEBUG_PRINT(BOLD YELLOW "All pending response data sent, cleaning header_buffer from client" RESET);
+			client->header_buffer.clear();
+		}
+		
+		// Check if response is complete
+		if (client->current_response && client->current_response->isReady()) {
+			DEBUG_PRINT("Response has been sent, resetting client for next request");
+			// Switch back to EPOLLIN for next request
 			DEBUG_PRINT(BOLD MAGENTA "Switching epoll back to EPOLLIN" RESET);
 			struct epoll_event event;
 			event.events = EPOLLIN;
@@ -579,17 +584,17 @@ void ServerManager::existingClientConnection() {
 			cleanHTTPElement(current_fd_);
 			client->resetForNextRequest();
 			DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
-            return;
-        }
-        
-        // Check if there's a body file to send
-        if (client->current_response && !client->current_response->getBodyFilename().empty()) {
-            DEBUG_PRINT("Response has body file: " << client->current_response->getBodyFilename());
-            client->file_sending_complete = false;
-            sendResponseBodyFile();
+			return;
+		}
+		
+		// Check if there's a body file to send
+		if (client->current_response && !client->current_response->getBodyFilename().empty()) {
+			DEBUG_PRINT("Response has body file: " << client->current_response->getBodyFilename());
+			client->file_sending_complete = false;
+			sendResponseBodyFile();
 			DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
 		} else {
-            DEBUG_PRINT("No body file, resetting client for next request");
+			DEBUG_PRINT("No body file, resetting client for next request");
 			DEBUG_PRINT(BOLD MAGENTA "Switching epoll back to EPOLLIN" RESET);
 			struct epoll_event event;
 			event.events = EPOLLIN;
@@ -599,10 +604,10 @@ void ServerManager::existingClientConnection() {
 			(void)epoll_result;
 			DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "existingClientConnection() existed" RESET);
 			cleanHTTPElement(current_fd_);
-            client->resetForNextRequest();
-        }
-        return;
-    }
+			client->resetForNextRequest();
+		}
+		return;
+	}
 
 	// Handle new request data - ONLY if EPOLLIN is set
 	if (events_[client_id_].events & EPOLLIN) {
@@ -638,7 +643,7 @@ void ServerManager::existingClientConnection() {
 				DEBUG_PRINT("Content-Length: " << content_length);
 				DEBUG_PRINT("Client error code: " << client->getLastStatusCode() << ", error_flag: " << error_flag);
 				if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
-    				DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
+					DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
 				}
 				if (client->getLastStatusCode() == 431 || client->getLastStatusCode() == 413) {
 					client->state = CLIENT_READY_TO_RESPOND;
@@ -665,7 +670,7 @@ void ServerManager::existingClientConnection() {
 			case CLIENT_READING_BODY: {
 				DEBUG_PRINT(BOLD CYAN "State: CLIENT_READING_BODY" RESET);
 				if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
-    				DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
+					DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
 				}	
 				int result = readRequestBody(client->expected_content_length, client->max_body_size);
 				DEBUG_PRINT("readRequestBody() returned: " << result);
@@ -720,21 +725,21 @@ bool ServerManager::readClientHeaders() {
 	DEBUG_PRINT("recv() returned: " BOLD << byte_received << RESET " bytes");
 	
 	if (byte_received > 0 && client && client->getLastStatusCode() == 413) {
-        DEBUG_PRINT("Client sending data after 413 error - closing connection");
-        cleanClient(current_fd_);
-        return false;
-    }
+		DEBUG_PRINT("Client sending data after 413 error - closing connection");
+		cleanClient(current_fd_);
+		return false;
+	}
 
-    if (byte_received <= 0) {
-        if (byte_received == 0) {
-            DEBUG_PRINT("Client disconnected gracefully - cleaning up connection");
-        } else {
-            DEBUG_PRINT("Error during header reading - cleaning up connection");
-        }
-        cleanClient(current_fd_);
-        DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "readClientHeaders() exited" RESET);
-        return false; // Connection closed or error
-    }
+	if (byte_received <= 0) {
+		if (byte_received == 0) {
+			DEBUG_PRINT("Client disconnected gracefully - cleaning up connection");
+		} else {
+			DEBUG_PRINT("Error during header reading - cleaning up connection");
+		}
+		cleanClient(current_fd_);
+		DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "readClientHeaders() exited" RESET);
+		return false; // Connection closed or error
+	}
 	
 	received_[byte_received] = '\0';
 	DEBUG_PRINT("Header buffer size before append: " BOLD << client->header_buffer.size() << RESET);
@@ -791,7 +796,7 @@ bool ServerManager::parseHeadersAndCheckBodySize() {
 	
 	// Server/location resolution - done once here
 	DEBUG_PRINT(BOLD GREEN "URL MATCHING INFORMATION FOR HEADER SENDING" RESET);
-	std::string server_IP = getServerIP(current_fd_);
+	std::string server_IP = getServerIPPort(current_fd_);
 	DEBUG_PRINT("Server IP: " << server_IP);
 	
 	default_server_ = servers_list_.front();
@@ -835,7 +840,7 @@ bool ServerManager::parseHeadersAndCheckBodySize() {
 	DEBUG_PRINT("parseHeadersAndCheckBodySize() completed successfully");
 	DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "parseHeadersAndCheckBodySize() exited" RESET);
 	if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
-    	DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
+		DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
 	}	
 	return true;
 }
@@ -871,16 +876,16 @@ int ServerManager::readRequestBody(size_t content_length, size_t max_body_size) 
 		DEBUG_PRINT("remaining: " BOLD << remaining << RESET ", to_read: " BOLD << to_read << RESET ", byte_received: " BOLD << byte_received << RESET);
 		
 		// DON'T CHECK ERRNO - per requirements
-    	if (byte_received <= 0) {
-        	if (byte_received == 0) {
-            	DEBUG_PRINT("Client disconnected gracefully - cleaning up connection");
-        	} else {
-            	DEBUG_PRINT("Error during header reading - cleaning up connection");
-        	}
-        	cleanClient(current_fd_);
+		if (byte_received <= 0) {
+			if (byte_received == 0) {
+				DEBUG_PRINT("Client disconnected gracefully - cleaning up connection");
+			} else {
+				DEBUG_PRINT("Error during header reading - cleaning up connection");
+			}
+			cleanClient(current_fd_);
 			DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "readRequestBody(() exited" RESET);
-        	return false; // Connection closed or error
-    	}
+			return false; // Connection closed or error
+		}
 		
 		client->body_bytes_read += byte_received;
 		DEBUG_PRINT("client body bytes after reading: " BOLD << client->body_bytes_read << RESET);
@@ -902,12 +907,12 @@ int ServerManager::readRequestBody(size_t content_length, size_t max_body_size) 
 	if (client->body_bytes_read >= content_length) {
 		DEBUG_PRINT("Body reading complete");
 		if (reinterpret_cast<uintptr_t>(client->current_request) < 0x1000) {
-    		DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
+			DEBUG_PRINT("ERROR: Request pointer looks invalid: " << client->current_request);
 		}
 		DEBUG_PRINT("body_buffer size to confirm: " BOLD << client->body_buffer.size() << RESET);
 		client->current_request->parseContent(client->body_buffer);
 		DEBUG_PRINT(BOLD GREEN"URL MATCHING INFORMATION FOR BODY SENDING" RESET);
-		std::string server_IP = getServerIP(current_fd_);
+		std::string server_IP = getServerIPPort(current_fd_);
 		default_server_ = servers_list_.front();
 		Server *server_requested = getCurrentServer((*client->current_request), *this, server_IP);
 		Location *location_requested = getCurrentLocation((*client->current_request), *server_requested);
@@ -1168,6 +1173,57 @@ bool ServerManager::cleanClient(int current_fd_) {
 	}
 	DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "cleanClient() exited" RESET);
 	return true;
+}
+
+void ServerManager::send408ErrorResponse(int fd) {
+    const char* response = 
+        "HTTP/1.1 408 Request Timeout\r\n"
+        "Content-Type: text/html; charset=UTF-8\r\n"
+        "Connection: close\r\n"
+        "Content-Length: 62\r\n"
+        "\r\n"
+        "<html><body><h1>408 Request Timeout</h1></body></html>\r\n";
+    ssize_t bytes_sent = send(fd, response, strlen(response), 0);
+    if (bytes_sent == -1) {
+        DEBUG_PRINT("Failed to send 408 response: " << strerror(errno));
+    } else {
+        DEBUG_PRINT("Sent 408 Response to client " << fd << " (" << bytes_sent << " bytes)");
+    }
+}
+
+void ServerManager::checkClientTimeouts() {
+    time_t now = time(NULL);
+    std::vector<int> clients_to_remove;
+    
+    DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "checkClientTimeout() called" RESET);
+    DEBUG_PRINT("CLIENT_TIMEOUT value: " << CLIENT_TIMEOUT);
+
+    std::map<int, Client*>::iterator it;
+    for (it = clients_list_.begin(); it != clients_list_.end(); ++it) {
+        int fd = it->first;
+        Client* client = it->second;
+        if (client != NULL) {
+            time_t inactive_time = now - client->last_activity;
+            if (inactive_time >= CLIENT_TIMEOUT) {
+                DEBUG_PRINT("Client " BOLD << fd << RESET " TIMED OUT (inactive for " UNDERLINE
+                           << inactive_time << RESET " seconds, limit: " UNDERLINE << CLIENT_TIMEOUT << RESET ")");
+                send408ErrorResponse(fd);
+                clients_to_remove.push_back(fd);
+            } else {
+                DEBUG_PRINT("Client " << fd << " still active (inactive for " 
+                           << inactive_time << "/" << CLIENT_TIMEOUT << " seconds)");
+            }
+        } else {
+            DEBUG_PRINT("Client " << fd << " is NULL");
+        }
+    }
+    DEBUG_PRINT("Clients to remove: " << clients_to_remove.size());
+    for (std::vector<int>::iterator it = clients_to_remove.begin(); 
+         it != clients_to_remove.end(); ++it) {
+        DEBUG_PRINT("Cleaning up timed out client");
+        cleanClient(*it);
+    }
+    DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "checkClientTimeout() exited" RESET);
 }
 
 void ServerManager::shutdown() {

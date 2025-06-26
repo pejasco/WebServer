@@ -12,12 +12,12 @@ name = ""
 post_data = ""
 
 #Better to calculate the body size just before sending the response as can be mismatch character from python to C++
-#if method == 'POST':
-	#content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-	#if content_length > 0:
-	#	post_data = sys.stdin.read(content_length)
-	#	params = urllib.parse.parse_qs(post_data)
-	#	name = params.get('name', [''])[0].capitalize()
+if method == 'POST':
+	content_length = int(os.environ.get('CONTENT_LENGTH', 0))
+	if content_length > 0:
+		post_data = sys.stdin.read(content_length)
+		params = urllib.parse.parse_qs(post_data)
+		name = params.get('name', [''])[0].capitalize()
 
 body = """
 <!DOCTYPE html>
