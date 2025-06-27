@@ -24,7 +24,7 @@ fileInput.onchange = ({target}) =>{
 
 function uploadFile(fullName, shortName){
     let xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://localhost:9000/upload");
+    xhr.open("POST", "http://localhost:9000/storage");
     HasError = 0;
     const errorElements = uploadedArea.querySelectorAll('.error');
     errorElements.forEach(element => element.remove());
@@ -131,7 +131,7 @@ uploadedArea.addEventListener("click", function(e) {
         const btn = e.target;
         const filename = btn.getAttribute("data-filename");
         
-        fetch(`/upload/storage/${filename}`, { method: "DELETE" })
+        fetch(`/storage/${filename}`, { method: "DELETE" })
             .then(res => {
                 if (res.ok) {
                     btn.closest(".row").remove();

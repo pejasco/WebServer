@@ -22,7 +22,7 @@ class Server;
 
 class HTTPResponse {
 	public:
-		HTTPResponse(const HTTPRequest &input_request, Server *default_server, Server *server_requested, Location *location_requested, int error_flag, int error_code); //get information like the path, method and version via HTTPrequest class 
+		HTTPResponse(const HTTPRequest &input_request, Server *server_requested, Location *location_requested, int error_flag, int error_code); //get information like the path, method and version via HTTPrequest class 
 		~HTTPResponse();
 		
 		//SETTER
@@ -60,6 +60,7 @@ class HTTPResponse {
 		HTTPRequest current_request_;
 		Server *server_;
 		Location *location_;
+		// Server *master_server_;
 		Server *default_server_;
 		Location *default_location_;
 		//RESPONSE CONTENT

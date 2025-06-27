@@ -16,8 +16,8 @@
 
 bool cgi_flag = false;
 
-HTTPResponse::HTTPResponse(const HTTPRequest &input_request, Server *default_server, Server *server_requested, Location *location_requested, int error_flag, int error_code) : status_code_(0),
-current_request_(input_request), server_(server_requested), location_(location_requested), default_server_(default_server), default_location_(default_server->getLocationsList().front()), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
+HTTPResponse::HTTPResponse(const HTTPRequest &input_request, Server *server_requested, Location *location_requested, int error_flag, int error_code) : status_code_(0),
+current_request_(input_request), server_(server_requested), location_(location_requested), default_server_(server_requested), default_location_(server_requested->getLocationsList().front()), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
 	DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE RESPONSE STARTED\n---------------------\n---------------------\n" RESET);
 	if (error_flag > 0) {
 		status_code_ = error_code;
@@ -236,7 +236,6 @@ int HTTPResponse::createUploadFile(std::string& upload_dir, Content& content){
 void HTTPResponse::setPostResponse() {
 	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET POST RESPONSE CALLED" RESET);
 	std::string default_path = default_location_->getRoot();
-	default_path.erase(std::remove(default_path.begin(), default_path.end(), '/'), default_path.end());
 	// Switch or if statement to see if it is an upload request (CD --> filename)
 		// IF fielname exist --> create a file with a filenema define in CD and fill it with the file content of cd and save it under upload
 	status_code_ = checkFile();
@@ -250,11 +249,16 @@ void HTTPResponse::setPostResponse() {
 		return;
 	}
 	
-	DEBUG_PRINT("location: " << location_);
-	DEBUG_PRINT("is a upload request: " << current_request_.getPath().find("upload"));
+	DEBUG_PRINT("location: " << location_->getName());
+	DEBUG_PRINT("is a upload request: " << location_->isUpload());
+	DEBUG_PRINT("upload directory: " << location_->getUploadDir());
 	std::string upload_dir;
-	if (location_ && current_request_.getPath().find("upload") != std::string::npos)
-		upload_dir = default_path + location_->getUploadDir();		  // upload_dir
+	if (location_ && location_->isUpload()) {
+		if (location_->getUploadDir().find(default_location_->getRoot()) != std::string::npos)
+			upload_dir = location_->getUploadDir();	
+		else
+			upload_dir = default_path + location_->getUploadDir();
+	} 	  // upload_dir
 	Content &content = current_request_.getContent(); // content
 	DEBUG_PRINT("upload_dir: " << upload_dir);
 	status_code_ = checkDirectory(upload_dir);
@@ -394,15 +398,14 @@ void HTTPResponse::draftErrorResponse() {
 int HTTPResponse::checkFile() {
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CHECK FILE CALLED" RESET);
 	std::string default_path = default_location_->getRoot();
-	default_path.erase(std::remove(default_path.begin(), default_path.end(), '/'), default_path.end());
 	DEBUG_PRINT("default path: " << default_path);
-	DEBUG_PRINT("location: " << location_->getIndex() << ", default_location: " << default_location_->getIndex());
+	DEBUG_PRINT("location: " << location_->getRoot() << ", default_location: " << default_location_->getRoot());
 	if (current_request_.getPath() == "/") {
 		if (location_ && location_ != default_location_) {
-			body_filename_ = default_path + location_->getRoot() + "/" + location_->getIndex();
+			body_filename_ = default_path + location_->getRoot() + location_->getIndex();
 			DEBUG_PRINT("body_filename from server matching: " << body_filename_);
 		} else {
-			body_filename_ = default_path + "/" + default_location_->getIndex();
+			body_filename_ = default_path + default_location_->getIndex();
 			DEBUG_PRINT("body_filename from default server: " << body_filename_);
 		}
 		std::ifstream body_file(body_filename_.c_str(), std::ios::binary);
@@ -417,17 +420,21 @@ int HTTPResponse::checkFile() {
 			return 500;
 		}
 	} else {
-		body_filename_ = default_path;
+		if (location_ != default_location_)
+			body_filename_ = default_path;
+		else
+			body_filename_ = "";
 		if (current_request_.getPath().find(".") == std::string::npos) {
 			if (location_->getIndex().empty() && location_->isAutoIndex() == true) {
 				autoIndexRequest();
 				DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CHECK FILE EXITED" RESET);
 				return 200;
 			}
-			body_filename_ += location_->getRoot() + "/" + location_->getIndex();
+			body_filename_ += location_->getRoot() + location_->getIndex();
 			DEBUG_PRINT("body_filename path with file from config: " << body_filename_);
 		} else {
-			body_filename_ += current_request_.getPath();
+			std::string filename = getFilenameFromPath(current_request_.getPath());
+			body_filename_ += location_->getRoot() + filename;
 			DEBUG_PRINT("body_filename path with file from HTTP request: " << body_filename_);
 		}
 		if (fileExists(body_filename_)){

@@ -65,11 +65,13 @@ void Server::setErrorList(const std::string &input_error_directory) {
 };
 
 void Server::addServerName(const std::string &input_names) {
-	std::stringstream ss(input_names);
-	std::string token;
+	if (!input_names.empty()) {
+		std::stringstream ss(input_names);
+		std::string token;
 
-	while (std::getline(ss, token, ' ')) {
-		server_names_.push_back(token);
+		while (std::getline(ss, token, ' ')) {
+			server_names_.push_back(token);
+		}
 	}
 };
 void Server::setMaxSize(size_t input_max_body_size) {

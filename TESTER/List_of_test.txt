@@ -3,9 +3,9 @@
 ### Basic Server Functionality
 - [x] **Server starts with configuration file argument** ✅ MANDATORY
 - [x] **Server uses default path when no config provided** ✅ MANDATORY
-- [ ] **Multiple servers with different host:port combinations** ✅ MANDATORY
+- [x] **Multiple servers with different host:port combinations** ✅ MANDATORY
 - [x] **Default server selection for host:port** ✅ MANDATORY
-- [ ] **Server names setup (optional in config, but must handle when present)** ✅ MANDATORY
+- [x] **Server names setup (optional in config, but must handle when present)** ✅ MANDATORY
 
 ### HTTP Methods (All Required)
 - [x] **GET requests** ✅ MANDATORY
@@ -74,8 +74,8 @@
 ## 🔴 MANDATORY PERFORMANCE & RELIABILITY
 
 ### Non-blocking Behavior (CRITICAL)
-- [ ] **Server must remain non-blocking at all times** ✅ MANDATORY
-- [ ] **Only 1 poll() (or equivalent) for all I/O operations** ✅ MANDATORY
+- [x] **Server must remain non-blocking at all times** ✅ MANDATORY
+- [x] **Only 1 poll() (or equivalent) for all I/O operations** ✅ MANDATORY
 - [ ] **Never read/write without poll()** ✅ MANDATORY
 - [ ] **Monitor reading and writing simultaneously** ✅ MANDATORY
 - [ ] **Proper client disconnection handling** ✅ MANDATORY

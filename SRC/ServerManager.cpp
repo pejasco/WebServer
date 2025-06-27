@@ -7,7 +7,7 @@ bool error_flag = false;
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-ServerManager::ServerManager(std::string &input_config_file) : running_(true), default_server_(NULL), epoll_fd_(-1), num_events_(-1), current_fd_(-1), error_code_(-1) {
+ServerManager::ServerManager(std::string &input_config_file) : running_(true), epoll_fd_(-1), num_events_(-1), current_fd_(-1), error_code_(-1) {
 	std::cout << BOLD MAGENTA "Starting MasterServer\n" RESET;
 	if (is_file_empty(input_config_file))
 		input_config_file = "configuration/default.conf";
@@ -209,7 +209,7 @@ int	ServerManager::readFile(std::fstream &config_file) {
 void ServerManager::parseServer(std::string &line, Server *current_server, std::fstream &config_file) {
 	size_t pos = 0;
 	if (line.find("server_name") != std::string::npos) {
-		if ((pos = line.rfind(":")) != std::string::npos)
+		if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
 			current_server->addServerName(line.substr(pos + 2));
 	} else if (line.find("host") != std::string::npos) {
 		if ((pos = line.find(":")) != std::string::npos && pos > line.find("host"))
@@ -225,7 +225,7 @@ void ServerManager::parseServer(std::string &line, Server *current_server, std::
 		if (line.find("on") != std::string::npos)
 			current_server->setKeepAlive(true);
 	} else if (line.find("client_max_body_size") != std::string::npos) { // limit for the HTTP request body info
-		if ((pos = line.rfind(":")) != std::string::npos) {
+		if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2) {
 			current_server->setMaxSize(getMaxSize(line.substr(pos + 2)));
 		}
 	} else if (line.find("location") != std::string::npos) {
@@ -257,25 +257,25 @@ void ServerManager::parseLocation(std::string &line, Server *current_server, std
 			current_server->addLocation(name);
 			current_location = current_server->getLocationsList().back();
 		} else if (line.find("method") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
 				current_location->setMethod(line.substr(pos + 2));
 		} else if (line.find("root") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
 				current_location->setRoot(line.substr(pos + 2));
 		} else if (line.find("autoindex") != std::string::npos) {
 			if (line.find("on") != std::string::npos)
 				current_location->setAutoIndex(true);
 		} else if (line.find("index:") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
 				current_location->setIndex(line.substr(pos + 2));
 		} else if (line.find("upload:") != std::string::npos) {
 			if (line.find("on") != std::string::npos)
 				current_location->setUpload(true);
 		} else if (line.find("upload_store") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
 				current_location->setUploadDir(line.substr(pos + 2));
 		} else if (line.find("max_body_size") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos) {
+			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2) {
 				current_location->setMaxBodySize(getMaxSize(line.substr(pos + 2)));
 			}
 				/////////////////////////////////
@@ -283,7 +283,7 @@ void ServerManager::parseLocation(std::string &line, Server *current_server, std
 			if (line.find("on") != std::string::npos)
 				current_location->setCGI(true);
 		} else if (line.find("cgi_extensions") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos)
+			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
 				current_location->setCGIExt(line.substr(pos + 2));	
 				/////////////////////////////////
 		} else if (line.find("redirect:") != std::string::npos) {
@@ -293,7 +293,7 @@ void ServerManager::parseLocation(std::string &line, Server *current_server, std
 			if ((pos = line.rfind(":")) != std::string::npos)
 				current_location->setRedirectCode(convertToNb<int>(line.substr(pos + 2)));
 		} else if (line.find("redirect_url") != std::string::npos) {
-			if ((pos = line.find(":")) != std::string::npos)
+			if ((pos = line.find(":")) != std::string::npos && line.size() > pos + 2)
 				current_location->setRedirectURL(line.substr(pos + 2));
 		} else if (line.find("}") != std::string::npos)
 			;
@@ -799,7 +799,7 @@ bool ServerManager::parseHeadersAndCheckBodySize() {
 	std::string server_IP = getServerIPPort(current_fd_);
 	DEBUG_PRINT("Server IP: " << server_IP);
 	
-	default_server_ = servers_list_.front();
+	// master_server_ = servers_list_.front();
 	Server *server_requested = getCurrentServer((*client->current_request), *this, server_IP);
 	Location *location_requested = getCurrentLocation((*client->current_request), *server_requested);
 	
@@ -913,7 +913,7 @@ int ServerManager::readRequestBody(size_t content_length, size_t max_body_size) 
 		client->current_request->parseContent(client->body_buffer);
 		DEBUG_PRINT(BOLD GREEN"URL MATCHING INFORMATION FOR BODY SENDING" RESET);
 		std::string server_IP = getServerIPPort(current_fd_);
-		default_server_ = servers_list_.front();
+		// master_server_ = servers_list_.front();
 		Server *server_requested = getCurrentServer((*client->current_request), *this, server_IP);
 		Location *location_requested = getCurrentLocation((*client->current_request), *server_requested);
 		DEBUG_PRINT(BOLD GREEN"URL MATCHING INFORMATION FOR DOBY SENDING" RESET);
@@ -938,7 +938,7 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 	}
 	
 	DEBUG_PRINT("Creating HTTP response");
-	HTTPResponse* http_response = new HTTPResponse((*client->current_request), default_server_, server_requested, location_requested, error_flag, client->getLastStatusCode());
+	HTTPResponse* http_response = new HTTPResponse((*client->current_request), server_requested, location_requested, error_flag, client->getLastStatusCode());
 	client->setResponse(http_response);
 	DEBUG_PRINT("status code of response: " << http_response->getStatusCode());
 	client->setLastStatusCode(client->current_response->getStatusCode());
