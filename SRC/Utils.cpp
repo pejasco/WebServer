@@ -460,22 +460,24 @@ Server *getCurrentServer(const HTTPRequest &input_request, ServerManager &server
     }
     
     // Step 2: Among matching IP:port servers, find one with matching server_name
-    std::vector<Server*>::iterator matching_it = matching_servers.begin();
+	std::vector<Server*>::iterator matching_it = matching_servers.begin();
     std::vector<Server*>::iterator matching_end = matching_servers.end();
     
     for (; matching_it != matching_end; ++matching_it) {
         // Get server names for this server (you'll need to implement getServerNames())
-        std::vector<std::string> server_names = (*matching_it)->getServerNames();
-        std::vector<std::string>::iterator name_it = server_names.begin();
-        std::vector<std::string>::iterator name_end = server_names.end();
-        
-        for (; name_it != name_end; ++name_it) {
-            DEBUG_PRINT("Checking server_name: " << *name_it << " against hostname: " << host_header);
-            if (*name_it == host_header) {
-                DEBUG_PRINT("Found exact server_name match!");
-                return *matching_it;
-            }
-        }
+        if (!(*matching_it)->getServerNames().empty()) {
+			std::vector<std::string> server_names = (*matching_it)->getServerNames();
+        	std::vector<std::string>::iterator name_it = server_names.begin();
+        	std::vector<std::string>::iterator name_end = server_names.end();
+	
+        	for (; name_it != name_end; ++name_it) {
+        	    DEBUG_PRINT("Checking server_name: " << *name_it << " against hostname: " << host_header);
+        	    if (*name_it == host_header) {
+        	        DEBUG_PRINT("Found exact server_name match!");
+        	        return *matching_it;
+        	    }
+        	}
+		}
     }
     
     // Step 3: No server_name match found, return FIRST server for this IP:port (default behavior)
@@ -500,7 +502,7 @@ Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_s
 	std::vector<Location*>::iterator begLo = current_server.getLocationsList().begin();
 	std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
 	for (; begLo != endLo; ++begLo) {
-		std::string location_path = (*begLo)->getRoot();
+		std::string location_path = (*begLo)->getName();
 		DEBUG_PRINT("Request: " << request_path << ", server location: " << location_path);
 		// Check if request path starts with location path (prefix matching)
 		if (request_path.length() >= location_path.length() && 

@@ -207,9 +207,9 @@ def test_server_names():
 		("8080", "tanzania", "tanzania/homepage.html"), 
 		("9000", "upload", ""),
 		("4001", "tooling.com", "tools/welcome.html"),
-		("3501", "cgi.com", "cgi/cgi-bin/meme.py"),
-		("3501", "cgi.com", "cgi/cgi-bin/birthday.py?day=6&month=4"),
-		("3501", "cgi.com", "cgi/cgi-bin/webserv.sh"),
+		("3501", "cgi.com", "cgi-bin/meme.py"),
+		("3501", "cgi.com", "cgi-bin/birthday.py?day=6&month=4"),
+		("3501", "cgi.com", "cgi-bin/webserv.sh"),
 	]
 	
 	for port, server_name, filename in test_cases:
@@ -260,12 +260,12 @@ def simple_test():
 	# print("\n======================================")
 	# print("BASIC TEST FOR METHOD GET, POST with CGI")
 	# print("======================================\n")
-	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/birthday.py?day=6&month=4', None)
-	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/meme.py', None)
-	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/env.py', None)
-	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/webserv.sh', None)
-	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/say_hello.py', {'name': 'username'})
-	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi/cgi-bin/mood.py', {'mood': "%F0%9F%98%8A"})
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/birthday.py?day=6&month=4', None)
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/meme.py', None)
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/env.py', None)
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/webserv.sh', None)
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/say_hello.py', {'name': 'username'})
+	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/mood.py', {'mood': "%F0%9F%98%8A"})
 	
 	# print("\n===========")
 	# print("ERROR TESTING")
@@ -278,22 +278,22 @@ def simple_test():
 	# individual_test(test_error_code, 'http://localhost:9000', 5, '/upload/upload.html', 405, "delete")
 	# individual_test(test_error_code, 'http://localhost:9000', 5, '/upload/storage/unauthorise.txt', 403, "delete")
 	# individual_test(test_error_code, 'http://localhost:4001', 5, '/tools/magic_guesser.html', 403, "get")
-	# individual_test(test_error_code, 'http://localhost:3501', 5, '/cgi/cgi-bin/fail_500.py', 500, "get")
-	# individual_test(test_error_code, 'http://localhost:3501', 5, '/cgi/cgi-bin/color.py', 404, "get")
-	# individual_test(test_error_code, 'http://localhost:3501', 5, '/cgi/cgi-bin/hello.php', 405, "get")
+	# individual_test(test_error_code, 'http://localhost:3501', 5, '/cgi-bin/fail_500.py', 500, "get")
+	# individual_test(test_error_code, 'http://localhost:3501', 5, '/cgi-bin/color.py', 404, "get")
+	# individual_test(test_error_code, 'http://localhost:3501', 5, '/cgi-bin/hello.php', 405, "get")
 	# test_error_default('http://localhost:8080', 5)
-	# test_error_timeout('localhost', 35)
+	#test_error_timeout('localhost', 35)
 	# test_error_max_header_size('http://localhost:9000/upload/', 5)
 	# test_error_max_body_size('http://localhost:9000/upload/', 5)
 	
 	# print("\n===========")
 	# print("CONCURRENT TESTING")
 	# print("===========\n")
-	# concurrent_test(test_get_request, 200, 'http://localhost:8080', 7, None)
-	# concurrent_test(test_cgi_request, 200, 'http://localhost:3501', 7, '/cgi/cgi-bin/meme.py', None)
-	# concurrent_test(test_cgi_request, 100, 'http://localhost:3501', 10, '/cgi/cgi-bin/say_hello.py', {'name': 'username'})
-	test_server_names()
-	#test_server_multiports()
+	#concurrent_test(test_get_request, 200, 'http://localhost:8080', 7, None)
+	#concurrent_test(test_cgi_request, 200, 'http://localhost:3501', 7, '/cgi/cgi-bin/meme.py', None)
+	#concurrent_test(test_cgi_request, 200, 'http://localhost:3501', 15, '/cgi/cgi-bin/say_hello.py', {'name': 'username'})
+	#test_server_names() #Add a virtual server to test this part (tanzania)
+	test_server_multiports()
 
 print(simple_test())
 

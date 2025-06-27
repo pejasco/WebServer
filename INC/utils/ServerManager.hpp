@@ -77,7 +77,7 @@ class ServerManager {
 		std::vector<Socket*> sockets_list_;
 		std::vector<int> sockets_fd_list_;
 		bool running_;
-		Server *default_server_;
+		// Server *master_server_;
 
 		/*EPOLL INSTANCE ATTRIBUTES*/
 		int epoll_fd_;
