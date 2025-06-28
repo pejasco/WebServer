@@ -156,6 +156,20 @@ def test_error_default(url, time):
 	except Exception as e:
 		print(f"[ERROR default -- URI too long (414)] => ❌ failed: {e}")
 
+def test_301_redirect(url, time):
+	try:
+		response = requests.get(url, timeout=time)
+		if response.history:
+			for i, redirect in enumerate(response.history):
+				if redirect.status_code == 301:
+					print(f"[TESTER REDIRECT] => ✅ Success! Status: {redirect.status_code}")
+					print(f"   {redirect.url} → {redirect.headers.get('Location')}")
+		else:
+			print("❌ No redirects occurred")
+			
+	except Exception as e:
+		print(f"❌ Error: {e}")
+
 def individual_test(test_function, *args, **kwargs):
 	success, status_or_error = test_function(*args, **kwargs)
 	if success:
@@ -241,13 +255,32 @@ def test_server_multiports():
 			print(f"❌ Host: '{port}' failed: {e}")
 	for port in test_cases_cgi_post:
 		try:
-			response = requests.post(f"http://localhost:{port}/cgi/cgi-bin/say_hello.py", data={"name": "coco"}, timeout=5)
+			response = requests.post(f"http://localhost:{port}/cgi-bin/say_hello.py", data={"name": "coco"}, timeout=5)
 			if (response.status_code == 200):
 				print(f"✅ Port: '{port}' → Status: {response.status_code}")
 			else:
 				print(f"❌ Port: '{port}' → Status: {response.status_code}")
 		except Exception as e:
 			print(f"❌ Host: '{port}' failed: {e}")
+
+def test_server_browsers(url, time):
+	test_browsers = {
+		"Chrome": "Chrome/120.0.0.0 Safari/537.36",
+		"Firefox": "Firefox/121.0",
+		"Edge": "Edg/120.0.0.0"
+	}
+	
+	for browser, user_agent in test_browsers.items():
+		try:
+			headers = {"User-Agent": user_agent}
+			response = requests.get(url, headers=headers, timeout=time)
+			if response.status_code == 200:
+				print(f"✅ Browser: '{browser}' → Status: {response.status_code}")
+			else:
+				print(f"❌ Browser: '{browser}' → Status: {response.status_code}")
+		except Exception as e:
+			print(f"❌ Browser: '{browser}' failed: {e}")
+
 
 def simple_test():
 	# print("\n=====================================")
@@ -264,7 +297,7 @@ def simple_test():
 	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/meme.py', None)
 	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/env.py', None)
 	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/webserv.sh', None)
-	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/say_hello.py', {'name': 'username'})
+	#individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/say_hello.py', {'name': 'username'})
 	# individual_test(test_cgi_request, 'http://localhost:3501', 5, '/cgi-bin/mood.py', {'mood': "%F0%9F%98%8A"})
 	
 	# print("\n===========")
@@ -285,6 +318,7 @@ def simple_test():
 	#test_error_timeout('localhost', 35)
 	# test_error_max_header_size('http://localhost:9000/upload/', 5)
 	# test_error_max_body_size('http://localhost:9000/upload/', 5)
+	#test_301_redirect('http://localhost:4001', 5)
 	
 	# print("\n===========")
 	# print("CONCURRENT TESTING")
@@ -293,7 +327,7 @@ def simple_test():
 	#concurrent_test(test_cgi_request, 200, 'http://localhost:3501', 7, '/cgi/cgi-bin/meme.py', None)
 	#concurrent_test(test_cgi_request, 200, 'http://localhost:3501', 15, '/cgi/cgi-bin/say_hello.py', {'name': 'username'})
 	#test_server_names() #Add a virtual server to test this part (tanzania)
-	test_server_multiports()
+	#test_server_multiports()
+	test_server_browsers('http://localhost:8080', 5)
 
 print(simple_test())
-
