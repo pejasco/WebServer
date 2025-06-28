@@ -1,4 +1,4 @@
-## 🔴 MANDATORY TESTS (Required to Pass)
+## 🔴 MANDATORY HTTP REQUEST & RESPONSE
 
 ### Basic Server Functionality
 - [x] **Server starts with configuration file argument** ✅ MANDATORY
@@ -30,97 +30,85 @@
 - [x] 405 Method Not Allowed - Unsupported methods ✅ MANDATORY
 - [x] 500 Internal Server Error - Server errors ✅ MANDATORY
 
-### 🟡 NICE TO HAVE (Configuration Options)
-- [ ] Custom error pages (when configured) 🟡 OPTIONAL
-- [ ] HTTP redirects (when configured) 🟡 OPTIONAL
-- [ ] 403 Forbidden 🟡 DEPENDS ON IMPLEMENTATION
-- [ ] 413 Payload Too Large 🟡 DEPENDS ON CONFIG
-
 ## Static Website Serving
-- [ ] **Serve fully static website** ✅ MANDATORY
-- [ ] **File serving (HTML, CSS, JS, images)** ✅ MANDATORY
-- [ ] **Large file serving** ✅ MANDATORY
-- [ ] **Binary file serving** ✅ MANDATORY
-
-### 🟡 NICE TO HAVE (Configuration-Dependent)
-- [ ] Directory listing (when enabled in config) 🟡 OPTIONAL
-- [ ] Default index files (when configured) 🟡 OPTIONAL
-- [ ] MIME type handling 🟡 NICE TO HAVE
-
-### File Upload Tests
-- [ ] **Clients must be able to upload files** ✅ MANDATORY
-- [ ] **File upload via POST** ✅ MANDATORY
-- [ ] **Upload to configured directory** ✅ MANDATORY
-
-### 🟡 NICE TO HAVE
-- [ ] Multiple file upload 🟡 NICE TO HAVE
-- [ ] Large file upload limits 🟡 DEPENDS ON CONFIG
+- [x] **Serve fully static website** ✅ MANDATORY
+- [x] **File serving (HTML, CSS, JS, images)** ✅ MANDATORY
+- [x] **Large file serving** ✅ MANDATORY
+- [x] **Binary file serving** ✅ MANDATORY
 
 ### CGI (Common Gateway Interface)
-- [ ] **At least one CGI support (PHP, Python, etc.)** ✅ MANDATORY
-- [ ] **CGI with GET method** ✅ MANDATORY
-- [ ] **CGI with POST method** ✅ MANDATORY
-- [ ] **CGI working directory (correct directory for relative paths)** ✅ MANDATORY
-- [ ] **CGI called with file as first argument** ✅ MANDATORY
-- [ ] **PATH_INFO as full path** ✅ MANDATORY
-- [ ] **Chunked request unchunking for CGI** ✅ MANDATORY
-- [ ] **CGI output handling (EOF when no Content-Length)** ✅ MANDATORY
+- [x] **At least one CGI support (PHP, Python, etc.)** ✅ MANDATORY
+- [x] **CGI with GET method** ✅ MANDATORY
+- [x] **CGI with POST method** ✅ MANDATORY
+- [x] **CGI working directory (correct directory for relative paths)** ✅ MANDATORY
+- [x] **CGI called with file as first argument** ✅ MANDATORY
+- [x] **PATH_INFO as full path** ✅ MANDATORY
+
+### File Upload Tests
+- [x] **Clients must be able to upload files** ✅ MANDATORY
+- [x] **File upload via POST** ✅ MANDATORY
+
+### Browser Compatibility
+- [x] **Compatible with standard web browsers** ✅ MANDATORY
+- [x] **HTTP/1.1 compliance (compare with NGINX)** ✅ MANDATORY
 
 ### 🟡 NICE TO HAVE
-- [ ] Multiple CGI types 🟡 NICE TO HAVE
-- [ ] CGI environment variables (beyond basics) 🟡 NICE TO HAVE
-- [ ] CGI timeout handling 🟡 NICE TO HAVE
+- [x] Custom error pages (when configured) 🟡 OPTIONAL
+- [x] HTTP redirects (when configured) 🟡 OPTIONAL
+- [x] 403 Forbidden 🟡 DEPENDS ON IMPLEMENTATION
+- [x] 413 Payload Too Large 🟡 DEPENDS ON CONFIG
+- [x] Directory listing (when enabled in config) 🟡 OPTIONAL
+- [x] Default index files (when configured) 🟡 OPTIONAL
+- [x] Multiple file upload 🟡 NICE TO HAVE
+- [x] Large file upload limits 🟡 DEPENDS ON CONFIG
+- [x] HTTP redirect definition 🟡 OPTIONAL (if configured)
+- [x] Directory listing enable/disable 🟡 OPTIONAL (if configured)
+- [x] Default file for directory requests 🟡 OPTIONAL (if configured)
+- [x] Maximum client request body size 🟡 OPTIONAL (if configured)
+- [x] CGI execution by file extension 🟡 OPTIONAL (if configured)
+- [x] Upload file location configuration 🟡 OPTIONAL (if configured)
+
+### Security & Edge Cases (Bonus)
+- [x] Extremely long URLs/headers 🟡 ROBUSTNESS BONUS
+- [x] Binary data in requests 🟡 ROBUSTNESS BONUS
+
+### Advanced Protocol Features (Nice to Have)
+- [x] Keep-alive connections 🟡 NICE TO HAVE
+- [x] Complex header handling 🟡 NICE TO HAVE
+- [x] Query string parsing 🟡 NICE TO HAVE
 
 ## 🔴 MANDATORY PERFORMANCE & RELIABILITY
 
 ### Non-blocking Behavior (CRITICAL)
 - [x] **Server must remain non-blocking at all times** ✅ MANDATORY
 - [x] **Only 1 poll() (or equivalent) for all I/O operations** ✅ MANDATORY
-- [ ] **Never read/write without poll()** ✅ MANDATORY
-- [ ] **Monitor reading and writing simultaneously** ✅ MANDATORY
-- [ ] **Proper client disconnection handling** ✅ MANDATORY
-- [ ] **No hanging requests (never hang indefinitely)** ✅ MANDATORY
-
-### Browser Compatibility
-- [ ] **Compatible with standard web browsers** ✅ MANDATORY
-- [ ] **HTTP/1.1 compliance (compare with NGINX)** ✅ MANDATORY
+- [x] **Never read/write without poll()** ✅ MANDATORY
+- [x] **Monitor reading and writing simultaneously** ✅ MANDATORY
+- [x] **Proper client disconnection handling** ✅ MANDATORY
+- [x] **No hanging requests (never hang indefinitely)** ✅ MANDATORY
 
 ### Multi-port Support
-- [ ] **Listen to multiple ports** ✅ MANDATORY
+- [x] **Listen to multiple ports** ✅ MANDATORY
+
+### 🟡 NICE TO HAVE Stress Testing (Good Practice)
+- [x] Multiple simultaneous connections 🟡 GOOD PRACTICE
+- [x] Server uptime under load 🟡 GOOD PRACTICE
+- [ ] Memory leak detection 🟡 GOOD PRACTICE
+- [x] Resource cleanup verification 🟡 GOOD PRACTICE
 
 ## 🔴 MANDATORY CONFIGURATION FEATURES
 
-### Route Configuration
-- [ ] **List of accepted HTTP methods per route** ✅ MANDATORY
-- [ ] **Directory/file location mapping** ✅ MANDATORY
-
-### 🟡 OPTIONAL CONFIGURATION FEATURES
-- [ ] HTTP redirect definition 🟡 OPTIONAL (if configured)
-- [ ] Directory listing enable/disable 🟡 OPTIONAL (if configured)
-- [ ] Default file for directory requests 🟡 OPTIONAL (if configured)
-- [ ] Maximum client request body size 🟡 OPTIONAL (if configured)
-- [ ] CGI execution by file extension 🟡 OPTIONAL (if configured)
-- [ ] Upload file location configuration 🟡 OPTIONAL (if configured)
-
-## 🟡 NICE TO HAVE / BONUS TESTS
-
-### Stress Testing (Good Practice)
-- [ ] Multiple simultaneous connections 🟡 GOOD PRACTICE
-- [ ] Server uptime under load 🟡 GOOD PRACTICE
-- [ ] Memory leak detection 🟡 GOOD PRACTICE
-- [ ] Resource cleanup verification 🟡 GOOD PRACTICE
-
-### Security & Edge Cases (Bonus)
-- [ ] Path traversal attempts (../ attacks) 🟡 SECURITY BONUS
-- [ ] Malformed HTTP requests handling 🟡 ROBUSTNESS BONUS
-- [ ] Extremely long URLs/headers 🟡 ROBUSTNESS BONUS
-- [ ] Binary data in requests 🟡 ROBUSTNESS BONUS
-
-### Advanced Protocol Features (Nice to Have)
-- [ ] Keep-alive connections 🟡 NICE TO HAVE
-- [ ] Chunked transfer encoding 🟡 NICE TO HAVE
-- [ ] Complex header handling 🟡 NICE TO HAVE
-- [ ] Query string parsing 🟡 NICE TO HAVE
+### Configuration File
+- [] ***Empty configuration file handling***
+- [] ***Missing minimum information in configuration file***
+    - 1 server block
+    - 1 host
+    - 1 port
+    - 1 location block
+    - 1 methods
+    - 1 root
+    - 1 index  
+- [] ***Double information (same ports, same ip on the same server block, etc...)***
 
 ## ❌ EXPLICITLY FORBIDDEN / NOT REQUIRED
 
@@ -131,49 +119,3 @@
 - ❌ **Using fork except for CGI** (forbidden)
 - ❌ **RegExp for routes** (routes won't use regexp)
 - ❌ **Custom configuration syntax** (can inspire from NGINX)
-
-## 🎯 MINIMUM VIABLE TESTS (Core MVP)
-
-### Essential Tests for Basic Functionality
-1. **Server startup** with config file
-2. **GET request** for static HTML file
-3. **POST request** with file upload
-4. **DELETE request** for file removal
-5. **404 error** with default error page
-6. **CGI execution** (one script type)
-7. **Multiple clients** connecting simultaneously
-8. **Browser compatibility** (load a webpage)
-9. **Non-blocking behavior** (no server hang)
-10. **Multiple ports** listening
-
-### Configuration Tests (Minimum)
-1. **Multiple servers** in config
-2. **Route with HTTP method restrictions**
-3. **File/directory location mapping**
-4. **Default server selection**
-
-## 📋 Test Implementation Priority
-
-### Phase 1: Core Functionality
-- Basic HTTP methods (GET, POST, DELETE)
-- Static file serving
-- Default error pages
-- Configuration parsing
-
-### Phase 2: Advanced Features
-- CGI implementation
-- File uploads
-- Multi-port/multi-server
-- Non-blocking validation
-
-### Phase 3: Polish & Edge Cases
-- Browser compatibility
-- Stress testing
-- Security edge cases
-- Performance optimization
-
-### Phase 4: Bonus Features
-- Advanced configuration options
-- Multiple CGI types
-- Enhanced error handling
-- Performance benchmarking
