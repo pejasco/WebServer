@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/26 18:04:03 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/28 13:11:35 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -276,6 +276,8 @@ void HTTPResponse::setPostResponse() {
 		content_length_ = body_msg_.size();
 		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: " + convertToStr(content_length_) + "\r\nConnection: close\r\n";
 		response_ = status_line_ + header_ + empty_line_ + body_msg_;
+		body_filename_ = "";
+		_response_ready_ = true;
 	}
 	else
 	{

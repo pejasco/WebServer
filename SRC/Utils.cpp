@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/26 17:44:32 by cofische         ###   ########.fr       */
+/*   Updated: 2025/06/28 13:20:20 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -581,16 +581,17 @@ int fileDeletable(const std::string &body_filename, Location *location, Location
 			std::vector<MET>::iterator endM = location->getMethod().end();
 			for (; begM != endM; ++begM) {
 				if (*begM == DELETE) {
+					if (getFilenameFromPath(body_filename) == default_location->getIndex()) {
+						DEBUG_PRINT("Trying to delete a root file -- unauthorise: 403");
+						return 403;
+					}
 					DEBUG_PRINT("File requested is in a DELETE environment: 200");
 					return 200;
+					
 				}
 				DEBUG_PRINT("File requested isn't in a DELETE environment: 405");
 				return 405;
 			}
-		}
-		if (body_filename.find(location->getRoot()) != std::string::npos) {
-			DEBUG_PRINT("Trying to delete a root file -- unauthorise: 403");
-			return 403;
 		}
 		if (body_filename.find(location->getName()) != std::string::npos)
 			return 200;
