@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/26 17:29:14 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/03 08:35:32 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,5 +58,7 @@ std::string urlDecoder(std::string &url_string);
 int checkExtensions(Location *current_location,std::string &script_name);
 int URILength(const std::string &uri);
 int fileDeletable(const std::string &body_filename, Location *location, Location *default_location);
+std::string getDefautlErrorPage(int code);
+bool isConfigFileOK(ServerManager &server_manager) ;
 
 #endif

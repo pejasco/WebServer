@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/28 13:20:20 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/03 11:08:10 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,31 @@ void printServer(Server &server) {
 	DEBUG_PRINT("");
 }
 
+bool isConfigFileOK(ServerManager &server_manager) {
+	Server *temp_server = NULL;
+	Location *temp_location = NULL;
+	if (server_manager.getServers().empty())
+		return false;
+	else {
+		temp_server = server_manager.getServers().front();
+		if (temp_server->getIP().empty())
+			return false;
+		else if (temp_server->getPort().empty())
+			return false;
+		else if (temp_server->getLocationsList().empty())
+			return false;
+	}
+	temp_location = temp_server->getLocationsList().front();
+	if (temp_location->getMethod().empty())
+		return false;
+	else if (temp_location->getRoot().empty())
+		return false;
+	else if (temp_location->getIndex().empty())
+		return false;
+	else 
+		return true;
+}
+
 bool is_file_empty(const std::string &config_file) {
 	std::ifstream filename(config_file.c_str());
 	return filename.tellg() == 0 && filename.peek() == std::ifstream::traits_type::eof();
@@ -113,57 +138,62 @@ bool isMessageCompleted(const std::string &request) {
 void cleanShutdown(ServerManager &master_server) {
 
 	//closing socket_fd from the servers and freeing the struct
-	std::vector<Socket*>::iterator begSo = master_server.getSockets().begin();
-	std::vector<Socket*>::iterator endSo = master_server.getSockets().end();
-	for (; begSo != endSo; ++begSo) {
-		int fd = (*begSo)->getSocketFd();
-        if (isFdOpen(fd)) {
-            DEBUG_PRINT("Closing fd: " << fd);
-        } else {
-            DEBUG_PRINT("fd " << fd << " already closed or invalid");
-        }
-		if (*begSo != NULL)
-			delete *begSo;
+	if (!master_server.getSockets().empty()) {
+		std::vector<Socket*>::iterator begSo = master_server.getSockets().begin();
+		std::vector<Socket*>::iterator endSo = master_server.getSockets().end();
+		for (; begSo != endSo; ++begSo) {
+			int fd = (*begSo)->getSocketFd();
+    	    if (isFdOpen(fd)) {
+    	        DEBUG_PRINT("Closing fd: " << fd);
+    	    } else {
+    	        DEBUG_PRINT("fd " << fd << " already closed or invalid");
+    	    }
+			if (*begSo != NULL)
+				delete *begSo;
+		}
 	}
-
 	//closing and deleting client info
-	std::map<int,Client*>::iterator begCl = master_server.getClients().begin();
-	std::map<int,Client*>::iterator endCl = master_server.getClients().end();
-	for (; begCl != endCl; ++begCl) {
-		int fd = begCl->first;
-        if (isFdOpen(fd)) {
-            DEBUG_PRINT("Closing fd: " << fd);
-        } else {
-            DEBUG_PRINT("fd " << fd << " already closed or invalid");
-        }
-		if ((begCl)->second) {
-			if (begCl->second->current_request) {
-				delete begCl->second->current_request;
-				begCl->second->current_request = NULL;
+	if (!master_server.getClients().empty()) {
+		std::map<int,Client*>::iterator begCl = master_server.getClients().begin();
+		std::map<int,Client*>::iterator endCl = master_server.getClients().end();
+		for (; begCl != endCl; ++begCl) {
+			int fd = begCl->first;
+    	    if (isFdOpen(fd)) {
+    	        DEBUG_PRINT("Closing fd: " << fd);
+    	    } else {
+    	        DEBUG_PRINT("fd " << fd << " already closed or invalid");
+    	    }
+			if ((begCl)->second) {
+				if (begCl->second->current_request) {
+					delete begCl->second->current_request;
+					begCl->second->current_request = NULL;
+				}
+				if (begCl->second->current_response) {
+					delete begCl->second->current_response;
+					begCl->second->current_response = NULL;
+				}
+				delete begCl->second;
 			}
-			if (begCl->second->current_response) {
-				delete begCl->second->current_response;
-				begCl->second->current_response = NULL;
-			}
-			delete begCl->second;
 		}
-	}
-		
+	}	
 	//freeing the struct server
-	std::vector<Server*>::iterator beg = master_server.getServers().begin();
-	std::vector<Server*>::iterator end = master_server.getServers().end();
-
-	for (; beg != end; ++beg) {
-		std::vector<Location*>::iterator begLo = (*beg)->getLocationsList().begin();
-		std::vector<Location*>::iterator endLo = (*beg)->getLocationsList().end();
-		for (; begLo != endLo; ++begLo) {
-			if (*begLo != NULL)
-				delete *begLo;
+	if (!master_server.getServers().empty()) {
+		std::vector<Server*>::iterator beg = master_server.getServers().begin();
+		std::vector<Server*>::iterator end = master_server.getServers().end();
+		
+		for (; beg != end; ++beg) {
+			std::vector<Location*>::iterator begLo = (*beg)->getLocationsList().begin();
+			std::vector<Location*>::iterator endLo = (*beg)->getLocationsList().end();
+			for (; begLo != endLo; ++begLo) {
+				if (*begLo != NULL)
+					delete *begLo;
+			}
+			if (*beg != NULL)
+				delete *beg;
 		}
-		if (*beg != NULL)
-			delete *beg;
+		if (master_server.getEpollFd() != -1)
+			close(master_server.getEpollFd());
 	}
-	close(master_server.getEpollFd());
 }
 
 bool isFdOpen(int fd) {
@@ -360,6 +390,49 @@ int checkExtensions(Location *current_location, std::string &script_name) {
 	return 500;
 }
 
+std::string getDefautlErrorPage(int code) {
+	switch (code) {
+	case 400:
+		return "HTTP/1.1 400 Bad Request\r\n\
+				Content-Type: text/html; charset=UTF-8\r\nContent-Length: 148\r\nConnection: close\r\n\r\n\
+				<!DOCTYPE html><html><head><title>400 Bad Request</title></head><body><h1>400 Bad Request\
+				</h1><p>The request could not be understood due to malformed syntax.</p></body></html>";
+	case 401:
+		return "HTTP/1.1 401 Unauthorized\r\n\
+				Content-Type: text/html; charset=UTF-8\r\nContent-Length: 154\r\nConnection: close\r\n\r\n\
+				<!DOCTYPE html><html><head><title>401 Unauthorized</title></head><body><h1>401 Unauthorized\
+				</h1><p>Authentication is required to access this resource.</p></body></html>";
+	case 403:
+		return "HTTP/1.1 403 Forbidden\r\n\
+				Content-Type: text/html; charset=UTF-8\r\nContent-Length: 142\r\nConnection: close\r\n\r\n\
+				<!DOCTYPE html><html><head><title>403 Forbidden</title></head><body><h1>403 Forbidden\
+				</h1><p>You don't have permission to access this resource.</p></body></html>";	
+	case 404:
+		return "HTTP/1.1 404 Not Found\r\n\
+				Content-Type: text/html; charset=UTF-8\r\nContent-Length: 134\r\nConnection: close\r\n\r\n\
+				<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>404 Not Found\
+				</h1><p>The requested resource could not be found.</p></body></html>";
+	case 405:
+		return "HTTP/1.1 405 Method Not Allowed\r\n\
+				Content-Type: text/html; charset=UTF-8\r\nContent-Length: 159\r\nConnection: close\r\n\r\n\
+				<!DOCTYPE html><html><head><title>405 Method Not Allowed</title></head><body><h1>405 Method Not Allowed\
+				</h1><p>The request method is not allowed for this resource.</p></body></html>";
+	case 413:
+		return "HTTP/1.1 413 Payload Too Large\r\n\
+				Content-Type: text/html; charset=UTF-8\r\nContent-Length: 152\r\nConnection: close\r\n\r\n\
+				<!DOCTYPE html><html><head><title>413 Payload Too Large</title></head><body><h1>413 Payload Too Large\
+				</h1><p>The request payload is too large to process.</p></body></html>";
+	case 500:
+		return "HTTP/1.1 500 Internal Server Error\r\n\
+				Content-Type: text/html; charset=UTF-8\r\nContent-Length: 167\r\nConnection: close\r\n\r\n\
+				<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error\
+				</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
+	default:
+		return "";
+	}
+	
+}
+
 std::string getServerIPPort(int socket_fd) {
 	struct sockaddr_in server_addr;
 	socklen_t server_addr_len = sizeof(server_addr);
@@ -427,6 +500,11 @@ Server *getCurrentServer(const HTTPRequest &input_request, ServerManager &server
         // Host header contains port (e.g., "localhost:8080")
         host = server_IP.substr(0, colon_pos);           // "localhost"
         request_port = server_IP.substr(colon_pos + 1);
+	}
+	colon_pos = host_header.find(':');
+	if (colon_pos != std::string::npos) {
+        // Host header contains port (e.g., "localhost:8080")
+        host_header = host_header.substr(0, colon_pos);           // "localhost"
 	}
 	DEBUG_PRINT("host_header: " << host_header << ", host: " << host << ", request_port: " << request_port);
     // Step 1: Collect all servers that match IP and port

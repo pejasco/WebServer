@@ -7,76 +7,62 @@ bool error_flag = false;
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-ServerManager::ServerManager(std::string &input_config_file) : running_(true), epoll_fd_(-1), num_events_(-1), current_fd_(-1), error_code_(-1) {
-	std::cout << BOLD MAGENTA "Starting MasterServer\n" RESET;
-	if (is_file_empty(input_config_file))
+ServerManager::ServerManager(std::string &input_config_file) : config_file_name_(input_config_file) ,running_(true), epoll_fd_(-1), num_events_(-1), current_fd_(-1), error_code_(-1) {
+	if (is_file_empty(input_config_file)) {
+		std::cerr << BOLD RED "ATTENTION" RESET " the configuration file provided is empty. Switching to default configuration file...\n";
 		input_config_file = "configuration/default.conf";
+	}
+	std::cout << BOLD MAGENTA "Starting MasterServer\n" RESET;
 	std::fstream config_file(input_config_file.c_str());
 
-	if (!readFile(config_file))
-		throw std::runtime_error("Failed to read config file / Error found when reading config file");
+	if (!readFile(config_file)) {
+		shutdown();
+		std::cout << BOLD MAGENTA "Closing MasterServer\n" RESET;
+		std::cerr << BOLD RED;
+		throw std::runtime_error(RESET "Failed to read config file / Error found when reading config file");
+	}
 	setHostPort();
-	if (!startSockets())
-		throw std::runtime_error("Failed to setting up socket(s) / Error found when setting up socket(s)");
-	if (!startEpoll())
-		throw std::runtime_error("Failed to setting up Epoll / Error found when setting up Epoll");
-	
-	//check on error of the config file (ex: incorrect format, missing essential elements) 
-	// --> can be place before the call of the object in main ??
-	// --> Write an information on how to write a config file for our server (README.md?)
-
-	/********DEBUGGING*********/
-	// Printing the server object to ensure they are well connected	
-	// std::vector<Server*>::iterator beg = servers_list_.begin();
-	// std::vector<Server*>::iterator end = servers_list_.end();
-	// for (; beg != end; ++beg)
-	// 	printServer(**beg);
-	// std::cout << "\n\n";
-	// std::map<std::string, std::string>::iterator start = host_port.begin();
-	// std::map<std::string, std::string>::iterator finish = host_port.end();
-	// for (; start != finish; ++start) {	
-	// 	std::cout << start->first << " " << start->second << std::endl; 
-	// }
-
-	// std::vector<Socket*>::iterator begSo = sockets.begin();
-	// std::vector<Socket*>::iterator endSo = sockets.end();
-	// for (; begSo != endSo; ++begSo) {
-	// 	std::cout << (*begSo)->getSocketFd() << std::endl;
-	// }
-	
-	// std::cout << line << std::endl;
-	/********DEBUGGING*********/
-	
-	//clear all the resources
-
+	if (!startSockets()) {
+		shutdown();
+		std::cout << BOLD MAGENTA "Closing MasterServer\n" RESET;
+		std::cerr << BOLD RED;
+		throw std::runtime_error(RESET "Failed to setting up socket(s) / Error found when setting up socket(s)");
+	} 
+	#ifdef DEBUG
+		if (!servers_list_.empty()) {
+			std::vector<Server*>::iterator beg = servers_list_.begin();
+			std::vector<Server*>::iterator end = servers_list_.end();
+			for (; beg != end; ++beg)
+				printServer(**beg);
+			DEBUG_PRINT("\nPRINTING LIST OF IP-PORTS PAIRS\n");
+		} 
+		if (!IP_ports_list_.empty()) {
+			std::map<std::string, std::string>::iterator start = IP_ports_list_.begin();
+			std::map<std::string, std::string>::iterator finish = IP_ports_list_.end();
+			for (; start != finish; ++start) {	
+				DEBUG_PRINT(start->first << " " << start->second); 
+			}
+		}
+		if (!sockets_list_.empty()) {
+			DEBUG_PRINT("\nPRINTING LIST OF SOCKETS\n");
+			std::vector<Socket*>::iterator begSo = sockets_list_.begin();
+			std::vector<Socket*>::iterator endSo = sockets_list_.end();
+			for (; begSo != endSo; ++begSo) {
+				DEBUG_PRINT((*begSo)->getSocketFd());
+			}
+			DEBUG_PRINT("\n\n");
+		}
+	# else 
+		if (!startEpoll()) {
+			shutdown();
+			std::cout << BOLD MAGENTA "Closing MasterServer\n" RESET;
+			std::cerr << BOLD RED;
+			throw std::runtime_error(RESET "Failed to setting up Epoll / Error found when setting up Epoll");
+		}
+	# endif
 }
 
 ServerManager::~ServerManager() {
-	// //closing epoll instance
-	// close(epoll_fd);
-
-	// //closing socket_fd from the servers and freeing the struct
-	// std::vector<Socket*>::iterator begSo = sockets.begin();
-	// std::vector<Socket*>::iterator endSo = sockets.end();
-	// for (; begSo != endSo; ++begSo) {
-	// 	delete *begSo;
-	// }
-
-	// //closing and deleting client info
-	// std::map<int,Client*>::iterator begCl = clients.begin();
-	// std::map<int,Client*>::iterator endCl = clients.end();
-	// for (; begCl != endCl; ++begCl) {
-	// 	close(begCl->first);
-	// 	delete begCl->second;
-	// }
-
-	// //freeing the struct server
-	// std::vector<Server*>::iterator beg = servers.begin();
-	// std::vector<Server*>::iterator end = servers.end();
-	// for (; beg != end; ++beg)
-	// 	delete *beg;
-
-
 	std::cout << BOLD MAGENTA "Closing MasterServer\n" RESET;
 }
 
@@ -175,7 +161,7 @@ int	ServerManager::readFile(std::fstream &config_file) {
 	if (config_file.is_open()){
 		if (checkDuplicatePort(config_file))
 		{
-			std::cerr << "Error: Duplicate port found\n";
+			std::cerr << BOLD RED "Error: " RESET "Duplicate port found\n";
 			config_file.close();
 			return (0);
 		}
@@ -188,12 +174,19 @@ int	ServerManager::readFile(std::fstream &config_file) {
 				servers_list_.push_back(new Server(server_ID++)); // newServerObj will return a pointer to a new Server object that is created
 				current_server = servers_list_.back();
 				server_flag = false;
-				// create a new server object that will parse each line in a sub ServerConfig object.
+				// create a new server object that will parse each line in a sub ServerConfig object.  
 			} else {
 				parseServer(line, current_server, config_file);
 			}
 		}
 		config_file.close();
+		if (!isConfigFileOK(*this)) {
+			DEBUG_PRINT("Config file provided is not complete and can't be process");
+			std::cerr << BOLD RED "Error: " RESET "the configuration file " BOLD << config_file_name_ << RESET " is missing essential information\n"
+			"Please provide at least one server block (including one ip address and one port)\nand a location block"
+			"(including one method, one root address and one file index)\n";
+			return (0);
+		}
 	} else {
 		std::cerr << BOLD RED "Error: file incorrect\n" RESET;
 		return 0;
@@ -242,11 +235,12 @@ void ServerManager::parseServer(std::string &line, Server *current_server, std::
 /****************/
 void ServerManager::parseLocation(std::string &line, Server *current_server, std::fstream &config_file) {
 	size_t pos;
-	std::string name;
+	std::string name = "";
 	Location *current_location = NULL;
-	if ((pos = line.rfind("/")) != std::string::npos)
+	if ((pos = line.rfind("/")) != std::string::npos) {
 		name = line.substr(pos);
-	name.erase(name.end() - 1);
+		name.erase(name.end() - 1);
+	}
 	current_server->addLocation(name);
 	current_location = current_server->getLocationsList().back();
 			//////////////////////////////////
