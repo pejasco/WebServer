@@ -99,8 +99,8 @@
 ## 🔴 MANDATORY CONFIGURATION FEATURES
 
 ### Configuration File
-- [] ***Empty configuration file handling***
-- [] ***Missing minimum information in configuration file***
+- [x] ***Empty configuration file handling***
+- [x] ***Missing minimum information in configuration file***
     - 1 server block
     - 1 host
     - 1 port

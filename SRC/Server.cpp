@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/18 21:41:55 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/07/03 09:52:39 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,9 @@ void Server::setMaxSize(size_t input_max_body_size) {
 	max_body_size_ = input_max_body_size;
 };
 void Server::addLocation(std::string &input_location) {
-	input_location.erase(input_location.end() - 1);
+	if (!input_location.empty()) {
+		input_location.erase(input_location.end() - 1);
+	}
 	locations_list_.push_back(new Location(input_location));
 };
 void Server::setKeepAlive(bool is_alive) {

@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/28 13:11:35 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/03 12:16:00 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -289,7 +289,7 @@ void HTTPResponse::setPostResponse() {
 
 void HTTPResponse::setDeleteResponse() { // NOT good as rely only on hardcoding path instead of using the parsing // config file 
 	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE CALLED" RESET);
-    std::string reqPath = current_request_.getPath(); //  "/upload/rose.jpg"
+    std::string reqPath = current_request_.getPath(); //
 	std::string default_path = default_location_->getRoot(); // "documents/"
 	DEBUG_PRINT("reqPath: " << reqPath << ", default_path: " << default_path);
 	status_code_ = checkFile();
@@ -310,7 +310,7 @@ void HTTPResponse::setDeleteResponse() { // NOT good as rely only on hardcoding 
        	    response_ = current_request_.getVersion() + " 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nFile deleted";
        	    _response_ready_ = true;
 			status_code_ = 200;
-       	} else if (errno == EACCES){
+       	} else if (errno == EACCES || errno == EPERM){
 			DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
 			status_code_ = 403;
        	    setErrorResponse(status_code_);
@@ -386,12 +386,17 @@ void HTTPResponse::draftRedirectResponse() {
 
 void HTTPResponse::draftErrorResponse() {
 	DEBUG_PRINT("error: error-file " << body_filename_ << " doesn't exist");
-	body_msg_ = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
-	status_line_ = "HTTP/1.1 500 Internal Server Error\r\n";
-	header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: 167\r\nConnection: close\r\n";
-	response_ = status_line_ + header_ + empty_line_ + body_msg_;
-	body_filename_ = "";
-	status_code_ = 500;
+	body_msg_ = getDefautlErrorPage(status_code_);
+	if (body_msg_.empty()) {
+		status_line_ = "HTTP/1.1 500 Internal Server Error\r\n";
+		header_ = "Content-Type: text/html; charset=UTF-8\r\nContent-Length: 167\r\nConnection: close\r\n";
+		body_msg_ = "<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error\
+					</h1><p>The server encountered an error and could not complete your request.</p></body></html>";
+		response_ = status_line_ + header_ + empty_line_ + body_msg_;
+		body_filename_ = "";
+		status_code_ = 500;
+	} else
+		response_ = body_msg_;
 	_response_ready_ = true;
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "SET ERROR RESPONSE EXITED" RESET);
 }
@@ -422,17 +427,28 @@ int HTTPResponse::checkFile() {
 			return 500;
 		}
 	} else {
-		if (location_ != default_location_)
+		if (location_ != default_location_) {
 			body_filename_ = default_path;
-		else
+		} else
 			body_filename_ = "";
+		DEBUG_PRINT("current_request: " << current_request_.getPath());
 		if (current_request_.getPath().find(".") == std::string::npos) {
 			if (location_->getIndex().empty() && location_->isAutoIndex() == true) {
 				autoIndexRequest();
 				DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CHECK FILE EXITED" RESET);
 				return 200;
 			}
-			body_filename_ += location_->getRoot() + location_->getIndex();
+			if (!current_request_.getQueryStr().empty() && current_request_.getQueryStr().find("file=") != std::string::npos) {
+				size_t equal = 0;
+				DEBUG_PRINT("query string for current request: " << current_request_.getQueryStr());
+				if ((equal = current_request_.getQueryStr().find("="))) {
+					std::string filename = current_request_.getQueryStr().substr(equal + 1, current_request_.getQueryStr().size() - equal + 1);
+					DEBUG_PRINT("filename " << filename);
+					body_filename_ += location_->getRoot() + filename; 
+				} else 
+					body_filename_ += location_->getRoot() + location_->getIndex();
+			} else
+				body_filename_ += location_->getRoot() + location_->getIndex();
 			DEBUG_PRINT("body_filename path with file from config: " << body_filename_);
 		} else {
 			std::string filename = getFilenameFromPath(current_request_.getPath());
@@ -452,7 +468,7 @@ int HTTPResponse::checkFile() {
     			    case ENOENT:
     			        DEBUG_PRINT("File not found: " << strerror(errno));
     			        return 404;
-    			    case EACCES:
+    			    case EACCES || EPERM:
     			        DEBUG_PRINT("Permission denied: " << strerror(errno));
     			        return 403;
     			    case EISDIR:

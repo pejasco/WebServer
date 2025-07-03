@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/26 10:24:20 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/03 08:39:54 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,7 @@ class ServerManager {
 		std::map<std::string, std::string> IP_ports_list_; // MAY NOT BE USEFUL AS WE GOT SERVER ID 
 		std::vector<Socket*> sockets_list_;
 		std::vector<int> sockets_fd_list_;
+		const std::string config_file_name_;
 		bool running_;
 		// Server *master_server_;
 
