@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/07/03 12:16:00 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/04 15:21:42 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,8 @@
 
 bool cgi_flag = false;
 
-HTTPResponse::HTTPResponse(const HTTPRequest &input_request, Server *server_requested, Location *location_requested, int error_flag, int error_code) : status_code_(0),
-current_request_(input_request), server_(server_requested), location_(location_requested), default_server_(server_requested), default_location_(server_requested->getLocationsList().front()), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
+HTTPResponse::HTTPResponse(const HTTPRequest &input_request, Server *server_requested, Location *location_requested, Server *master_server, int error_flag, int error_code) : status_code_(0),
+current_request_(input_request), server_(server_requested), location_(location_requested), default_server_(server_requested), default_location_(server_requested->getLocationsList().front()), master_server_(master_server), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
 	DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE RESPONSE STARTED\n---------------------\n---------------------\n" RESET);
 	if (error_flag > 0) {
 		status_code_ = error_code;
@@ -348,9 +348,32 @@ void HTTPResponse::setErrorResponse(int error_code) {
 		}
 		if (begEr == endEr)
 			body_filename_ = server_->getErrorDirectory() + convertToStr(status_code_) + ".html";
-	} else 
-		body_filename_ = default_server_->getErrorDirectory() + convertToStr(status_code_) + ".html";
-	// std::cout << "body_filename_ found via map lookup: " << body_filename_ << std::endl;
+		DEBUG_PRINT("body_filename_ found via map lookup: " << body_filename_);
+	} else if (!default_server_->getErrorList().empty()) {
+		DEBUG_PRINT("Error code exist inside server");
+		std::map<int, std::string>::iterator begEr = default_server_->getErrorList().begin();
+		std::map<int, std::string>::iterator endEr = default_server_->getErrorList().end();
+		for (; begEr != endEr; ++begEr) {
+			if (begEr->first == status_code_)
+				body_filename_ = begEr->second;
+		}
+		if (begEr == endEr)
+			body_filename_ = default_server_->getErrorDirectory() + convertToStr(status_code_) + ".html";
+		DEBUG_PRINT("body_filename_ found via map lookup: " << body_filename_);		
+	} else if (!master_server_->getErrorDirectory().empty()) {
+		DEBUG_PRINT("Error code exist inside server");
+		std::map<int, std::string>::iterator begEr = master_server_->getErrorList().begin();
+		std::map<int, std::string>::iterator endEr = master_server_->getErrorList().end();
+		for (; begEr != endEr; ++begEr) {
+			if (begEr->first == status_code_)
+				body_filename_ = begEr->second;
+		}
+		if (begEr == endEr)
+			body_filename_ = master_server_->getErrorDirectory() + convertToStr(status_code_) + ".html";
+		DEBUG_PRINT("body_filename_ found via map lookup: " << body_filename_);		
+	} else
+		body_filename_ = master_server_->getErrorDirectory() + convertToStr(status_code_) + ".html";
+	DEBUG_PRINT("body_filename_ found via default: " << body_filename_);
 	// std::cerr << "[DEBUG hellooo] setErrorResponse: using body_filename_ = " << body_filename_ << std::endl;
 	if (fileExists(body_filename_)) {
 		DEBUG_PRINT("File error found: " << body_filename_);
@@ -750,15 +773,13 @@ void HTTPResponse::CGI_Body() {
 void HTTPResponse::autoIndexRequest() {
 	DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "AUTO INDEX REQUEST CALLED" RESET);
 	is_autoindex_ = true;
-	std::string dir_path = body_filename_ + current_request_.getPath();
-	DEBUG_PRINT("Generate auto index from: " << dir_path);
-	// needed to save the auto_index file in the base directory
-	std::string default_folder = default_location_->getRoot();
-	size_t pos = 0;
-	if ((pos = default_folder.find("/")) != std::string::npos)
-		default_folder = default_folder.substr(pos + 1);
+	std::string dir_path = resolvePathWithoutDuplication(location_->getRoot(), current_request_.getPath());
+	std::string default_folder = master_server_->getLocationsList().front()->getRoot();
+	DEBUG_PRINT("dir_path: " << dir_path << " & default_folder: " << default_folder);
 	status_code_ = structureInfo(dir_path, current_request_.getPath(), default_folder);
-	body_filename_ = default_folder + "/auto_index.html";
+	DEBUG_PRINT("status code: " << status_code_);
+	body_filename_ = default_folder + "auto_index.html";
+	DEBUG_PRINT("body_filename: " << body_filename_);
 	if (status_code_ != 200) {
 		if (!std::remove(body_filename_.c_str())) {
 			this->setAutoIndex(false);

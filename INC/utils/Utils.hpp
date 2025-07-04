@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/03 13:12:41 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/04 15:19:53 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ int checkExtensions(Location *current_location,std::string &script_name);
 int URILength(const std::string &uri);
 int fileDeletable(const std::string &body_filename, Location *location, Location *default_location);
 std::string getDefautlErrorPage(int code);
-bool isConfigFileOK(ServerManager &server_manager) ;
+bool isConfigFileOK(ServerManager &server_manager);
+std::string resolvePathWithoutDuplication(const std::string &root_path, const std::string &request_url) ;
 
 #endif

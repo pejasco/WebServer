@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/04 12:41:06 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/04 15:19:39 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -722,4 +722,28 @@ int fileDeletable(const std::string &body_filename, Location *location, Location
 	}
 	DEBUG_PRINT("No default location saved -- returning error per security: 403");
 	return 403;	
+}
+
+std::string resolvePathWithoutDuplication(const std::string &root_path, const std::string &request_url) {
+    std::string clean_root = root_path;
+    std::string clean_request = request_url;
+    if (!clean_root.empty() && clean_root[clean_root.length() - 1] == '/')
+        clean_root = clean_root.substr(0, clean_root.length() - 1);
+    if (clean_request.empty() || clean_request[0] != '/')
+        clean_request = "/" + clean_request;
+    std::string location_name = "";
+    size_t slash_pos = clean_request.find('/', 1);
+    if (slash_pos != std::string::npos) 
+        location_name = clean_request.substr(0, slash_pos);
+	else
+        location_name = clean_request;
+    size_t root_location_pos = clean_root.find(location_name.substr(1));
+    if (root_location_pos != std::string::npos) {
+        if (slash_pos != std::string::npos) {
+            std::string remaining_path = clean_request.substr(slash_pos);
+            return clean_root + remaining_path;
+        } else 
+            return clean_root;
+    } else
+        return clean_root + clean_request;
 }

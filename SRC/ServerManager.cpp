@@ -962,9 +962,9 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 		DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "processAndSendResponse() exited" RESET);
 		return;
 	}
-	
+	Server *master_server = this->getServers().front();
 	DEBUG_PRINT("Creating HTTP response");
-	HTTPResponse* http_response = new HTTPResponse((*client->current_request), server_requested, location_requested, error_flag, client->getLastStatusCode());
+	HTTPResponse* http_response = new HTTPResponse((*client->current_request), server_requested, location_requested, master_server, error_flag, client->getLastStatusCode());
 	client->setResponse(http_response);
 	DEBUG_PRINT("status code of response: " << http_response->getStatusCode());
 	client->setLastStatusCode(client->current_response->getStatusCode());

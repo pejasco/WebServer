@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/23 15:30:24 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/04 14:50:43 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ class Server;
 
 class HTTPResponse {
 	public:
-		HTTPResponse(const HTTPRequest &input_request, Server *server_requested, Location *location_requested, int error_flag, int error_code); //get information like the path, method and version via HTTPrequest class 
+		HTTPResponse(const HTTPRequest &input_request, Server *server_requested, Location *location_requested, Server *master_server, int error_flag, int error_code); //get information like the path, method and version via HTTPrequest class 
 		~HTTPResponse();
 		
 		//SETTER
@@ -63,6 +63,7 @@ class HTTPResponse {
 		// Server *master_server_;
 		Server *default_server_;
 		Location *default_location_;
+		Server *master_server_;
 		//RESPONSE CONTENT
 		std::string response_;
 		std::string status_line_;
