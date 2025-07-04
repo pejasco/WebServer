@@ -29,34 +29,34 @@ ServerManager::ServerManager(std::string &input_config_file) : config_file_name_
 		throw std::runtime_error(RESET "Failed to setting up socket(s) / Error found when setting up socket(s)");
 	} 
 	#ifdef DEBUG
-		if (!servers_list_.empty()) {
-			std::vector<Server*>::iterator beg = servers_list_.begin();
-			std::vector<Server*>::iterator end = servers_list_.end();
-			for (; beg != end; ++beg) {
-				if (*beg != NULL)
-					printServer(**beg);
-			}
-		} 
-		DEBUG_PRINT("\n\nPRINTING LIST OF IP-PORTS PAIRS\n");
-		if (!IP_ports_list_.empty()) {
-			const std::map<std::string, std::string>& ip_port = IP_ports_list_;
-			std::map<std::string, std::string>::const_iterator start = ip_port.begin();
-			std::map<std::string, std::string>::const_iterator finish = ip_port.end();
-			for (; start != finish; ++start) {	
-				DEBUG_PRINT(start->first << " " << start->second); 
-			}
-			DEBUG_PRINT("");
-		}
-		if (!sockets_list_.empty()) {
-			DEBUG_PRINT("PRINTING LIST OF SOCKETS\n");
-			const std::vector<Socket*>& sock = sockets_list_;
-			std::vector<Socket*>::const_iterator begSo = sock.begin();
-			std::vector<Socket*>::const_iterator endSo = sock.end();
-			for (; begSo != endSo; ++begSo) {
-				DEBUG_PRINT((*begSo)->getSocketFd());
-			}
-			DEBUG_PRINT("");
-		}
+		// if (!servers_list_.empty()) {
+		// 	std::vector<Server*>::iterator beg = servers_list_.begin();
+		// 	std::vector<Server*>::iterator end = servers_list_.end();
+		// 	for (; beg != end; ++beg) {
+		// 		if (*beg != NULL)
+		// 			printServer(**beg);
+		// 	}
+		// } 
+		// DEBUG_PRINT("\n\nPRINTING LIST OF IP-PORTS PAIRS\n");
+		// if (!IP_ports_list_.empty()) {
+		// 	const std::map<std::string, std::string>& ip_port = IP_ports_list_;
+		// 	std::map<std::string, std::string>::const_iterator start = ip_port.begin();
+		// 	std::map<std::string, std::string>::const_iterator finish = ip_port.end();
+		// 	for (; start != finish; ++start) {	
+		// 		DEBUG_PRINT(start->first << " " << start->second); 
+		// 	}
+		// 	DEBUG_PRINT("");
+		// }
+		// if (!sockets_list_.empty()) {
+		// 	DEBUG_PRINT("PRINTING LIST OF SOCKETS\n");
+		// 	const std::vector<Socket*>& sock = sockets_list_;
+		// 	std::vector<Socket*>::const_iterator begSo = sock.begin();
+		// 	std::vector<Socket*>::const_iterator endSo = sock.end();
+		// 	for (; begSo != endSo; ++begSo) {
+		// 		DEBUG_PRINT((*begSo)->getSocketFd());
+		// 	}
+		// 	DEBUG_PRINT("");
+		// }
 		if (!startEpoll()) {
 			shutdown();
 			std::cout << BOLD MAGENTA "Closing MasterServer\n" RESET;
@@ -255,10 +255,12 @@ void ServerManager::parseLocation(std::string &line, Server *current_server, std
     size_t pos = 0;
     std::string name = "";
     Location *current_location = NULL;
-    if ((pos = line.rfind("/")) != std::string::npos)
+    if ((pos = line.find("/")) != std::string::npos) {
         name = safeSubstrAfter(line, pos, 0);
+		current_server->addLocation(name);
+	} else 
+		current_server->addLocation(name);
     pos = 0;
-    current_server->addLocation(name);
     current_location = current_server->getLocationsList().back();
     
     //////////////////////////////////
