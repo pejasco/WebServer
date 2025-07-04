@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/04 11:48:18 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/04 12:41:06 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -618,25 +618,30 @@ Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_s
 	}
 	Location *best_location_name = NULL;
 	size_t name_length_track = 0;
+	bool isValidMatch = false;
 	std::vector<Location*>::iterator begLo = current_server.getLocationsList().begin();
 	std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
 	for (; begLo != endLo; ++begLo) {
 		std::string location_path = (*begLo)->getName();
 		DEBUG_PRINT("Request: " << request_path << ", server location: " << location_path);
+		DEBUG_PRINT("Request size: " << request_path.size() << ", server location size: " << location_path.size());
 		// Check if request path starts with location path (prefix matching)
+		DEBUG_PRINT("Prefix to compare: " << request_path.substr(0, location_path.length()) << ", size: " << request_path.substr(0, location_path.length()).size());
+		DEBUG_PRINT("Check char by char the location string: ");
+		for (size_t i = 0; i < location_path.length(); ++i) {
+			DEBUG_PRINT("[" << i << "] '" << location_path[i] << "' ");
+		}
+		DEBUG_PRINT("Check char by char the request string: ");
+		for (size_t i = 0; i < (request_path.substr(0, location_path.length())).length(); ++i) {
+			DEBUG_PRINT("[" << i << "] '" << (request_path.substr(0, location_path.length()))[i] << "' ");
+		}
 		if (request_path.length() >= location_path.length() && 
 			request_path.substr(0, location_path.length()) == location_path) {
 			DEBUG_PRINT("Prefix match found: " << request_path.substr(0, location_path.length()));
-			// Additional check: ensure we match complete path segments
-			// /kapouet should match /kapouet/file but not /kapouetfile
-			bool isValidMatch = false;
-			if (location_path.length() == request_path.length()) {
+			if (location_path.length() == request_path.substr(0, location_path.length()).length()) {
 				// Exact match
 				isValidMatch = true;
-			} else if (location_path[-1] == '/') {
-				isValidMatch = true;
-			} else if (request_path[location_path.length()] == '/') {
-				// Next character in request is '/', valid path segment boundary
+			} else if (location_path[location_path.length() - 1] == '/') {
 				isValidMatch = true;
 			}
 			if (isValidMatch) {

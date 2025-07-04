@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/04 11:53:27 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/04 12:36:16 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,10 +88,14 @@ void Server::setMaxSize(size_t input_max_body_size) {
 	max_body_size_ = input_max_body_size;
 };
 void Server::addLocation(std::string &input_location) {
+	std::string new_name = "";
+	DEBUG_PRINT("input name: " << input_location);
 	if (!input_location.empty()) {
-		input_location.erase(input_location.end() - 1);
+		input_location.erase(input_location.length() - 1);
+		new_name = safeSubstrAfter(input_location, 0, 0);
 	}
-	locations_list_.push_back(new Location(input_location));
+	DEBUG_PRINT("new input name for location id: " << new_name << ", location id size: " << new_name.size());
+	locations_list_.push_back(new Location(new_name));
 };
 void Server::setKeepAlive(bool is_alive) {
 	keep_alive_ = is_alive;	
