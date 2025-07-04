@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 09:19:15 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/17 10:03:41 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/04 15:03:18 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,7 @@ int structureInfo(const std::string &dir_path, const std::string &sub_dir, const
 	
 	DEBUG_PRINT("location of HTML file: " << (default_folder));
 	// start to write the HTML file 
-	std::ofstream HTML((default_folder + "/auto_index.html").c_str());
+	std::ofstream HTML((default_folder + "auto_index.html").c_str());
 	int status_code = 0;
 	if (HTML.is_open()) {
 		setupHTML(HTML, sub_dir);
