@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:37:06 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/04 14:09:07 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/04 11:49:18 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,9 @@ cgi_enabled_(false), redirect_enable_(false) {
 	redirect_code_ = -1;
 	redirect_url_ = "";
 	root_ = "";
+	cgi_extensions_.clear();
+	method_.clear();
+	
 };
 Location::~Location() {
 	// std::cout << "deleting location\n";
@@ -70,14 +73,15 @@ void Location::setMaxBodySize(size_t input_size) {
 void Location::setCGI(bool is_CGI) {
 	cgi_enabled_ = is_CGI;
 };
-void Location::setCGIExt(const std::string &input_extensions) {
-	std::stringstream ss(input_extensions);
-	std::string token;
-
-	while (std::getline(ss, token, ' ')) {
-    	cgi_extensions_.push_back(token);
-	}
-};
+void Location::setCGIExt(const std::string &input_extensions) {  
+    if (!input_extensions.empty()) {
+        std::istringstream iss(input_extensions);
+        std::string token;
+        
+        while (iss >> token)
+            cgi_extensions_.push_back(token);  // LINE 83 - WHERE IT CRASHES
+    }
+}
 
 /*******REDIRECT INFO********/
 void Location::setRedirect(bool is_redirect) {
@@ -127,7 +131,7 @@ bool Location::isCGI() {
 	return cgi_enabled_;
 };
 std::vector<std::string> &Location::getCGIExt() {
-	return cgi_extensions_;
+    return cgi_extensions_;
 };
 
 /*******REDIRECT INFO********/

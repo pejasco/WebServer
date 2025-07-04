@@ -32,25 +32,36 @@ ServerManager::ServerManager(std::string &input_config_file) : config_file_name_
 		if (!servers_list_.empty()) {
 			std::vector<Server*>::iterator beg = servers_list_.begin();
 			std::vector<Server*>::iterator end = servers_list_.end();
-			for (; beg != end; ++beg)
-				printServer(**beg);
-			DEBUG_PRINT("\nPRINTING LIST OF IP-PORTS PAIRS\n");
+			for (; beg != end; ++beg) {
+				if (*beg != NULL)
+					printServer(**beg);
+			}
 		} 
+		DEBUG_PRINT("\n\nPRINTING LIST OF IP-PORTS PAIRS\n");
 		if (!IP_ports_list_.empty()) {
-			std::map<std::string, std::string>::iterator start = IP_ports_list_.begin();
-			std::map<std::string, std::string>::iterator finish = IP_ports_list_.end();
+			const std::map<std::string, std::string>& ip_port = IP_ports_list_;
+			std::map<std::string, std::string>::const_iterator start = ip_port.begin();
+			std::map<std::string, std::string>::const_iterator finish = ip_port.end();
 			for (; start != finish; ++start) {	
 				DEBUG_PRINT(start->first << " " << start->second); 
 			}
+			DEBUG_PRINT("");
 		}
 		if (!sockets_list_.empty()) {
-			DEBUG_PRINT("\nPRINTING LIST OF SOCKETS\n");
-			std::vector<Socket*>::iterator begSo = sockets_list_.begin();
-			std::vector<Socket*>::iterator endSo = sockets_list_.end();
+			DEBUG_PRINT("PRINTING LIST OF SOCKETS\n");
+			const std::vector<Socket*>& sock = sockets_list_;
+			std::vector<Socket*>::const_iterator begSo = sock.begin();
+			std::vector<Socket*>::const_iterator endSo = sock.end();
 			for (; begSo != endSo; ++begSo) {
 				DEBUG_PRINT((*begSo)->getSocketFd());
 			}
-			DEBUG_PRINT("\n\n");
+			DEBUG_PRINT("");
+		}
+		if (!startEpoll()) {
+			shutdown();
+			std::cout << BOLD MAGENTA "Closing MasterServer\n" RESET;
+			std::cerr << BOLD RED;
+			throw std::runtime_error(RESET "Failed to setting up Epoll / Error found when setting up Epoll");
 		}
 	# else 
 		if (!startEpoll()) {
@@ -158,16 +169,16 @@ int	ServerManager::readFile(std::fstream &config_file) {
 	std::string line;
 	int server_ID = 1000; //Set an ID for new servers (MAY NOT BE USEFUL?)
 	
-	if (config_file.is_open()){
-		if (checkDuplicatePort(config_file))
-		{
-			std::cerr << BOLD RED "Error: " RESET "Duplicate port found\n";
-			config_file.close();
-			return (0);
-		}
-	}
-	config_file.clear();
-	config_file.seekg(0, std::ios::beg);
+	// if (config_file.is_open()){
+	// 	if (checkDuplicatePort(config_file))
+	// 	{
+	// 		std::cerr << BOLD RED "Error: " RESET "Duplicate port found\n";
+	// 		config_file.close();
+	// 		return (0);
+	// 	}
+	// }
+	// config_file.clear();
+	// config_file.seekg(0, std::ios::beg);
 	if (config_file.is_open()) {
 		while (std::getline(config_file, line)) {
 			if (line.find("server {") != std::string::npos || server_flag == true) {				
@@ -200,33 +211,40 @@ int	ServerManager::readFile(std::fstream &config_file) {
 /* if a location word is found, it call parseLocation to create an fill in Location object*/
 /****************/
 void ServerManager::parseServer(std::string &line, Server *current_server, std::fstream &config_file) {
-	size_t pos = 0;
-	if (line.find("server_name") != std::string::npos) {
-		if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
-			current_server->addServerName(line.substr(pos + 2));
-	} else if (line.find("host") != std::string::npos) {
-		if ((pos = line.find(":")) != std::string::npos && pos > line.find("host"))
-			current_server->setIP(line.substr(pos + 2));
-	} else if (line.find("port") != std::string::npos) {
-		if ((pos = line.rfind(":")) != std::string::npos)
-			current_server->setPort(line.substr(pos + 2));
-	} else if (line.find("error_pages") != std::string::npos) {
-		while (std::getline(config_file, line) && line.find("}") == std::string::npos) {
-			current_server->setErrorList(line);	
+    size_t pos = 0;
+    if (line.find("server_name") != std::string::npos) {
+        std::string server_name = extractValueAfterColon(line, true);
+        if (!server_name.empty())
+            current_server->addServerName(server_name);
+    } else if (line.find("host") != std::string::npos) {
+        pos = line.find(":");
+        if (pos != std::string::npos && pos > line.find("host")) {
+            std::string ip = safeSubstrAfter(line, pos, 2);
+            if (!ip.empty())
+                current_server->setIP(ip);
+        }
+    } else if (line.find("port") != std::string::npos) {
+        std::string port = extractValueAfterColon(line, true);
+        if (!port.empty())
+            current_server->setPort(port);
+    } else if (line.find("error_pages") != std::string::npos) {
+        while (std::getline(config_file, line) && line.find("}") == std::string::npos) {
+			if (!line.empty())
+				current_server->setErrorList(line);	
 		}
-	} else if (line.find("keep_alive") != std::string::npos) {
-		if (line.find("on") != std::string::npos)
-			current_server->setKeepAlive(true);
-	} else if (line.find("client_max_body_size") != std::string::npos) { // limit for the HTTP request body info
-		if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2) {
-			current_server->setMaxSize(getMaxSize(line.substr(pos + 2)));
-		}
-	} else if (line.find("location") != std::string::npos) {
-		parseLocation(line, current_server, config_file);
-		if (line.find("server") != std::string::npos)
-			server_flag = true;
-	} else
-		return; // PRINTING ERROR AS UNKNOW CONFIG ELEMENT FOUND
+    } else if (line.find("keep_alive") != std::string::npos) {
+        if (line.find("on") != std::string::npos)
+            current_server->setKeepAlive(true);
+    } else if (line.find("client_max_body_size") != std::string::npos) { // limit for the HTTP request body info
+        std::string max_size = extractValueAfterColon(line, true);
+        if (!max_size.empty())
+            current_server->setMaxSize(getMaxSize(max_size));
+    } else if (line.find("location") != std::string::npos) {
+        parseLocation(line, current_server, config_file);
+        if (line.find("server") != std::string::npos)
+            server_flag = true;
+    } else
+        return; // PRINTING ERROR AS UNKNOW CONFIG ELEMENT FOUND
 }
 
 /****************/
@@ -234,66 +252,78 @@ void ServerManager::parseServer(std::string &line, Server *current_server, std::
 /* if already in the location block, just parse information in the location structure (like root, index, cgi_enable, etc...)*/
 /****************/
 void ServerManager::parseLocation(std::string &line, Server *current_server, std::fstream &config_file) {
-	size_t pos;
-	std::string name = "";
-	Location *current_location = NULL;
-	if ((pos = line.rfind("/")) != std::string::npos) {
-		name = line.substr(pos);
-		name.erase(name.end() - 1);
-	}
-	current_server->addLocation(name);
-	current_location = current_server->getLocationsList().back();
-			//////////////////////////////////
-	while (std::getline(config_file, line) && line.find("server") == std::string::npos) {
-		if (line.find("location") != std::string::npos) {
-			if ((pos = line.rfind("/")) != std::string::npos)
-				name = line.substr(pos);
-			current_server->addLocation(name);
-			current_location = current_server->getLocationsList().back();
-		} else if (line.find("method") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
-				current_location->setMethod(line.substr(pos + 2));
-		} else if (line.find("root") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
-				current_location->setRoot(line.substr(pos + 2));
-		} else if (line.find("autoindex") != std::string::npos) {
-			if (line.find("on") != std::string::npos)
-				current_location->setAutoIndex(true);
-		} else if (line.find("index:") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
-				current_location->setIndex(line.substr(pos + 2));
-		} else if (line.find("upload:") != std::string::npos) {
-			if (line.find("on") != std::string::npos)
-				current_location->setUpload(true);
-		} else if (line.find("upload_store") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
-				current_location->setUploadDir(line.substr(pos + 2));
-		} else if (line.find("max_body_size") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2) {
-				current_location->setMaxBodySize(getMaxSize(line.substr(pos + 2)));
+    size_t pos = 0;
+    std::string name = "";
+    Location *current_location = NULL;
+    if ((pos = line.rfind("/")) != std::string::npos)
+        name = safeSubstrAfter(line, pos, 0);
+    pos = 0;
+    current_server->addLocation(name);
+    current_location = current_server->getLocationsList().back();
+    
+    //////////////////////////////////
+    while (std::getline(config_file, line) && line.find("server") == std::string::npos) {
+        if (line.find("location") != std::string::npos) {
+            if ((pos = line.rfind("/")) != std::string::npos)
+                name = safeSubstrAfter(line, pos, 0);
+			if (!name.empty()) {
+            	current_server->addLocation(name);
+            	current_location = current_server->getLocationsList().back();
 			}
-				/////////////////////////////////
-		} else if (line.find("cgi:") != std::string::npos) {
-			if (line.find("on") != std::string::npos)
-				current_location->setCGI(true);
-		} else if (line.find("cgi_extensions") != std::string::npos) {
-			if ((pos = line.rfind(":")) != std::string::npos && line.size() > pos + 2)
-				current_location->setCGIExt(line.substr(pos + 2));	
-				/////////////////////////////////
-		} else if (line.find("redirect:") != std::string::npos) {
-			if (line.find("on") != std::string::npos)
-				current_location->setRedirect(true);
-		} else if (line.find("redirect_code") != std::string::npos) { // do I need a redirect code or can I simply redirect to a default webpage?
-			if ((pos = line.rfind(":")) != std::string::npos)
-				current_location->setRedirectCode(convertToNb<int>(line.substr(pos + 2)));
-		} else if (line.find("redirect_url") != std::string::npos) {
-			if ((pos = line.find(":")) != std::string::npos && line.size() > pos + 2)
-				current_location->setRedirectURL(line.substr(pos + 2));
-		} else if (line.find("}") != std::string::npos)
-			;
-		else
-			return; // PRINTING ERROR AS UNKNOW CONFIG ELEMENT FOUND
-	}	
+		} else if (line.find("method") != std::string::npos) {
+            std::string method = extractValueAfterColon(line, true);
+            if (!method.empty())
+                current_location->setMethod(method);
+        } else if (line.find("root") != std::string::npos) {
+            std::string root = extractValueAfterColon(line, true);
+            if (!root.empty())
+                current_location->setRoot(root);
+        } else if (line.find("autoindex") != std::string::npos) {
+            if (line.find("on") != std::string::npos)
+                current_location->setAutoIndex(true);
+        } else if (line.find("index:") != std::string::npos) {
+            std::string index = extractValueAfterColon(line, true);
+            if (!index.empty())
+                current_location->setIndex(index);
+        } else if (line.find("upload:") != std::string::npos) {
+            if (line.find("on") != std::string::npos)
+                current_location->setUpload(true);
+        } else if (line.find("upload_store") != std::string::npos) {
+            std::string upload_dir = extractValueAfterColon(line, true);
+            if (!upload_dir.empty())
+                current_location->setUploadDir(upload_dir);
+        } else if (line.find("max_body_size") != std::string::npos) {
+            std::string max_size = extractValueAfterColon(line, true);
+            if (!max_size.empty())
+                current_location->setMaxBodySize(getMaxSize(max_size));
+            /////////////////////////////////
+        } else if (line.find("cgi:") != std::string::npos) {
+            if (line.find("on") != std::string::npos)
+                current_location->setCGI(true);
+        } else if (line.find("cgi_extensions") != std::string::npos) {
+			DEBUG_PRINT("Parsing cgi_extensions line: '" << line << "'");
+			std::string cgi_ext = extractValueAfterColon(line, true);
+			DEBUG_PRINT("Extracted value: '" << cgi_ext << "'");
+			if (!cgi_ext.empty()) {
+				current_location->setCGIExt(cgi_ext);
+			}
+            /////////////////////////////////
+        } else if (line.find("redirect:") != std::string::npos) {
+            if (line.find("on") != std::string::npos)
+                current_location->setRedirect(true);
+        } else if (line.find("redirect_code") != std::string::npos) { // do I need a redirect code or can I simply redirect to a default webpage?
+            std::string redirect_code = extractValueAfterColon(line, true);
+            if (!redirect_code.empty())
+                current_location->setRedirectCode(convertToNb<int>(redirect_code));
+        } else if (line.find("redirect_url") != std::string::npos) {
+            std::string redirect_url = extractValueAfterColon(line, false);
+            if (!redirect_url.empty())
+                current_location->setRedirectURL(redirect_url);
+        } else if (line.find("}") != std::string::npos)
+            ;
+        else
+            return; // PRINTING ERROR AS UNKNOW CONFIG ELEMENT FOUND
+    }	
 }
 
 /****************/

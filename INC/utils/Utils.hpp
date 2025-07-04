@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/03 08:35:32 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/03 13:12:41 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ T convertToNb(const std::string &str) {
 	return nb;
 }
 
+std::string safeSubstrAfter(const std::string& str, size_t pos, size_t offset = 1);
+std::string extractValueAfterColon(const std::string& line, bool use_rfind = true);
 void printServer(Server &server);
 void printLocation(Location &location);
 bool isMessageCompleted(const std::string &request);

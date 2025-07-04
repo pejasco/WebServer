@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:32:27 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/03 09:52:39 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/04 11:53:27 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,15 @@
 
 Server::Server(int input_ID): ID_(input_ID), keep_alive_(false) {
 	(void)ID_;
+	error_directory_ = "";
+	IP_ = "";
+	server_names_.clear();
+	errors_list_.clear();
+	port_.clear();
+	locations_list_.clear();
+	max_body_size_ = 0;
+	keep_alive_ = 0;
+		
 };
 
 Server::~Server() {};
@@ -53,26 +62,27 @@ void Server::setPort(const std::string &input_port) {
 };
 
 void Server::setErrorList(const std::string &input_error_directory) {
-	std::stringstream ss(input_error_directory);
-	std::string directory;
-	size_t pos = 0;
-	int code;
-	char space;
-	ss >> code >> space >> directory;
-	errors_list_.insert(std::pair<int, std::string>(code, directory));
-	if ((pos = directory.rfind('/')) != std::string::npos)
-		error_directory_ = directory.substr(0, pos + 1);
+	if (!input_error_directory.empty()) {
+		std::stringstream ss(input_error_directory);
+		std::string directory;
+		size_t pos = 0;
+		int code = 0;
+		char space;
+		ss >> code >> space >> directory;
+		errors_list_.insert(std::pair<int, std::string>(code, directory));
+		if ((pos = directory.rfind('/')) != std::string::npos)
+			error_directory_ = directory.substr(0, pos + 1);
+	}
 };
 
 void Server::addServerName(const std::string &input_names) {
-	if (!input_names.empty()) {
-		std::stringstream ss(input_names);
-		std::string token;
-
-		while (std::getline(ss, token, ' ')) {
-			server_names_.push_back(token);
-		}
-	}
+    if (!input_names.empty()) {
+        std::istringstream iss(input_names);
+        std::string token;
+        
+        while (iss >> token)
+            server_names_.push_back(token);
+    }
 };
 void Server::setMaxSize(size_t input_max_body_size) {
 	max_body_size_ = input_max_body_size;

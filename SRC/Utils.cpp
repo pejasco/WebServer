@@ -6,86 +6,127 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/03 11:08:10 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/04 11:48:18 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/ServerManager.hpp"
 #include "../INC/utils/Utils.hpp"
 
+std::string safeSubstrAfter(const std::string& str, size_t pos, size_t offset) {
+    if (pos == std::string::npos || pos + offset >= str.size())
+        return "";
+    std::string result = str.substr(pos + offset);
+    
+    // Trim whitespace (restore this functionality!)
+    size_t start = result.find_first_not_of(" \t\n\r");
+    if (start == std::string::npos) {
+        return "";  // Only whitespace found
+    }
+    size_t end = result.find_last_not_of(" \t\n\r");
+    return result.substr(start, end - start + 1);
+}
+
+// Helper for extracting values after colon with +2 offset
+std::string extractValueAfterColon(const std::string& line, bool use_rfind) {
+    size_t pos = 0;
+	if (use_rfind)
+		pos = line.rfind(":");
+	else
+		pos = line.find(":");
+    return safeSubstrAfter(line, pos, 2);
+}
+
 void printLocation(Location &location) {
 	/*BASIC INFO*/
-	DEBUG_PRINT(BOLD MAGENTA "Location");
-	DEBUG_PRINT("Path: " << location.getName());
-	DEBUG_PRINT("root: " << location.getRoot());
+	DEBUG_PRINT(BOLD MAGENTA "Location" RESET);
+	DEBUG_PRINT(BOLD "Path: " RESET << location.getName());
+	DEBUG_PRINT(BOLD "root: " RESET << location.getRoot());
 	//method display
-	std::vector<MET>::iterator itMet = location.getMethod().begin();
-	std::vector<MET>::iterator iteMet = location.getMethod().end();
-	for (; itMet != iteMet; ++ itMet) {
-		if (*itMet == 0)
-			DEBUG_PRINT("methods: GET");
-		else if (*itMet == 1)
-			DEBUG_PRINT("methods: POST");
-		else if (*itMet == 2)
-			DEBUG_PRINT("methods: DELETE");
-		else
-			DEBUG_PRINT("methods: UNKNOWN");
+	if (!location.getMethod().empty()) {
+		const std::vector<MET>& met = location.getMethod();
+		std::vector<MET>::const_iterator itMet = met.begin();
+		std::vector<MET>::const_iterator iteMet = met.end();
+		for (; itMet != iteMet; ++ itMet) {
+			if (*itMet == 0)
+				DEBUG_PRINT(BOLD "methods: " RESET "GET");
+			else if (*itMet == 1)
+				DEBUG_PRINT(BOLD "methods: " RESET "POST");
+			else if (*itMet == 2)
+				DEBUG_PRINT(BOLD "methods: " RESET "DELETE");
+			else
+				DEBUG_PRINT(BOLD "methods: " RESET "UNKNOWN");
+		}
 	}
 	
-	DEBUG_PRINT("index: " << location.getIndex());
-	DEBUG_PRINT("directories listing: " << location.isAutoIndex());
+	DEBUG_PRINT(BOLD "index: " RESET << location.getIndex());
+	DEBUG_PRINT(BOLD "directories listing: " RESET << location.isAutoIndex());
 	
 	/*UPLAOD INFO*/
-	DEBUG_PRINT("- is upload enable: " << location.isUpload());
-	DEBUG_PRINT("upload storage folder: " << location.getUploadDir());
-	DEBUG_PRINT("upload Max body size: " << location.getMaxSize());
+	DEBUG_PRINT(BOLD "- is upload enable: " RESET << location.isUpload());
+	DEBUG_PRINT(BOLD "upload storage folder: " RESET << location.getUploadDir());
+	DEBUG_PRINT(BOLD "upload Max body size: " RESET << location.getMaxSize());
 
 	/*CGI INFO*/
-	DEBUG_PRINT("- is CGI enable: " << location.isCGI());
+	DEBUG_PRINT(BOLD "- is CGI enable: " RESET << location.isCGI());
 	//cgi extension list
-	std::vector<std::string>::iterator itExt = location.getCGIExt().begin();
-	std::vector<std::string>::iterator iteExt = location.getCGIExt().end();
-	for (; itExt != iteExt; ++ itExt)
-		DEBUG_PRINT("extension: " << *iteExt);
-
+	if (!location.getCGIExt().empty()) {
+		const std::vector<std::string>& extensions = location.getCGIExt();  // Single call
+		std::vector<std::string>::const_iterator itExt = extensions.begin();
+		std::vector<std::string>::const_iterator iteExt = extensions.end();
+		for (; itExt != iteExt; ++itExt) {
+			DEBUG_PRINT(BOLD "extension: " RESET << *itExt);
+		}
+	}
 	/*REDIRECTION INFO*/
-	DEBUG_PRINT("- is redirection enable: " << location.getRedirect());
-	DEBUG_PRINT("redirection code: " << location.getRedirectCode());
-	DEBUG_PRINT("redirection URL: " << location.getRedirectURL());
+	DEBUG_PRINT(BOLD "- is redirection enable: " RESET << location.getRedirect());
+	DEBUG_PRINT(BOLD "redirection code: " RESET << location.getRedirectCode());
+	DEBUG_PRINT(BOLD "redirection URL: " RESET << location.getRedirectURL());
 	
 }
 
 void printServer(Server &server) {
 	/*SERVER NAMES*/
-	std::vector<std::string>::iterator it = server.getServerNames().begin();
-	std::vector<std::string>::iterator ite = server.getServerNames().end();
-	for (; it != ite; ++it)
-		DEBUG_PRINT("server name: " << *ite);
-	
+	DEBUG_PRINT(BOLD YELLOW "SERVER" RESET);
+	if (!server.getServerNames().empty()) {
+		const std::vector<std::string>& names = server.getServerNames();  // Also use reference
+		std::vector<std::string>::const_iterator it = names.begin();
+		std::vector<std::string>::const_iterator ite = names.end();
+		for (; it != ite; ++it)
+			DEBUG_PRINT(BOLD "server name: " RESET << *it);  // Fixed: *it not *ite
+	}
 	/*PORT AND HOST*/
-	DEBUG_PRINT("server host: " << server.getIP());
-	std::vector<std::string>::iterator itp = server.getPort().begin();
-	std::vector<std::string>::iterator itep = server.getPort().end();
-	for (; itp != itep; ++itp)
-		DEBUG_PRINT("server ports: " << *itp);
-
+	DEBUG_PRINT(BOLD "server host: " RESET << server.getIP());
+	if (!server.getPort().empty()) {
+		const std::vector<std::string>& ports = server.getPort();
+		std::vector<std::string>::const_iterator itp = ports.begin();
+		std::vector<std::string>::const_iterator itep = ports.end();
+		for (; itp != itep; ++itp)
+			DEBUG_PRINT(BOLD "server ports: " RESET << *itp);
+	}
 	/*ERROR PAGES CODE LIST*/
-	std::map<int, std::string>::iterator itr = server.getErrorList().begin();
-	std::map<int, std::string>::iterator iter = server.getErrorList().end();
-	for (; itr != iter; ++itr)
-		DEBUG_PRINT("error page: " << itr->first << " " << itr->second);
-	
+	if (!server.getErrorList().empty()) {
+		const std::map<int, std::string>& errors = server.getErrorList();
+		std::map<int, std::string>::const_iterator itr = errors.begin();
+		std::map<int, std::string>::const_iterator iter =	errors.end();
+		for (; itr != iter; ++itr)
+			DEBUG_PRINT(BOLD "error page: " RESET << itr->first << " " << itr->second);
+	}
 	/*MAX BODY SIZE*/
-	DEBUG_PRINT("server maxsize: " << server.getMaxBodySize());
-	DEBUG_PRINT("server keep alive: " << server.isKeepAlive());
+	DEBUG_PRINT(BOLD "server maxsize: " RESET << server.getMaxBodySize());
+	DEBUG_PRINT(BOLD "server keep alive: " RESET << server.isKeepAlive());
 	
 	/*LOCATIONS BLOCKS*/
-	std::vector<Location*>::iterator itL = server.getLocationsList().begin();
-	std::vector<Location*>::iterator iteL = server.getLocationsList().end();
-	for (; itL != iteL; ++itL) {
-		printLocation(**itL);
+	if (!server.getLocationsList().empty()) {
+		const std::vector<Location*>& loc = server.getLocationsList();
+		std::vector<Location*>::const_iterator itL = loc.begin();
+		std::vector<Location*>::const_iterator iteL = loc.end();
+		for (; itL != iteL; ++itL) {
+			printLocation(**itL);
+			DEBUG_PRINT("");
+		}
+		DEBUG_PRINT("");
 	}
-	DEBUG_PRINT("");
 }
 
 bool isConfigFileOK(ServerManager &server_manager) {
