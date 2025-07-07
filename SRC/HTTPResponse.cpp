@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/07/04 15:21:42 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/07 17:23:41 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -491,7 +491,8 @@ int HTTPResponse::checkFile() {
     			    case ENOENT:
     			        DEBUG_PRINT("File not found: " << strerror(errno));
     			        return 404;
-    			    case EACCES || EPERM:
+    			    case EACCES:
+					case EPERM:
     			        DEBUG_PRINT("Permission denied: " << strerror(errno));
     			        return 403;
     			    case EISDIR:
@@ -504,7 +505,7 @@ int HTTPResponse::checkFile() {
     			        DEBUG_PRINT("Filename too long: " << strerror(errno));
     			        return 414;
     			    default:
-    			        DEBUG_PRINT("Unknown file error: " << strerror(errno));
+    			        DEBUG_PRINT("Unknown file error: " << strerror(errno) << ": " << errno);
     			        return 500;
     			}
 			}
