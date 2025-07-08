@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executeScript.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 16:27:11 by ssottori          #+#    #+#             */
-/*   Updated: 2025/05/17 19:36:06 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/07/08 13:48:45 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,12 +26,14 @@
 #include "prepEnv.hpp"
 #include "receiveRequest.hpp"
 #include "receiveRequest.hpp"
+#include "../../INC/utils/ServerManager.hpp"
+#include "../../INC/utils/Utils.hpp"
 
 class ScriptExecutor
 {
 	private:
-		std::string _scriptPath;
-		RequestData _request;
+		const std::string &_scriptPath;
+		const RequestData &_request;
 		std::string _response;
 		int _pipe[2];
 
@@ -45,8 +47,9 @@ class ScriptExecutor
 		std::string errorResponse();
 
 	public:
-		ScriptExecutor(const std::string &scriptPath, const RequestData &request);
+		ScriptExecutor(const std::string &scriptPath, const RequestData &request, ServerManager *master_server);
 		~ScriptExecutor();
 
 		std::string runScript();
+		ServerManager *_master_server;
 };

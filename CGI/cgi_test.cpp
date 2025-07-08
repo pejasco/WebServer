@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_test.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/17 20:57:59 by ssottori          #+#    #+#             */
-/*   Updated: 2025/06/04 21:24:08 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/07/08 12:43:39 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,28 +52,28 @@
 // 	return 0;
 // }
 
-#include "inc/executeScript.hpp"
-#include "inc/receiveRequest.hpp"
-#include "inc/prepEnv.hpp"
-#include <iostream>
+// #include "inc/executeScript.hpp"
+// #include "inc/receiveRequest.hpp"
+// #include "inc/prepEnv.hpp"
+// #include <iostream>
 
-void testBirthdayScriptGET(std::map<std::string, std::string> headers)
-{
-	RequestData request("GET", "./cgi-bin/birthday.py", "day=13&month=11", headers, "");
-	ScriptExecutor executor("./cgi-bin/birthday.py", request);
+// void testBirthdayScriptGET(std::map<std::string, std::string> headers)
+// {
+// 	RequestData request("GET", "./cgi-bin/birthday.py", "day=13&month=11", headers, "");
+// 	ScriptExecutor executor("./cgi-bin/birthday.py", request);
 
-	std::string output = executor.runScript();
-	std::cout << "[CGI OUTPUT] ===\n" << output << std::endl;
-}
+// 	std::string output = executor.runScript();
+// 	std::cout << "[CGI OUTPUT] ===\n" << output << std::endl;
+// }
 
-void testHelloScriptPOST(std::map<std::string, std::string> headers)
-{
-	RequestData request("POST", "./cgi-bin/say_hello.py", "", headers, "name=shaly");
-	ScriptExecutor executor("./cgi-bin/say_hello.py", request);
+// void testHelloScriptPOST(std::map<std::string, std::string> headers)
+// {
+// 	RequestData request("POST", "./cgi-bin/say_hello.py", "", headers, "name=shaly");
+// 	ScriptExecutor executor("./cgi-bin/say_hello.py", request);
 
-	std::string output = executor.runScript();
-	std::cout << "[CGI OUTPUT] ===\n" << output << std::endl;
-}
+// 	std::string output = executor.runScript();
+// 	std::cout << "[CGI OUTPUT] ===\n" << output << std::endl;
+// }
 
 // int main() {
 // 	std::map<std::string, std::string> headers;

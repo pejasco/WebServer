@@ -102,7 +102,7 @@ body = """
 <body>
 	<h1>Hellooo whats your name?</h1>
 	<div class="method">POST</div>
-	<form method="POST" action="cgi-bin/say_hello.py">
+	<form method="POST" action="say_hello.py">
 		<input type="text" name="name" placeholder="Enter your name" />
 		<input type="submit" value="Say Hello" />
 	</form>

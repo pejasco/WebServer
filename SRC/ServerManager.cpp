@@ -7,7 +7,7 @@ bool error_flag = false;
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-ServerManager::ServerManager(std::string &input_config_file) : config_file_name_(input_config_file) ,running_(true), epoll_fd_(-1), num_events_(-1), current_fd_(-1), error_code_(-1) {
+ServerManager::ServerManager(std::string &input_config_file) : config_file_name_(input_config_file) ,running_(true), _http_request(NULL), _http_response(NULL), epoll_fd_(-1), num_events_(-1), current_fd_(-1), error_code_(-1) {
 	if (is_file_empty(input_config_file)) {
 		std::cerr << BOLD RED "ATTENTION" RESET " the configuration file provided is empty. Switching to default configuration file...\n";
 		input_config_file = "configuration/default.conf";
@@ -101,6 +101,14 @@ void ServerManager::setRunning(int is_running) {
 	running_= is_running;
 }
 
+void ServerManager::setHTTPRequest(HTTPRequest *request) {
+	_http_request = request;
+}
+
+void ServerManager::setHTTPResponse(HTTPResponse *response) {
+	_http_response = response;
+}
+
 /********/
 /*GETTER*/
 /********/
@@ -123,8 +131,12 @@ std::map<int,Client*> &ServerManager::getClients() {
 int ServerManager::getEpollFd() {
 	return epoll_fd_;
 };
-
-
+HTTPRequest *ServerManager::getHTTPRequest() {
+	return _http_request;
+};
+HTTPResponse *ServerManager::getHTTPResponse() {
+	return _http_response;
+};
 /********/
 /*METHOD*/
 /********/
@@ -759,12 +771,20 @@ bool ServerManager::readClientHeaders() {
 	if (byte_received <= 0) {
 		if (byte_received == 0) {
 			DEBUG_PRINT("Client disconnected gracefully - cleaning up connection");
+			cleanClient(current_fd_);
+			DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "readClientHeaders() exited" RESET);
+			return false; // Connection closed or error
 		} else {
-			DEBUG_PRINT("Error during header reading - cleaning up connection");
+			usleep(1000); // 1ms delay for retrying
+    		byte_received = recv(current_fd_, received_, sizeof(received_) - 1, 0);
+			DEBUG_PRINT("AFTER SECOND READING -- byte_received: " BOLD << byte_received << RESET);
+			if (byte_received < 0) {
+				DEBUG_PRINT("Error during header reading - cleaning up connection");
+				cleanClient(current_fd_);
+				DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "readClientHeaders() exited" RESET);
+				return false; // Connection closed or error
+			}
 		}
-		cleanClient(current_fd_);
-		DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "readClientHeaders() exited" RESET);
-		return false; // Connection closed or error
 	}
 	
 	received_[byte_received] = '\0';
@@ -815,8 +835,8 @@ bool ServerManager::parseHeadersAndCheckBodySize() {
 		DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "parseHeadersAndCheckBodySize() exited" RESET);
 		return false;
 	}
-	HTTPRequest* http_request = new HTTPRequest();
-	client->setRequest(http_request);
+	HTTPRequest* _http_request = new HTTPRequest();
+	client->setRequest(_http_request);
 	client->current_request->parseRequest(client->headers_string);
 	
 	
@@ -901,16 +921,23 @@ int ServerManager::readRequestBody(size_t content_length, size_t max_body_size) 
 		ssize_t byte_received = recv(current_fd_, received_, to_read, 0);
 		DEBUG_PRINT("remaining: " BOLD << remaining << RESET ", to_read: " BOLD << to_read << RESET ", byte_received: " BOLD << byte_received << RESET);
 		
-		// DON'T CHECK ERRNO - per requirements
 		if (byte_received <= 0) {
 			if (byte_received == 0) {
 				DEBUG_PRINT("Client disconnected gracefully - cleaning up connection");
+				cleanClient(current_fd_);
+				DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "readRequestBody(() exited" RESET);
+				return false;
 			} else {
-				DEBUG_PRINT("Error during header reading - cleaning up connection");
+				usleep(1000); // 1ms delay for retrying reading in case of delay on client socket
+    			byte_received = recv(current_fd_, received_, sizeof(received_) - 1, 0);
+				DEBUG_PRINT("AFTER SECOND READING -- remaining: " BOLD << remaining << RESET ", to_read: " BOLD << to_read << RESET ", byte_received: " BOLD << byte_received << RESET);
+				if (byte_received == -1) {
+					DEBUG_PRINT("Error during header reading - cleaning up connection");
+					cleanClient(current_fd_);
+					DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "readRequestBody(() exited" RESET);
+					return false;
+				}
 			}
-			cleanClient(current_fd_);
-			DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "readRequestBody(() exited" RESET);
-			return false; // Connection closed or error
 		}
 		
 		client->body_bytes_read += byte_received;
@@ -964,8 +991,8 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 	}
 	Server *master_server = this->getServers().front();
 	DEBUG_PRINT("Creating HTTP response");
-	HTTPResponse* http_response = new HTTPResponse((*client->current_request), server_requested, location_requested, master_server, error_flag, client->getLastStatusCode());
-	client->setResponse(http_response);
+	_http_response = new HTTPResponse((*client->current_request), server_requested, location_requested, master_server, this, error_flag, client->getLastStatusCode());  // Default constructor
+	client->setResponse(_http_response);
 	DEBUG_PRINT("status code of response: " << http_response->getStatusCode());
 	client->setLastStatusCode(client->current_response->getStatusCode());
 	error_flag = false;

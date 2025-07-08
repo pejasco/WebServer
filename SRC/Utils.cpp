@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/04 15:19:39 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 15:13:22 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,15 +143,14 @@ bool isConfigFileOK(ServerManager &server_manager) {
 		else if (temp_server->getLocationsList().empty())
 			return false;
 	}
-	temp_location = temp_server->getLocationsList().front();
-	if (temp_location->getMethod().empty())
-		return false;
-	else if (temp_location->getRoot().empty())
-		return false;
-	else if (temp_location->getIndex().empty())
-		return false;
-	else 
-		return true;
+	std::vector<Location*>::iterator it = temp_server->getLocationsList().begin();
+	std::vector<Location*>::iterator ite = temp_server->getLocationsList().end();
+	for (; it != ite; ++it) {
+		temp_location = *it;
+		if (!temp_location->getMethod().empty() && !temp_location->getRoot().empty() && !temp_location->getIndex().empty())
+			return true;
+	} 
+	return false;
 }
 
 bool is_file_empty(const std::string &config_file) {
@@ -206,10 +205,12 @@ void cleanShutdown(ServerManager &master_server) {
     	    }
 			if ((begCl)->second) {
 				if (begCl->second->current_request) {
+					(*begCl->second).current_request->getAccept().clear();
 					delete begCl->second->current_request;
 					begCl->second->current_request = NULL;
 				}
 				if (begCl->second->current_response) {
+					
 					delete begCl->second->current_response;
 					begCl->second->current_response = NULL;
 				}
@@ -234,6 +235,14 @@ void cleanShutdown(ServerManager &master_server) {
 		}
 		if (master_server.getEpollFd() != -1)
 			close(master_server.getEpollFd());
+	}
+	if (master_server.getHTTPRequest() != NULL) {
+		delete (master_server.getHTTPRequest());
+		master_server.setHTTPRequest(NULL);
+	}
+	if (master_server.getHTTPResponse() != NULL) {
+		delete (master_server.getHTTPResponse());
+		master_server.setHTTPResponse(NULL);
 	}
 }
 
@@ -529,9 +538,24 @@ size_t getMaxSize(const std::string &input_size) {
 		
 }
 
+bool isValidLocationMatch(std::string& request_path, std::string& location_path) {
+	if (request_path.length() < location_path.length() || 
+		request_path.substr(0, location_path.length()) != location_path)
+		return false;
+	if (request_path.length() == location_path.length())
+		return true;
+	if (location_path[location_path.length() - 1] == '/')
+		return true;
+	if (request_path.length() > location_path.length() && 
+		request_path[location_path.length()] == '/')
+		return true;
+	return false;
+}
+
 
 Server *getCurrentServer(const HTTPRequest &input_request, ServerManager &server_manager, const std::string &server_IP) {
-    std::string host_header = input_request.getHost();
+    DEBUG_PRINT(BOLD UNDERLINE "FINDING MATCHING SERVER" RESET);
+	std::string host_header = input_request.getHost();
     std::string host;
     std::string request_port;
 	
@@ -605,62 +629,41 @@ Server *getCurrentServer(const HTTPRequest &input_request, ServerManager &server
 }
 
 Location *getCurrentLocation(const HTTPRequest &input_request, Server &current_server) {
+	DEBUG_PRINT("\n" BOLD UNDERLINE "FINDING MATCHING LOCATION" RESET);
 	DEBUG_PRINT("is locationList empty? " << (current_server.getLocationsList().empty() ? "is empty" : "is not empty"));
 		 
 	std::string request_path = input_request.getPath();
 	DEBUG_PRINT("URL to look for: " << request_path);
 	// Handle root request specially if needed
 	if (request_path == "/") {
-		// Look for exact root location match first
-		// DEBUG_PRINT("it is a default location\n";
+		DEBUG_PRINT("it is a default location of server, returning: " << current_server.getLocationsList().front() << "\n");
 		return current_server.getLocationsList().front();
-		// DEBUG_PRINT("is returning the default location\n";
 	}
 	Location *best_location_name = NULL;
 	size_t name_length_track = 0;
-	bool isValidMatch = false;
 	std::vector<Location*>::iterator begLo = current_server.getLocationsList().begin();
 	std::vector<Location*>::iterator endLo = current_server.getLocationsList().end();
 	for (; begLo != endLo; ++begLo) {
 		std::string location_path = (*begLo)->getName();
+		if (location_path == "/")
+			continue;
 		DEBUG_PRINT("Request: " << request_path << ", server location: " << location_path);
-		DEBUG_PRINT("Request size: " << request_path.size() << ", server location size: " << location_path.size());
-		// Check if request path starts with location path (prefix matching)
-		DEBUG_PRINT("Prefix to compare: " << request_path.substr(0, location_path.length()) << ", size: " << request_path.substr(0, location_path.length()).size());
-		DEBUG_PRINT("Check char by char the location string: ");
-		for (size_t i = 0; i < location_path.length(); ++i) {
-			DEBUG_PRINT("[" << i << "] '" << location_path[i] << "' ");
-		}
-		DEBUG_PRINT("Check char by char the request string: ");
-		for (size_t i = 0; i < (request_path.substr(0, location_path.length())).length(); ++i) {
-			DEBUG_PRINT("[" << i << "] '" << (request_path.substr(0, location_path.length()))[i] << "' ");
-		}
-		if (request_path.length() >= location_path.length() && 
-			request_path.substr(0, location_path.length()) == location_path) {
-			DEBUG_PRINT("Prefix match found: " << request_path.substr(0, location_path.length()));
-			if (location_path.length() == request_path.substr(0, location_path.length()).length()) {
-				// Exact match
-				isValidMatch = true;
-			} else if (location_path[location_path.length() - 1] == '/') {
-				isValidMatch = true;
+		if (isValidLocationMatch(request_path, location_path)) {
+			DEBUG_PRINT("Valid match found: " << location_path);
+			// Keep track of longest matching location (most specific)
+			if (location_path.length() > name_length_track) {
+				best_location_name = *begLo;
+				name_length_track = location_path.length();
+				DEBUG_PRINT("New best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot());
 			}
-			if (isValidMatch) {
-				// Keep track of longest matching location (most specific)
-				if (location_path.length() > name_length_track) {
-					best_location_name = *begLo;
-					name_length_track = location_path.length();
-					DEBUG_PRINT("New best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot());
-				}
-			}
+		} else {
+			DEBUG_PRINT("Invalid match rejected: " << location_path);
 		}
 	}
-	// Check if we found a match before accessing it
-	if (best_location_name != NULL) {
-		DEBUG_PRINT("Final best match: " << best_location_name->getName() << " -> " << best_location_name->getRoot());
+	if (best_location_name != NULL)
 		return best_location_name;
-	}
 	// If no specific location matched, return default (first location or NULL)
-	DEBUG_PRINT("No location match found, using default");
+	DEBUG_PRINT("No location match found, using default\n");
 	return current_server.getLocationsList().empty() ? NULL : current_server.getLocationsList().front();
 }
 

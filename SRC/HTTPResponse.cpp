@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/07/07 17:23:41 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 15:23:50 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,9 @@
 
 bool cgi_flag = false;
 
-HTTPResponse::HTTPResponse(const HTTPRequest &input_request, Server *server_requested, Location *location_requested, Server *master_server, int error_flag, int error_code) : status_code_(0),
+// HTTPResponse:: HTTPResponse() {}
+
+HTTPResponse::HTTPResponse(HTTPRequest &input_request, Server *server_requested, Location *location_requested, Server *master_server, ServerManager *server_manager, int error_flag, int error_code) : server_manager_(server_manager), status_code_(0),
 current_request_(input_request), server_(server_requested), location_(location_requested), default_server_(server_requested), default_location_(server_requested->getLocationsList().front()), master_server_(master_server), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
 	DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE RESPONSE STARTED\n---------------------\n---------------------\n" RESET);
 	if (error_flag > 0) {
@@ -431,6 +433,11 @@ int HTTPResponse::checkFile() {
 	DEBUG_PRINT("default path: " << default_path);
 	DEBUG_PRINT("location: " << location_->getRoot() << ", default_location: " << default_location_->getRoot());
 	if (current_request_.getPath() == "/") {
+		if (location_->getIndex().empty() && location_->isAutoIndex() == true) {
+				autoIndexRequest();
+				DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "CHECK FILE EXITED" RESET);
+				return 200;
+		}
 		if (location_ && location_ != default_location_) {
 			body_filename_ = default_path + location_->getRoot() + location_->getIndex();
 			DEBUG_PRINT("body_filename from server matching: " << body_filename_);
@@ -659,8 +666,8 @@ void HTTPResponse::CGI_Body() {
 		DEBUG_PRINT("[CGI WARNING] POST method but body is empty!");
 	}
 
-	CgiHandler handler(data, scriptPath); // pass to CGI engine
-	std::string cgiOutput = handler.run();
+	CgiHandler handler(data, scriptPath, server_manager_); // pass to CGI engine
+	std::string cgiOutput = handler.run(server_manager_);
 	
 
 	// Try to parse headers from CGI output
