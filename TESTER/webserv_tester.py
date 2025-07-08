@@ -281,14 +281,69 @@ def test_server_browsers(url, time):
 		except Exception as e:
 			print(f"❌ Browser: '{browser}' failed: {e}")
 
+##################################################
+#### UPLOAD AND DELETE TESTING ON CONCURRENCE ####
+##################################################
+
+#CREATE THE LIST OF FILE WITH SIMILAR NAME 
+def create_test_files(num_files):
+	filenames = []
+	for i in range(1, num_files + 1):
+		filename = f"test{i}.txt"
+		with open(filename, 'w') as f:
+			f.write(f'Test file #{i} content')
+		filenames.append(filename)
+	return filenames
+
+def test_concurrent_uploads(url, num_files, timeout):
+	print(f"Testing {num_files} concurrent uploads...")
+	create_test_files(num_files)
+	
+	def upload_random_file():
+		import random
+		file_number = random.randint(1, num_files)
+		filename = f"test{file_number}.txt"
+		with open(filename, 'rb') as f:
+			files = {'file': f}
+			time.sleep(random.uniform(0.05, 0.25)) 
+			return test_upload_request(url, timeout, files)
+	
+	successful, total, duration = concurrent_test(upload_random_file, num_files)
+	return successful, total, duration
+
+def test_concurrent_deletes(url, num_files, timeout):
+	print(f"Testing {num_files} concurrent deletes...")
+
+	def delete_random_file():
+		import random
+		file_number = random.randint(1, num_files)
+		filename = f"/test{file_number}.txt"  # Add / for URL path
+		return test_delete_request(url, timeout, filename)
+	successful, total, duration = concurrent_test(delete_random_file, num_files)
+	return successful, total, duration
+
+def test_upload_and_delete(upload_url, delete_url, num_files, timeout):
+	print("=== UPLOAD PHASE ===")
+	upload_results = test_concurrent_uploads(upload_url, num_files, timeout)
+	print("\n=== DELETE PHASE ===")
+	delete_results = test_concurrent_deletes(delete_url, num_files, timeout)
+	return upload_results, delete_results
+
+def cleanup_files(num_files):
+	for i in range(1, num_files + 1):
+		filename = f"test{i}.txt"
+		if os.path.exists(filename):
+			os.remove(filename)
+	print(f"Cleaned up {num_files} test files")
+
 
 def simple_test():
 	print("\n=====================================")
 	print("BASIC TEST FOR METHOD GET, POST, DELETE")
 	print("=====================================\n")
 	individual_test(test_get_request, 'http://localhost:8080', 5, None)
-	individual_test(test_upload_request, 'http://localhost:9000', 5, None)
-	individual_test(test_delete_request, 'http://localhost:9000', 5, '/upload/storage/test.txt')
+	individual_test(test_upload_request, 'http://localhost:9000/storage', 5, None)
+	individual_test(test_delete_request, 'http://localhost:9000', 5, '/storage/test.txt')
 	
 	print("\n======================================")
 	print("BASIC TEST FOR METHOD GET, POST with CGI")
@@ -341,5 +396,25 @@ def simple_test():
 	print("BROWSER TESTING")
 	print("===========\n")
 	test_server_browsers('http://localhost:8080', 5)
+
+	print("\n===================================")
+	print("UPLOAD AND DELETE CONCURRENCE TESTING")
+	print("===================================")
+	num_files = 50
+	print("\nTESTING CONCURRENT UPLOADS AND DELETES")
+	test_upload_and_delete("http://localhost:9000/storage","http://localhost:9000/storage", num_files, 50)
+	cleanup_files(num_files)
+
+	# print("\nTESTING CONCURRENT UPLOADS")
+	# upload_success, upload_total, upload_time = test_concurrent_uploads("http://localhost:9000/storage", num_files, 50)
+	# print("\nTESTING CONCURRENT DELETES")
+	# delete_success, delete_total, delete_time = test_concurrent_deletes("http://localhost:9000/storage", num_files, 30)
+	# print("FINAL SUMMARY")
+	# print(f"Upload results: {upload_success}/{upload_total} in {upload_time:.2f}s")
+	# print(f"Delete results: {delete_success}/{delete_total} in {delete_time:.2f}s")
+	# cleanup_files(num_files)
+
+
+	print("\nTest completed!")
 
 print(simple_test())

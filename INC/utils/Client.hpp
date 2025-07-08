@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.hpp                                         :+:      :+:    :+:   */
+/*   Client copy.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 11:54:18 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/26 09:44:15 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 14:41:52 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ class Client {
 		~Client();
 
 		void setResponse(HTTPResponse* response);
-		void setRequest(HTTPRequest *request);
+		void setRequest(HTTPRequest* request);
 		void setLastStatusCode(int status_code);
 
 		int getClientFd();

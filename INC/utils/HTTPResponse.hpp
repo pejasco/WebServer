@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/07/04 14:50:43 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 15:23:33 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #define HTTPRESPONSE_HPP
 
 #include "HTTPRequest.hpp"
-#include "ServerManager.hpp"
+// #include "ServerManager.hpp"
 
 class ServerManager;
 class Location;
@@ -22,7 +22,8 @@ class Server;
 
 class HTTPResponse {
 	public:
-		HTTPResponse(const HTTPRequest &input_request, Server *server_requested, Location *location_requested, Server *master_server, int error_flag, int error_code); //get information like the path, method and version via HTTPrequest class 
+		// HTTPResponse();
+		HTTPResponse(HTTPRequest &input_request, Server *server_requested, Location *location_requested, Server *master_server, ServerManager *server_manager, int error_flag, int error_code); //get information like the path, method and version via HTTPrequest class 
 		~HTTPResponse();
 		
 		//SETTER
@@ -56,8 +57,9 @@ class HTTPResponse {
 	
 	private:
 		//PREPARING RESPONSE
+		ServerManager *server_manager_;
 		int status_code_;
-		HTTPRequest current_request_;
+		HTTPRequest &current_request_;
 		Server *server_;
 		Location *location_;
 		// Server *master_server_;

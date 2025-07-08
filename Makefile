@@ -6,7 +6,7 @@
 #    By: cofische <cofische@student.42london.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/24 01:20:10 by ssottori          #+#    #+#              #
-#    Updated: 2025/07/03 12:31:12 by cofische         ###   ########.fr        #
+#    Updated: 2025/07/08 08:01:17 by cofische         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -124,6 +124,7 @@ tester-debug:
 	  kill -INT $$SERVER_PID; rm -f test.txt
 
 tester-dummy:
+	@cp -r TESTER/www /tmp/
 	@make debug
 	@echo "[${YELLOW}webserv tester with dummy configuration${NC}] starting python tester..."
 	@ ./webserv configuration/dummy.conf

@@ -1,19 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.cpp                                         :+:      :+:    :+:   */
+/*   Client copy.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 11:54:15 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/26 09:47:12 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 14:41:20 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/Client.hpp"
 
 Client::Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, socklen_t inputClientAddrLen): header_completed(false), file_sending_complete(true), 
-	current_response(NULL), current_request(NULL), body_bytes_read(0), max_body_size(0), expected_content_length(0),
+	current_response(), current_request(), body_bytes_read(0), max_body_size(0), expected_content_length(0),
 	state(CLIENT_READING_HEADERS), last_status_code_(0), error_(false), client_fd_(inputClientFd), client_addr_(inputClientAddr), client_addr_len_(inputClientAddrLen) {
 	header_buffer = "";
 	body_buffer = "";
@@ -51,14 +51,16 @@ void Client::setResponse(HTTPResponse* response) {
 		delete current_response;
 		current_response = response;
 	}
+	current_response = response;
 	file_sending_complete = true;
 }
 
-void Client::setRequest(HTTPRequest *request) {
+void Client::setRequest(HTTPRequest* request) {
     if (current_request != request) {
         delete current_request;
         current_request = request;
     }
+	current_request = request;
 }
 
 void Client::setLastStatusCode(int status_code) {

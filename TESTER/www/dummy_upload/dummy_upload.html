@@ -141,7 +141,7 @@
             
             showStatus('Uploading file...', 'success');
             
-            fetch('http://localhost:6554/storage', {
+            fetch('http://localhost:6554/dummy_upload/storage', {
                 method: 'POST',
                 body: formData
             })
@@ -180,7 +180,7 @@
             
             showStatus('Deleting file...', 'success');
             
-            fetch(`http://localhost:6554/storage?file=${encodeURIComponent(fileName)}`, {
+            fetch(`http://localhost:6554/dummy_upload/storage?file=${encodeURIComponent(fileName)}`, {
                 method: 'DELETE'
             })
             .then(response => {

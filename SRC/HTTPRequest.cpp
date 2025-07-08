@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/18 11:19:00 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 13:28:06 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ HTTPRequest::HTTPRequest() : instance_index_(global_index_++),
 	open_boundary_ = "";
 }
 
-HTTPRequest::~HTTPRequest(){}
+HTTPRequest::~HTTPRequest() {}
 
 
 //Setters
@@ -311,7 +311,7 @@ const std::map<std::string, std::string>& HTTPRequest::getUserAgent(){
 	return user_agent_;
 }
 
-const std::vector<Accept>& HTTPRequest::getAccept(){
+std::vector<Accept>& HTTPRequest::getAccept(){
 	return accept_list_;
 }
 

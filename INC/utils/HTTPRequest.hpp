@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:18:48 by chuleung          #+#    #+#             */
-/*   Updated: 2025/06/18 08:53:12 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 13:27:47 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ struct Accept
 class HTTPRequest {
 	public:
 		HTTPRequest();
-		virtual ~HTTPRequest();
+		~HTTPRequest();
 
 		//Setters:
 		void setMet(const std::string& method);
@@ -89,7 +89,7 @@ class HTTPRequest {
 		const std::string& getHost() const;
 		int getContentLength();
 		const std::map<std::string, std::string>& getUserAgent();
-		const std::vector<Accept>& getAccept();
+		std::vector<Accept>& getAccept();
 		const std::vector<std::string>& getAcceptEncoding();
 		const std::map<std::string, float>& getAcceptLanguage();
 		bool getConnection();

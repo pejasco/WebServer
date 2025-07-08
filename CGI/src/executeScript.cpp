@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 16:26:00 by ssottori          #+#    #+#             */
-/*   Updated: 2025/06/23 09:41:54 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 15:07:20 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "../../INC/utils/Debug.hpp"
 #include "../../INC/utils/Colors.hpp"
 
-ScriptExecutor::ScriptExecutor(const std::string &scriptPath, const RequestData &request) : _scriptPath(scriptPath), _request(request) {}
+ScriptExecutor::ScriptExecutor(const std::string &scriptPath, const RequestData &request, ServerManager *master_server) : _scriptPath(scriptPath), _request(request), _master_server(master_server) {}
 
 ScriptExecutor::~ScriptExecutor() {}
 
@@ -58,12 +58,15 @@ void ScriptExecutor::runChild()
 		int postPipe[2];
 		if (pipe(postPipe) == -1) {
 			std::cerr << BOLD RED "Failed to create POST pipe\n" RESET;
+			cleanShutdown(*_master_server);
+			delete(_master_server);
 			_exit(1);
 		}
-
 		pid_t grandchild = fork(); // for testing
 		if (grandchild < 0) {
 			std::cerr << BOLD RED "Failed to fork grandchild for CGI\n" RESET;
+			cleanShutdown(*_master_server);
+			delete(_master_server);
 			_exit(1);
 		}
 
@@ -76,8 +79,12 @@ void ScriptExecutor::runChild()
 			close(postPipe[1]);                 // write end of stdin pipe
 			dup2(postPipe[0], STDIN_FILENO);    // CGI stdin
 			close(postPipe[0]);
-
+			
+			cleanShutdown(*_master_server);
+			delete(_master_server);
 			execveScript();                     // run the script
+			cleanShutdown(*_master_server);
+			delete(_master_server);
 			_exit(1);                           // only if execve fails
 		} else {
 			// Child: writes POST body into pipe, waits for grandchild
@@ -86,6 +93,8 @@ void ScriptExecutor::runChild()
 			write(postPipe[1], body.c_str(), body.size());
 			close(postPipe[1]);
 			waitpid(grandchild, NULL, 0);
+			cleanShutdown(*_master_server);
+			delete(_master_server);
 			_exit(0);  // done
 		}
 	}
@@ -94,7 +103,11 @@ void ScriptExecutor::runChild()
 		dup2(_pipe[1], STDOUT_FILENO);
 		close(_pipe[0]);
 		close(_pipe[1]);
+		cleanShutdown(*_master_server);
+		delete(_master_server);
 		execveScript();
+		cleanShutdown(*_master_server);
+		delete(_master_server);
 		_exit(1);
 	}
 }
@@ -146,6 +159,7 @@ void ScriptExecutor::execveScript()
 		delete[] av[i];
 	delete[] av;
 	///might need to delete?? if i dinamically allocate av
+	cleanShutdown(*_master_server);
 	_exit(1);
 }
 

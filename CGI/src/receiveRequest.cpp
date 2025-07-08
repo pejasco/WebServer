@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   receiveRequest.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 17:12:40 by ssottori          #+#    #+#             */
-/*   Updated: 2025/05/14 17:49:52 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/07/08 14:03:01 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

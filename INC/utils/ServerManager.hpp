@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/03 08:39:54 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 15:15:14 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,12 +41,16 @@ class ServerManager {
 
 		void setHostPort();
 		void setRunning(int is_running);
+		void setHTTPRequest(HTTPRequest *request);
+		void setHTTPResponse(HTTPResponse *response);
 		
 		std::vector<Server*> &getServers();
 		std::map<std::string, std::string> &getIPPorts();
 		std::vector<Socket*> &getSockets();
 		std::vector<int> &getSocketsFD();
 		std::map<int,Client*> &getClients();
+		HTTPRequest *getHTTPRequest();
+		HTTPResponse *getHTTPResponse();
 		int getEpollFd();
 		
 		bool checkDuplicatePort(std::fstream &config_file);
@@ -78,6 +82,8 @@ class ServerManager {
 		std::vector<int> sockets_fd_list_;
 		const std::string config_file_name_;
 		bool running_;
+		HTTPRequest* _http_request;
+		HTTPResponse* _http_response;
 		// Server *master_server_;
 
 		/*EPOLL INSTANCE ATTRIBUTES*/
