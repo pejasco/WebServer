@@ -118,6 +118,6 @@ body += "</body></html>"
 # body += f"<p>[DEBUG] Post Data Raw: {post_data}</p>"
 
 print("Content-Type: text/html")
-#print(f"Content-Length: {len(body.encode('utf-8'))}")
+print(f"Content-Length: {len(body.encode('utf-8'))}")
 print()
 print(body)
