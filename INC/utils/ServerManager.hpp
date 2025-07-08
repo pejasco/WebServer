@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 11:26:11 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/08 15:15:14 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 16:25:54 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,8 @@ class HTTPResponse;
 
 class ServerManager {
 	public:
-		ServerManager(std::string &config_file);
+		ServerManager();
+		ServerManager(const char* config_file);
 		~ServerManager();
 
 		void setHostPort();
@@ -80,7 +81,7 @@ class ServerManager {
 		std::map<std::string, std::string> IP_ports_list_; // MAY NOT BE USEFUL AS WE GOT SERVER ID 
 		std::vector<Socket*> sockets_list_;
 		std::vector<int> sockets_fd_list_;
-		const std::string config_file_name_;
+		std::string config_file_name_;
 		bool running_;
 		HTTPRequest* _http_request;
 		HTTPResponse* _http_response;

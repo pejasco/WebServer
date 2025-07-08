@@ -7,13 +7,15 @@ bool error_flag = false;
 /*CONSTRUCTOR/DESTRUCTOR*/
 /************************/
 
-ServerManager::ServerManager(std::string &input_config_file) : config_file_name_(input_config_file) ,running_(true), _http_request(NULL), _http_response(NULL), epoll_fd_(-1), num_events_(-1), current_fd_(-1), error_code_(-1) {
-	if (is_file_empty(input_config_file)) {
-		std::cerr << BOLD RED "ATTENTION" RESET " the configuration file provided is empty. Switching to default configuration file...\n";
-		input_config_file = "configuration/default.conf";
-	}
-	std::cout << BOLD MAGENTA "Starting MasterServer\n" RESET;
-	std::fstream config_file(input_config_file.c_str());
+ServerManager::ServerManager(const char* input_config_file) : config_file_name_("") ,running_(true), _http_request(NULL), _http_response(NULL), epoll_fd_(-1), num_events_(-1), current_fd_(-1), error_code_(-1) {
+    const char* actual_config_file = input_config_file;
+    if (is_file_empty(input_config_file)) {
+        std::cerr << BOLD RED "ATTENTION" RESET " the configuration file provided is empty. Switching to default configuration file...\n";
+        actual_config_file = "configuration/default.conf";  // Update the pointer, don't reassign parameter
+    }
+    config_file_name_ = std::string(actual_config_file);
+    std::cout << BOLD MAGENTA "Starting MasterServer\n" RESET;
+    std::fstream config_file(actual_config_file); 
 
 	if (!readFile(config_file)) {
 		shutdown();
@@ -835,8 +837,8 @@ bool ServerManager::parseHeadersAndCheckBodySize() {
 		DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "parseHeadersAndCheckBodySize() exited" RESET);
 		return false;
 	}
-	HTTPRequest* _http_request = new HTTPRequest();
-	client->setRequest(_http_request);
+	// HTTPRequest* _http_request = new HTTPRequest();
+	client->setRequest(new HTTPRequest());
 	client->current_request->parseRequest(client->headers_string);
 	
 	
@@ -991,9 +993,9 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 	}
 	Server *master_server = this->getServers().front();
 	DEBUG_PRINT("Creating HTTP response");
-	_http_response = new HTTPResponse((*client->current_request), server_requested, location_requested, master_server, this, error_flag, client->getLastStatusCode());  // Default constructor
-	client->setResponse(_http_response);
-	DEBUG_PRINT("status code of response: " << http_response->getStatusCode());
+	// _http_response = new HTTPResponse((*client->current_request), server_requested, location_requested, master_server, this, error_flag, client->getLastStatusCode());  // Default constructor
+	client->setResponse(new HTTPResponse((client->current_request), server_requested, location_requested, master_server, this, error_flag, client->getLastStatusCode()));
+	DEBUG_PRINT("status code of response: " << client->current_response->getStatusCode());
 	client->setLastStatusCode(client->current_response->getStatusCode());
 	error_flag = false;
 	DEBUG_PRINT("Client status code saved before sending: " << client->getLastStatusCode());

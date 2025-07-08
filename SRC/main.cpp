@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chuleung <chuleung@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 15:48:24 by cofische          #+#    #+#             */
-/*   Updated: 2025/06/19 10:38:14 by chuleung         ###   ########.fr       */
+/*   Updated: 2025/07/08 16:26:23 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,16 +24,16 @@ int main(int ac, char **av) {
 		std::cerr << BOLD RED "Error: invalid number of arguments\n" RESET;
 		return (-1);
 	}
-	std::string config_file;
-	if (ac > 1) {
-		config_file = av[1];
-	} else
-		config_file = "configuration/default.conf";
 	signal(SIGINT, signal_handler);
 	signal(SIGQUIT, signal_handler);
     ServerManager* master_server = NULL;
-    try {
-        master_server = new ServerManager(config_file);
+	std::string config_file;
+	try {
+		if (ac > 1) {
+			master_server = new ServerManager(av[1]);
+		} else {
+			master_server = new ServerManager("configuration/default.conf");
+		}
     } catch (const std::exception& ex){
         std::cerr << "Error: " << ex.what() << std::endl;
 		delete master_server;
