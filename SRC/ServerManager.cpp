@@ -1002,6 +1002,7 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 	
 	client->header_buffer = client->current_response->getResponse();
 	DEBUG_PRINT("Response headers size: " << client->header_buffer.size());
+	// DEBUG_PRINT("REsponse: " << client->header_buffer);
 	
 	if (current_fd_ < 0) {
 		// std::cerr << "Error, current_fd_ socket is already closed");

@@ -3,10 +3,6 @@
 import os
 import cgi
 
-print("HTTP/1.1 200 OK")
-print("Content-type: text/html\n\n")
-print()
-
 print("<html>")
 print("<head>")
 print("<button class=\"homepage\"<button onclick=\"window.location.href='http://localhost:3501/cgi'\">Homepage</button></button>")

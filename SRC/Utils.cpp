@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/08 20:47:12 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 20:56:19 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,12 +183,12 @@ void cleanShutdown(ServerManager &master_server) {
 		std::vector<Socket*>::iterator endSo = master_server.getSockets().end();
 		for (; begSo != endSo; ++begSo) {
 			if (*begSo) {
-				int fd = (*begSo)->getSocketFd();
-				if (isFdOpen(fd)) {
-					DEBUG_PRINT("Closing fd: " << fd);
-				} else {
-					DEBUG_PRINT("fd " << fd << " already closed or invalid");
-				}
+				// int fd = (*begSo)->getSocketFd();
+				// if (isFdOpen(fd)) {
+				// 	DEBUG_PRINT("Closing fd: " << fd);
+				// } else {
+				// 	DEBUG_PRINT("fd " << fd << " already closed or invalid");
+				// }
 			}
 			if (*begSo != NULL)
 				delete *begSo;
@@ -201,12 +201,12 @@ void cleanShutdown(ServerManager &master_server) {
 		std::map<int,Client*>::iterator begCl = master_server.getClients().begin();
 		std::map<int,Client*>::iterator endCl = master_server.getClients().end();
 		for (; begCl != endCl; ++begCl) {
-			int fd = begCl->first;
-    	    if (isFdOpen(fd)) {
-    	        DEBUG_PRINT("Closing fd: " << fd);
-    	    } else {
-    	        DEBUG_PRINT("fd " << fd << " already closed or invalid");
-    	    }
+			// int fd = begCl->first;
+    	    // if (isFdOpen(fd)) {
+    	    //     DEBUG_PRINT("Closing fd: " << fd);
+    	    // } else {
+    	    //     DEBUG_PRINT("fd " << fd << " already closed or invalid");
+    	    // }
 			if ((begCl)->second) {
 				if (begCl->second->current_response) {
 					begCl->second->current_response->clearBodyFilename();
