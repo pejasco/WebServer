@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 16:26:00 by ssottori          #+#    #+#             */
-/*   Updated: 2025/07/08 20:46:17 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 22:43:04 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,16 +18,15 @@ ScriptExecutor::ScriptExecutor(const std::string &scriptPath, const RequestData 
 
 ScriptExecutor::~ScriptExecutor() {}
 
-std::string ScriptExecutor::runScript()
+std::string ScriptExecutor::runScript(std::string &body_filename)
 {
 	if (!createOutPipe())
 		return errorResponse();
-	
 	pid_t pid = fork();
 	if (pid < 0)
 		return errorResponse();
 	if (pid == 0)
-		runChild();
+		runChild(body_filename);
 	else
 		return runParent(pid);
 	
@@ -51,13 +50,14 @@ char** ScriptExecutor::createArgv() const
 	return av;
 }
 
-void ScriptExecutor::runChild()
+void ScriptExecutor::runChild(std::string &body_filename)
 {
 	if (_request.getMethod() == "POST") {
 		// Create a pipe for sending POST body to stdin
 		int postPipe[2];
 		if (pipe(postPipe) == -1) {
 			std::cerr << BOLD RED "Failed to create POST pipe\n" RESET;
+			body_filename = "";
 			cleanShutdown(*_master_server);
 			delete(_master_server);
 			_exit(1);
@@ -65,6 +65,7 @@ void ScriptExecutor::runChild()
 		pid_t grandchild = fork(); // for testing
 		if (grandchild < 0) {
 			std::cerr << BOLD RED "Failed to fork grandchild for CGI\n" RESET;
+			body_filename = "";
 			cleanShutdown(*_master_server);
 			delete(_master_server);
 			_exit(1);
@@ -80,11 +81,10 @@ void ScriptExecutor::runChild()
 			dup2(postPipe[0], STDIN_FILENO);    // CGI stdin
 			close(postPipe[0]);
 			
+			execveScript(body_filename);                     // run the script
 			cleanShutdown(*_master_server);
 			delete(_master_server);
-			execveScript();                     // run the script
-			cleanShutdown(*_master_server);
-			delete(_master_server);
+			body_filename = "";
 			_exit(1);                           // only if execve fails
 		} else {
 			// Child: writes POST body into pipe, waits for grandchild
@@ -93,6 +93,7 @@ void ScriptExecutor::runChild()
 			write(postPipe[1], body.c_str(), body.size());
 			close(postPipe[1]);
 			waitpid(grandchild, NULL, 0);
+			body_filename = "";
 			cleanShutdown(*_master_server);
 			delete(_master_server);
 			_exit(0);  // done
@@ -103,9 +104,7 @@ void ScriptExecutor::runChild()
 		dup2(_pipe[1], STDOUT_FILENO);
 		close(_pipe[0]);
 		close(_pipe[1]);
-		cleanShutdown(*_master_server);
-		delete(_master_server);
-		execveScript();
+		execveScript(body_filename);
 		cleanShutdown(*_master_server);
 		delete(_master_server);
 		_exit(1);
@@ -147,7 +146,7 @@ std::string ScriptExecutor::runParent(pid_t pid)
 	return _response;
 }
 
-void ScriptExecutor::execveScript()
+void ScriptExecutor::execveScript(std::string &body_filename)
 {
 	EnvBuilder envBuilder(_request);
 	char** envp = envBuilder.buildEnvArray();
@@ -159,7 +158,9 @@ void ScriptExecutor::execveScript()
 		delete[] av[i];
 	delete[] av;
 	///might need to delete?? if i dinamically allocate av
+	body_filename = "";
 	cleanShutdown(*_master_server);
+	delete _master_server;
 	_exit(1);
 }
 
