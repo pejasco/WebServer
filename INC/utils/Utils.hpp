@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:11:28 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/04 15:19:53 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 16:59:49 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ bool isFdOpen(int fd);
 std::string getFilenameFromPath(const std::string& path);
 std::string trimString(const std::string& s);
 std::string urlDecoder(std::string &url_string);
-int checkExtensions(Location *current_location,std::string &script_name);
+int checkExtensions(Location *current_location, const std::string &script_name);
 int URILength(const std::string &uri);
 int fileDeletable(const std::string &body_filename, Location *location, Location *default_location);
 std::string getDefautlErrorPage(int code);

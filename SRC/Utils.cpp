@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/08 15:13:22 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 20:47:12 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,22 +176,26 @@ bool isMessageCompleted(const std::string &request) {
 }
 
 void cleanShutdown(ServerManager &master_server) {
-
+	
 	//closing socket_fd from the servers and freeing the struct
 	if (!master_server.getSockets().empty()) {
 		std::vector<Socket*>::iterator begSo = master_server.getSockets().begin();
 		std::vector<Socket*>::iterator endSo = master_server.getSockets().end();
 		for (; begSo != endSo; ++begSo) {
-			int fd = (*begSo)->getSocketFd();
-    	    if (isFdOpen(fd)) {
-    	        DEBUG_PRINT("Closing fd: " << fd);
-    	    } else {
-    	        DEBUG_PRINT("fd " << fd << " already closed or invalid");
-    	    }
+			if (*begSo) {
+				int fd = (*begSo)->getSocketFd();
+				if (isFdOpen(fd)) {
+					DEBUG_PRINT("Closing fd: " << fd);
+				} else {
+					DEBUG_PRINT("fd " << fd << " already closed or invalid");
+				}
+			}
 			if (*begSo != NULL)
 				delete *begSo;
+			
 		}
 	}
+	
 	//closing and deleting client info
 	if (!master_server.getClients().empty()) {
 		std::map<int,Client*>::iterator begCl = master_server.getClients().begin();
@@ -204,15 +208,17 @@ void cleanShutdown(ServerManager &master_server) {
     	        DEBUG_PRINT("fd " << fd << " already closed or invalid");
     	    }
 			if ((begCl)->second) {
-				if (begCl->second->current_request) {
-					(*begCl->second).current_request->getAccept().clear();
-					delete begCl->second->current_request;
-					begCl->second->current_request = NULL;
-				}
 				if (begCl->second->current_response) {
-					
+					begCl->second->current_response->clearBodyFilename();
+					begCl->second->current_response->cleanCurrentRequest();
 					delete begCl->second->current_response;
 					begCl->second->current_response = NULL;
+				}
+				// Then delete request
+				if (begCl->second->current_request) {
+					begCl->second->current_request->getAccept().clear();
+					delete begCl->second->current_request;
+					begCl->second->current_request = NULL;
 				}
 				delete begCl->second;
 			}
@@ -412,11 +418,12 @@ std::string urlDecoder(std::string &url_string) {
     return ascii_string;
 }
 
-int checkExtensions(Location *current_location, std::string &script_name) {
+int checkExtensions(Location *current_location, const std::string &script_name) {
 	std::string extension_requested;
+	std::string copy_script_name = script_name;
 	size_t pos = 0;
-	if ((pos = script_name.find(".")) != std::string::npos) {
-		extension_requested = script_name.substr(pos, (script_name.size() - pos));
+	if ((pos = copy_script_name.find(".")) != std::string::npos) {
+		extension_requested = copy_script_name.substr(pos, (copy_script_name.size() - pos));
 		DEBUG_PRINT("extension identify in script_name: " << extension_requested);
 	}
 	if (!current_location->getCGIExt().empty()) {

@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:03 by chuleung          #+#    #+#             */
-/*   Updated: 2025/07/08 15:23:33 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 19:42:42 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,19 +23,23 @@ class Server;
 class HTTPResponse {
 	public:
 		// HTTPResponse();
-		HTTPResponse(HTTPRequest &input_request, Server *server_requested, Location *location_requested, Server *master_server, ServerManager *server_manager, int error_flag, int error_code); //get information like the path, method and version via HTTPrequest class 
+		HTTPResponse(HTTPRequest *input_request, Server *server_requested, Location *location_requested, Server *master_server, ServerManager *server_manager, int error_flag, int error_code); //get information like the path, method and version via HTTPrequest class 
 		~HTTPResponse();
 		
 		//SETTER
 		void setAutoIndex(bool val);
+		void setBodyFilename(std::string filename);
 
 		//GETTER
 		const std::string &getResponse();
 		std::string &getBodyFilename();
 		bool isAutoIndex();
 		int getStatusCode();
+		HTTPRequest *getCurrentRequest();
 			
 		//METHOD
+		void clearBodyFilename();
+		void cleanCurrentRequest();
 		void setGetResponse();
 		void setPostResponse();
 		void setDeleteResponse();
@@ -59,7 +63,7 @@ class HTTPResponse {
 		//PREPARING RESPONSE
 		ServerManager *server_manager_;
 		int status_code_;
-		HTTPRequest &current_request_;
+		HTTPRequest *current_request_;
 		Server *server_;
 		Location *location_;
 		// Server *master_server_;
