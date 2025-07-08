@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/07/08 21:35:07 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 22:32:44 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -622,6 +622,7 @@ void HTTPResponse::headerResponse() {
 void HTTPResponse::CGI_Body() {
 	DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "CGI_BODY CALLED" RESET);
 	const std::string& scriptPath = !body_filename_.empty() ? body_filename_ : current_request_->getPath();
+	// body_filename_ = "";
 	std::string script_name = getFilenameFromPath(body_filename_);
 	status_code_ = checkExtensions(location_, script_name);
 	if (status_code_ != 200) {
@@ -659,7 +660,6 @@ void HTTPResponse::CGI_Body() {
 		setErrorResponse(status_code_);
 		return;
 	}
-
 	// Build the RequestData object for CGI
 	RequestData data;
 	data.setMethod(current_request_->getMethodAsStr());
@@ -677,7 +677,7 @@ void HTTPResponse::CGI_Body() {
 		DEBUG_PRINT("[CGI WARNING] POST method but body is empty!");
 	}
 
-	CgiHandler handler(data, scriptPath, server_manager_); // pass to CGI engine
+	CgiHandler handler(data, scriptPath, server_manager_, body_filename_); // pass to CGI engine
 	std::string cgiOutput = handler.run(server_manager_);
 
 	// Try to parse headers from CGI output

@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 16:27:11 by ssottori          #+#    #+#             */
-/*   Updated: 2025/07/08 20:45:51 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/08 22:40:21 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,10 @@ class ScriptExecutor
 
 		char** createArgv() const;
 		std::string getInterpreter() const;
-		void runChild();
+		void runChild(std::string &body_filename);
 		std::string runParent(pid_t pid);
 		void bodytoStdin(); //POST only
-		void execveScript();
+		void execveScript(std::string &body_filename);
 		bool createOutPipe();
 		std::string errorResponse();
 
@@ -50,6 +50,6 @@ class ScriptExecutor
 		ScriptExecutor(const std::string &scriptPath, const RequestData &request, ServerManager *master_server);
 		~ScriptExecutor();
 
-		std::string runScript();
+		std::string runScript(std::string &body_filename);
 		ServerManager *_master_server;
 };

@@ -1,1 +1,85 @@
-
+==698309== Memcheck, a memory error detector
+==698309== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==698309== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==698309== Command: ./webserv
+==698309== Parent PID: 698308
+==698309== 
+==698352== 
+==698352== HEAP SUMMARY:
+==698352==     in use at exit: 347 bytes in 2 blocks
+==698352==   total heap usage: 331 allocs, 329 frees, 142,664 bytes allocated
+==698352== 
+==698352== 35 bytes in 1 blocks are still reachable in loss record 1 of 2
+==698352==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==698352==    by 0x49D570E: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_mutate(unsigned long, unsigned long, char const*, unsigned long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+==698352==    by 0x49D704F: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_append(char const*, unsigned long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+==698352==    by 0x13DFB7: HTTPResponse::checkFile() (SRC/HTTPResponse.cpp:500)
+==698352==    by 0x13AA6C: HTTPResponse::setPostResponse() (SRC/HTTPResponse.cpp:259)
+==698352==    by 0x138697: HTTPResponse::HTTPResponse(HTTPRequest*, Server*, Location*, Server*, ServerManager*, int, int) (SRC/HTTPResponse.cpp:59)
+==698352==    by 0x121B21: ServerManager::processAndSendResponse(Server*, Location*) (SRC/ServerManager.cpp:997)
+==698352==    by 0x1216ED: ServerManager::readRequestBody(unsigned long, unsigned long) (SRC/ServerManager.cpp:976)
+==698352==    by 0x11B4A6: ServerManager::existingClientConnection() (SRC/ServerManager.cpp:715)
+==698352==    by 0x117D8E: ServerManager::serverMonitoring() (SRC/ServerManager.cpp:455)
+==698352==    by 0x1510B8: main (SRC/main.cpp:42)
+==698352== 
+==698352== 312 bytes in 1 blocks are still reachable in loss record 2 of 2
+==698352==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==698352==    by 0x121A80: ServerManager::processAndSendResponse(Server*, Location*) (SRC/ServerManager.cpp:997)
+==698352==    by 0x1216ED: ServerManager::readRequestBody(unsigned long, unsigned long) (SRC/ServerManager.cpp:976)
+==698352==    by 0x11B4A6: ServerManager::existingClientConnection() (SRC/ServerManager.cpp:715)
+==698352==    by 0x117D8E: ServerManager::serverMonitoring() (SRC/ServerManager.cpp:455)
+==698352==    by 0x1510B8: main (SRC/main.cpp:42)
+==698352== 
+==698352== LEAK SUMMARY:
+==698352==    definitely lost: 0 bytes in 0 blocks
+==698352==    indirectly lost: 0 bytes in 0 blocks
+==698352==      possibly lost: 0 bytes in 0 blocks
+==698352==    still reachable: 347 bytes in 2 blocks
+==698352==         suppressed: 0 bytes in 0 blocks
+==698352== 
+==698352== For lists of detected and suppressed errors, rerun with: -s
+==698352== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==698354== 
+==698354== HEAP SUMMARY:
+==698354==     in use at exit: 347 bytes in 2 blocks
+==698354==   total heap usage: 333 allocs, 331 frees, 147,038 bytes allocated
+==698354== 
+==698354== 35 bytes in 1 blocks are still reachable in loss record 1 of 2
+==698354==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==698354==    by 0x49D570E: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_mutate(unsigned long, unsigned long, char const*, unsigned long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+==698354==    by 0x49D704F: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_append(char const*, unsigned long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+==698354==    by 0x13DFB7: HTTPResponse::checkFile() (SRC/HTTPResponse.cpp:500)
+==698354==    by 0x13AA6C: HTTPResponse::setPostResponse() (SRC/HTTPResponse.cpp:259)
+==698354==    by 0x138697: HTTPResponse::HTTPResponse(HTTPRequest*, Server*, Location*, Server*, ServerManager*, int, int) (SRC/HTTPResponse.cpp:59)
+==698354==    by 0x121B21: ServerManager::processAndSendResponse(Server*, Location*) (SRC/ServerManager.cpp:997)
+==698354==    by 0x1216ED: ServerManager::readRequestBody(unsigned long, unsigned long) (SRC/ServerManager.cpp:976)
+==698354==    by 0x11B4A6: ServerManager::existingClientConnection() (SRC/ServerManager.cpp:715)
+==698354==    by 0x117D8E: ServerManager::serverMonitoring() (SRC/ServerManager.cpp:455)
+==698354==    by 0x1510B8: main (SRC/main.cpp:42)
+==698354== 
+==698354== 312 bytes in 1 blocks are still reachable in loss record 2 of 2
+==698354==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==698354==    by 0x121A80: ServerManager::processAndSendResponse(Server*, Location*) (SRC/ServerManager.cpp:997)
+==698354==    by 0x1216ED: ServerManager::readRequestBody(unsigned long, unsigned long) (SRC/ServerManager.cpp:976)
+==698354==    by 0x11B4A6: ServerManager::existingClientConnection() (SRC/ServerManager.cpp:715)
+==698354==    by 0x117D8E: ServerManager::serverMonitoring() (SRC/ServerManager.cpp:455)
+==698354==    by 0x1510B8: main (SRC/main.cpp:42)
+==698354== 
+==698354== LEAK SUMMARY:
+==698354==    definitely lost: 0 bytes in 0 blocks
+==698354==    indirectly lost: 0 bytes in 0 blocks
+==698354==      possibly lost: 0 bytes in 0 blocks
+==698354==    still reachable: 347 bytes in 2 blocks
+==698354==         suppressed: 0 bytes in 0 blocks
+==698354== 
+==698354== For lists of detected and suppressed errors, rerun with: -s
+==698354== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==698309== 
+==698309== HEAP SUMMARY:
+==698309==     in use at exit: 0 bytes in 0 blocks
+==698309==   total heap usage: 344 allocs, 344 frees, 160,584 bytes allocated
+==698309== 
+==698309== All heap blocks were freed -- no leaks are possible
+==698309== 
+==698309== For lists of detected and suppressed errors, rerun with: -s
+==698309== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
