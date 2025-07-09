@@ -83,7 +83,6 @@ current_request_(input_request), server_(server_requested), location_(location_r
 
 HTTPResponse::~HTTPResponse() {
 	// std::cout << "method destructor\n";
-	std::cerr << "HTTPResponse destroyed at " << this << std::endl;
 };
 
 // SETTER
@@ -477,7 +476,7 @@ int HTTPResponse::checkFile() {
 			return 500;
 		}
 	} else {
-		if (location_ != default_location_) {
+		if (location_ != default_location_ && location_->getRoot().find(default_location_->getRoot()) == std::string::npos) {
 			body_filename_ = default_path;
 		} else
 			body_filename_ = "";
@@ -680,8 +679,7 @@ void HTTPResponse::CGI_Body() {
 	if (data.getMethod() == "POST" && data.getBody().empty()) {
 		DEBUG_PRINT("[CGI WARNING] POST method but body is empty!");
 	}
-	std::cerr << "CGI_BODY in HTTPResponse method -> Allocated HTTPResponse of size " << sizeof(HTTPResponse) << " at " << this << ", size of client response: " << sizeof(this) << std::endl;
-	std::cerr << "HTTResponse location: " << this << ", size: " << sizeof(this) << std::endl;
+
 	CgiHandler handler(data, scriptPath, server_manager_, body_filename_, this); // pass to CGI engine
 	std::string cgiOutput = handler.run(server_manager_, this);
 

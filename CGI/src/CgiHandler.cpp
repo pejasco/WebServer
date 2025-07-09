@@ -22,7 +22,7 @@ CgiHandler::CgiHandler(const RequestData &request, const std::string &scriptPath
 
 std::string CgiHandler::run(ServerManager *master_server, HTTPResponse *http) {
 	// DEBUG_PRINT(BOLD UNDERLINE BG_BLUE WHITE "CGI HANDLER CALLED" RESET);
-	std::cerr << "CGIHandler run in HTTPResponse method -> Allocated HTTPResponse of size " << sizeof(HTTPResponse) << " at " << http << ", size of client response: " << sizeof(http) << std::endl;
+	// std::cerr << "CGIHandler run in HTTPResponse method -> Allocated HTTPResponse of size " << sizeof(HTTPResponse) << " at " << http << ", size of client response: " << sizeof(http) << std::endl;
 	ScriptExecutor executor(_scriptPath, _request, master_server);
 	return executor.runScript(_body_filename, http);
 }

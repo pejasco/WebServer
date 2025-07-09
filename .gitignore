@@ -4,5 +4,6 @@ index.html.*
 output
 /OBJ
 webserv
-/documents/upload/storage/*
-!/documents/upload/storage/unauthorise.txt
+documents/upload/storage/*
+!documents/upload/storage/unauthorise.txt
+!documents/tools/magic_guesser.html

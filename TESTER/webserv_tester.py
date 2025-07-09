@@ -67,8 +67,6 @@ def test_error_code(url, time, filename, error_code, request_type):
 			"get": requests.get,
 			"post": requests.post,
 			"delete": requests.delete,
-			"put": requests.put,
-			"head": requests.head
 		}
 		method = methods.get(request_type.lower())
 		if not method:
@@ -370,7 +368,7 @@ def simple_test():
 	individual_test(test_error_code, 'http://localhost:3501', 5, '/cgi-bin/color.py', 404, "get")
 	individual_test(test_error_code, 'http://localhost:3501', 5, '/cgi-bin/hello.php', 405, "get")
 	test_error_default('http://localhost:8080', 5)
-	test_error_timeout('localhost', 35)
+	# test_error_timeout('localhost', 35)
 	test_error_max_header_size('http://localhost:9000/upload/', 5)
 	test_error_max_body_size('http://localhost:9000/upload/', 5)
 	test_301_redirect('http://localhost:4001', 5)

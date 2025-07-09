@@ -199,7 +199,7 @@ void ScriptExecutor::execveScript(std::string &body_filename, HTTPResponse *http
 	EnvBuilder envBuilder(_request);
 	char** envp = envBuilder.buildEnvArray();
 	char** av = createArgv();
-	std::cerr << "ExecveScript run in HTTPResponse method -> Allocated HTTPResponse of size " << sizeof(HTTPResponse) << " at " << http << ", size of client response: " << sizeof(http) << std::endl;
+	// std::cerr << "ExecveScript run in HTTPResponse method -> Allocated HTTPResponse of size " << sizeof(HTTPResponse) << " at " << http << ", size of client response: " << sizeof(http) << std::endl;
 	if (http->getCurrentRequest()) {
 		delete http->getCurrentRequest();
 	}
