@@ -703,7 +703,7 @@ void HTTPResponse::CGI_Body() {
 		// fallback response, in case headers were missing
 		response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + convertToStr(cgiOutput.size()) + "\r\n\r\n" + cgiOutput;
 	}
-	// DEBUG_PRINT("response: " << response_);
+	DEBUG_PRINT("response: " << response_);
 	_response_ready_ = true;
 }
 

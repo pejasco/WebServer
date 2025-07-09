@@ -151,56 +151,56 @@ void HTTPRequest::setHost(std::string& host) {
 // 	}
 // }
 
-void HTTPRequest::setAccept(const std::string& media_types){
-	std::stringstream iss(media_types);
-	std::string media_type;
-	size_t pos_begin;
-	size_t pos_end;
-	std::string type;
-	std::string subtype;
-	float priority;
+// void HTTPRequest::setAccept(const std::string& media_types){
+// 	std::stringstream iss(media_types);
+// 	std::string media_type;
+// 	size_t pos_begin;
+// 	size_t pos_end;
+// 	std::string type;
+// 	std::string subtype;
+// 	float priority;
 
-	while(getline(iss, media_type, ','))
-	{
-		priority = 1.0;
+// 	while(getline(iss, media_type, ','))
+// 	{
+// 		priority = 1.0;
 		
-		if (media_type.find(';') == std::string::npos) {
-			pos_end = media_type.find('/');
-			pos_begin = 0;
+// 		if (media_type.find(';') == std::string::npos) {
+// 			pos_end = media_type.find('/');
+// 			pos_begin = 0;
 			
-			if (pos_begin == pos_end)
-				type = "*";
-			else
-				type = media_type.substr(0, pos_end);
+// 			if (pos_begin == pos_end)
+// 				type = "*";
+// 			else
+// 				type = media_type.substr(0, pos_end);
 				
-			pos_begin = pos_end + 1;
-			subtype = media_type.substr(pos_begin, std::string::npos);
-		} else {
-			// Handle piority
-			pos_end = media_type.find('/');
-			type = media_type.substr(0, pos_end);
+// 			pos_begin = pos_end + 1;
+// 			subtype = media_type.substr(pos_begin, std::string::npos);
+// 		} else {
+// 			// Handle piority
+// 			pos_end = media_type.find('/');
+// 			type = media_type.substr(0, pos_end);
 			
-			pos_begin = pos_end + 1;
-			pos_end = media_type.find(';');
-			subtype = media_type.substr(pos_begin, pos_end - pos_begin);
+// 			pos_begin = pos_end + 1;
+// 			pos_end = media_type.find(';');
+// 			subtype = media_type.substr(pos_begin, pos_end - pos_begin);
 			
-			// Extract piority
-			if (media_type.find("q=") != std::string::npos) {
-				pos_begin = media_type.find("q=") + 2;
-				std::string q = media_type.substr(pos_begin);
-				std::stringstream ss(q);
-				ss >> priority;
-			}
-		}
+// 			// Extract piority
+// 			if (media_type.find("q=") != std::string::npos) {
+// 				pos_begin = media_type.find("q=") + 2;
+// 				std::string q = media_type.substr(pos_begin);
+// 				std::stringstream ss(q);
+// 				ss >> priority;
+// 			}
+// 		}
 		
-		//need to handle more type in the future
-		if (subtype.empty() && type == "image") {
-			subtype = "*";
-		}
+// 		//need to handle more type in the future
+// 		if (subtype.empty() && type == "image") {
+// 			subtype = "*";
+// 		}
 		
-		accept_list_.push_back(Accept(type, subtype, priority));
-	}
-}
+// 		accept_list_.push_back(Accept(type, subtype, priority));
+// 	}
+// }
 
 void HTTPRequest::setAcceptLanguage(const std::string& languages){
 	std::stringstream iss(languages);
@@ -701,7 +701,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
 			if ((pos_begin = line.rfind(":")) != std::string::npos) {
 				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
 				std::string accept = line.substr(pos_begin, std::string::npos);
-				setAccept(accept);
+				// setAccept(accept);
 				DEBUG_PRINT("accept: " << accept);
 			}
 		} 

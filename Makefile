@@ -133,7 +133,7 @@ tester-leaks:
 tester-dummy:
 	@cp -r TESTER/www /tmp/
 	@make debug
-	@echo "[${YELLOW}webserv tester with dummy configuration${NC}] starting python tester..."
+	@echo "[${YELLOW}webserv tester with dummy configuration${NC}] starting tester..."
 	@ ./webserv configuration/dummy.conf
 
 tester: 

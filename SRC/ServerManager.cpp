@@ -478,7 +478,7 @@ void ServerManager::createNewClientConnection() {
 	DEBUG_PRINT("accept() returned fd: " << temp_fd);
 	
 	if (temp_fd == -1) {
-		std::cerr << BOLD RED "Error accept() failed: " << strerror(errno) << RESET << std::endl;
+		std::cerr << BOLD RED "Error accept() failed: " RESET << std::endl;
 		DEBUG_PRINT(BOLD UNDERLINE BG_GREEN BLACK "createNewClientConnection() existed" RESET);
 		return;
 	}
@@ -512,7 +512,7 @@ void ServerManager::createNewClientConnection() {
 	client_event.data.fd = new_client_fd;
 	
 	if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, new_client_fd, &client_event) == -1) {
-		std::cerr << BOLD RED "Error epoll_ctl ADD failed: " << strerror(errno) << RESET << std::endl;
+		std::cerr << BOLD RED "Error epoll_ctl ADD failed" RESET << std::endl;
 		close(new_client_fd);
 		clients_list_.erase(new_client_fd);
 		delete new_client;
@@ -593,8 +593,22 @@ void ServerManager::existingClientConnection() {
 			DEBUG_PRINT("send() returned: " BOLD << bytes_sent << RESET" bytes");
 			
 			if (bytes_sent <= 0) {
-				DEBUG_PRINT("Error sending pending response");
-				return; // Error or would block
+				if (bytes_sent == 0) {
+					DEBUG_PRINT("Client disconnected gracefully - cleaning up connection");
+					cleanClient(current_fd_);
+					DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "processAndSendResponse() exited" RESET);
+					return; // Connection closed or error
+				} else {
+					usleep(1000); // 1ms delay for retrying
+					bytes_sent = send(current_fd_, client->header_buffer.c_str(), client->header_buffer.length(), 0);
+					DEBUG_PRINT("AFTER SECOND READING -- bytes_sent: " BOLD << bytes_sent << RESET);
+					if (bytes_sent < 0) {
+						DEBUG_PRINT("Error during header reading - cleaning up connection");
+						cleanClient(current_fd_);
+						DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "processAndSendResponse() exited" RESET);
+						return; // Connection closed or error
+					}
+				}
 			}
 			
 			if (bytes_sent < static_cast<ssize_t>(client->header_buffer.length())) {
@@ -1036,9 +1050,22 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 	
 	// DON'T CHECK ERRNO - per requirements
 	if (bytes_sent <= 0) {
-		DEBUG_PRINT("Error when sending response to client");
-		DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "processAndSendResponse() exited" RESET);
-		return; // Error or would block
+		if (bytes_sent == 0) {
+			DEBUG_PRINT("Client disconnected gracefully - cleaning up connection");
+			cleanClient(current_fd_);
+			DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "processAndSendResponse() exited" RESET);
+			return; // Connection closed or error
+		} else {
+			usleep(1000); // 1ms delay for retrying
+    		bytes_sent = send(current_fd_, client->header_buffer.c_str(), client->header_buffer.length(), 0);
+			DEBUG_PRINT("AFTER SECOND READING -- bytes_sent: " BOLD << bytes_sent << RESET);
+			if (bytes_sent < 0) {
+				DEBUG_PRINT("Error during header reading - cleaning up connection");
+				cleanClient(current_fd_);
+				DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "processAndSendResponse() exited" RESET);
+				return; // Connection closed or error
+			}
+		}
 	}
 	
 	if (bytes_sent < static_cast<ssize_t>(client->header_buffer.length())) {
@@ -1131,14 +1158,18 @@ bool ServerManager::sendResponseBodyFile() {
 			std::string debug_content(buffer_, bytes_read);
 			//DEBUG_PRINT("Body sent to client: " << debug_content);
 			DEBUG_PRINT("send() returned: " BOLD << bytes_sent << RESET " bytes");
-			
 			if (bytes_sent <= 0) {
-				DEBUG_PRINT("Send would block or error occurred");
-				// Would block or error - seek back and try again later
-				client->file_stream.seekg(-bytes_read, std::ios::cur);
-				DEBUG_PRINT("Seeked back " BOLD << bytes_read << RESET " bytes in file");
-				DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "sendResponseBodyFile() exited" RESET);
-				return false;
+				if (bytes_sent == 0) {
+					DEBUG_PRINT("Client disconnected gracefully - cleaning up connection");
+					cleanClient(current_fd_);
+					DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "sendResponseBodyFile() exited" RESET);
+					return false;
+				} else { // bytes_sent < 0, indicating an error
+					DEBUG_PRINT("Send error occurred - cleaning up connection");
+					cleanClient(current_fd_);
+					DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "sendResponseBodyFile() exited" RESET);
+					return false;
+				}
 			} else if (bytes_sent < bytes_read) {
 				DEBUG_PRINT("Partial send: " BOLD << bytes_sent << RESET "/" BOLD << bytes_read << RESET " bytes");
 				// Partial send - seek back to unsent position
@@ -1213,7 +1244,7 @@ bool ServerManager::cleanClient(int current_fd_) {
 		int epoll_result = epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, current_fd_, NULL);
 		DEBUG_PRINT("epoll_ctl DEL result: " << epoll_result);
 		if (epoll_result == -1) {
-			std::cerr << BOLD RED "Error: epoll_ctl DEL failed: " << strerror(errno) << RESET;
+			std::cerr << BOLD RED "Error: epoll_ctl DEL failed" << RESET;
 		}
 		cleanHTTPElement(current_fd_);
 		delete delete_client;
@@ -1240,11 +1271,25 @@ void ServerManager::send408ErrorResponse(int fd) {
         "\r\n"
         "<html><body><h1>408 Request Timeout</h1></body></html>\r\n";
     ssize_t bytes_sent = send(fd, response, strlen(response), 0);
-    if (bytes_sent == -1) {
-        DEBUG_PRINT("Failed to send 408 response: " << strerror(errno));
-    } else {
-        DEBUG_PRINT("Sent 408 Response to client " << fd << " (" << bytes_sent << " bytes)");
-    }
+	if (bytes_sent <= 0) {
+		if (bytes_sent == 0) {
+			DEBUG_PRINT("Client disconnected gracefully - cleaning up connection");
+			cleanClient(fd);
+			DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "send408ErrorResponse() exited" RESET);
+			return;
+		} else {
+			usleep(1000); // 1ms delay for retrying
+			bytes_sent = send(fd, response, strlen(response), 0);
+			DEBUG_PRINT("AFTER SECOND READING -- bytes_sent: " BOLD << bytes_sent << RESET);
+			if (bytes_sent < 0) {
+				DEBUG_PRINT("Error during sending - cleaning up connection");
+				cleanClient(fd);
+				DEBUG_PRINT(BOLD UNDERLINE BG_WHITE BLACK "send408ErrorResponse() exited" RESET);
+				return;
+			}
+		}
+	}
+	DEBUG_PRINT("All bytes sent successfully");
 }
 
 void ServerManager::checkClientTimeouts() {
