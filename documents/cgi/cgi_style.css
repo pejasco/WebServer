@@ -69,6 +69,19 @@ body {
 	transform: scale(1.05);
 }
 
+.homepage {
+	position: absolute;
+	top: 10px;
+	left: 10px; /* Or use right: 10px; for right side */
+	padding: 10px 16px;
+	background-color: #003344;
+	color: #00ffe7;
+	border: 1px solid #00ffe7;
+	border-radius: 8px;
+	font-size: 1rem;
+	cursor: pointer;
+}
+
 button {
 	background-color: #003344;
 	color: #00ffe7;
