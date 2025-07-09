@@ -994,7 +994,8 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 	Server *master_server = this->getServers().front();
 	DEBUG_PRINT("Creating HTTP response");
 	// _http_response = new HTTPResponse((*client->current_request), server_requested, location_requested, master_server, this, error_flag, client->getLastStatusCode());  // Default constructor
-	client->setResponse(new HTTPResponse((client->current_request), server_requested, location_requested, master_server, this, error_flag, client->getLastStatusCode()));
+	client->setResponse(new HTTPResponse((client->current_request), server_requested, location_requested, master_server, this, *client, error_flag, client->getLastStatusCode()));
+	std::cerr << "SERVERMANAGER Allocated HTTPResponse of size " << sizeof(HTTPResponse) << " at " << client->current_response << ", size of client response: " << sizeof(client->current_response) << std::endl;
 	DEBUG_PRINT("status code of response: " << client->current_response->getStatusCode());
 	client->setLastStatusCode(client->current_response->getStatusCode());
 	error_flag = false;

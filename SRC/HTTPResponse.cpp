@@ -18,8 +18,8 @@ bool cgi_flag = false;
 
 // HTTPResponse:: HTTPResponse() {}
 
-HTTPResponse::HTTPResponse(HTTPRequest *input_request, Server *server_requested, Location *location_requested, Server *master_server, ServerManager *server_manager, int error_flag, int error_code) : server_manager_(server_manager), status_code_(0),
-current_request_(input_request), server_(server_requested), location_(location_requested), default_server_(server_requested), default_location_(server_requested->getLocationsList().front()), master_server_(master_server), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
+HTTPResponse::HTTPResponse(HTTPRequest *input_request, Server *server_requested, Location *location_requested, Server *master_server, ServerManager *server_manager, Client &client, int error_flag, int error_code) : server_manager_(server_manager), status_code_(0),
+current_request_(input_request), server_(server_requested), location_(location_requested), default_server_(server_requested), default_location_(server_requested->getLocationsList().front()), master_server_(master_server), client_(client), empty_line_("\r\n"), is_autoindex_(false), _response_ready_(false) {
 	DEBUG_PRINT(BOLD WHITE "\n\n---------------------\n---------------------\nPARSE RESPONSE STARTED\n---------------------\n---------------------\n" RESET);
 	if (error_flag > 0) {
 		status_code_ = error_code;
@@ -83,6 +83,7 @@ current_request_(input_request), server_(server_requested), location_(location_r
 
 HTTPResponse::~HTTPResponse() {
 	// std::cout << "method destructor\n";
+	std::cerr << "HTTPResponse destroyed at " << this << std::endl;
 };
 
 // SETTER
@@ -119,6 +120,10 @@ int HTTPResponse::getStatusCode() {
 HTTPRequest *HTTPResponse::getCurrentRequest() {
 	return current_request_;
 };
+
+Client &HTTPResponse::getClient() {
+	return client_;
+}
 //METHOD
 
 void HTTPResponse::clearBodyFilename() {
@@ -675,9 +680,10 @@ void HTTPResponse::CGI_Body() {
 	if (data.getMethod() == "POST" && data.getBody().empty()) {
 		DEBUG_PRINT("[CGI WARNING] POST method but body is empty!");
 	}
-
-	CgiHandler handler(data, scriptPath, server_manager_, body_filename_); // pass to CGI engine
-	std::string cgiOutput = handler.run(server_manager_);
+	std::cerr << "CGI_BODY in HTTPResponse method -> Allocated HTTPResponse of size " << sizeof(HTTPResponse) << " at " << this << ", size of client response: " << sizeof(this) << std::endl;
+	std::cerr << "HTTResponse location: " << this << ", size: " << sizeof(this) << std::endl;
+	CgiHandler handler(data, scriptPath, server_manager_, body_filename_, this); // pass to CGI engine
+	std::string cgiOutput = handler.run(server_manager_, this);
 
 	// Try to parse headers from CGI output
 	size_t headerEnd = cgiOutput.find("\r\n\r\n");

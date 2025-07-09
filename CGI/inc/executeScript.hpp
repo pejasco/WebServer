@@ -39,10 +39,10 @@ class ScriptExecutor
 
 		char** createArgv() const;
 		std::string getInterpreter() const;
-		void runChild(std::string &body_filename);
+		void runChild(std::string &body_filename, HTTPResponse *http);
 		std::string runParent(pid_t pid);
 		void bodytoStdin(); //POST only
-		void execveScript(std::string &body_filename);
+		void execveScript(std::string &body_filenam, HTTPResponse *http);
 		bool createOutPipe();
 		std::string errorResponse();
 
@@ -50,6 +50,6 @@ class ScriptExecutor
 		ScriptExecutor(const std::string &scriptPath, const RequestData &request, ServerManager *master_server);
 		~ScriptExecutor();
 
-		std::string runScript(std::string &body_filename);
+		std::string runScript(std::string &body_filename, HTTPResponse *http);
 		ServerManager *_master_server;
 };

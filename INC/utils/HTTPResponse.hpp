@@ -14,16 +14,17 @@
 #define HTTPRESPONSE_HPP
 
 #include "HTTPRequest.hpp"
-// #include "ServerManager.hpp"
+#include "Client.hpp"
 
 class ServerManager;
 class Location;
 class Server;
+class Client;
 
 class HTTPResponse {
 	public:
 		// HTTPResponse();
-		HTTPResponse(HTTPRequest *input_request, Server *server_requested, Location *location_requested, Server *master_server, ServerManager *server_manager, int error_flag, int error_code); //get information like the path, method and version via HTTPrequest class 
+		HTTPResponse(HTTPRequest *input_request, Server *server_requested, Location *location_requested, Server *master_server, ServerManager *server_manager, Client &client, int error_flag, int error_code); //get information like the path, method and version via HTTPrequest class 
 		~HTTPResponse();
 		
 		//SETTER
@@ -36,6 +37,7 @@ class HTTPResponse {
 		bool isAutoIndex();
 		int getStatusCode();
 		HTTPRequest *getCurrentRequest();
+		Client &getClient();
 			
 		//METHOD
 		void clearBodyFilename();
@@ -70,6 +72,7 @@ class HTTPResponse {
 		Server *default_server_;
 		Location *default_location_;
 		Server *master_server_;
+		Client &client_;
 		//RESPONSE CONTENT
 		std::string response_;
 		std::string status_line_;
