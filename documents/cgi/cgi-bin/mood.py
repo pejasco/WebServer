@@ -17,7 +17,7 @@ if method == "POST":
 		post_data = sys.stdin.read(content_length)
 		params = urllib.parse.parse_qs(post_data)
 		mood = params.get("mood", [""])[0]
-		print(f"Content-Length:  {content_length}")
+		# print(f"Content-Length:  {content_length}")
 
 print("""
 <!DOCTYPE html>

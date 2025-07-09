@@ -683,30 +683,25 @@ void HTTPResponse::CGI_Body() {
 	// Try to parse headers from CGI output
 	size_t headerEnd = cgiOutput.find("\r\n\r\n");
 	// DEBUG_PRINT("cgioutput: " << cgiOutput);
-	if (headerEnd == std::string::npos) {
+	if (headerEnd == std::string::npos)
 		// Try Unix line endings as fallback
 		headerEnd = cgiOutput.find("\n\n");
-		if (headerEnd != std::string::npos) {
-			std::string headers = cgiOutput.substr(0, headerEnd);
-			// DEBUG_PRINT("Header: " << headers);
-			std::string body = cgiOutput.substr(headerEnd);
-
-			if (headers.find("Content-Type:") == std::string::npos)
-				headers = "Content-Type: text/html\r\n" + headers;
-
-			if (headers.find("Content-Length:") == std::string::npos) {
-        	    headers += "\r\nContent-Length: " + convertToStr(body.size());
-        	}
-
-			if (headers.find("Connection:") == std::string::npos)
-				headers += "\r\nConnection: close";
-
-			response_ = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
-			body_filename_.clear();
-		} else {
-			// fallback response, in case headers were missing
-			response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + convertToStr(cgiOutput.size()) + "\r\n\r\n" + cgiOutput;
-		}
+	if (headerEnd != std::string::npos) {
+		std::string headers = cgiOutput.substr(0, headerEnd);
+		// DEBUG_PRINT("Header: " << headers);
+		std::string body = cgiOutput.substr(headerEnd + 2);
+		if (headers.find("Content-Type:") == std::string::npos)
+			headers = "Content-Type: text/html\r\n" + headers;
+		if (headers.find("Content-Length:") == std::string::npos) {
+    	    headers += "\r\nContent-Length: " + convertToStr(body.size());
+    	}
+		if (headers.find("Connection:") == std::string::npos)
+			headers += "\r\nConnection: close";
+		response_ = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
+		body_filename_.clear();
+	} else {
+		// fallback response, in case headers were missing
+		response_ = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + convertToStr(cgiOutput.size()) + "\r\n\r\n" + cgiOutput;
 	}
 	// DEBUG_PRINT("response: " << response_);
 	_response_ready_ = true;
