@@ -40,8 +40,14 @@ Client::Client(int inputClientFd, struct sockaddr_storage &inputClientAddr, sock
 }
 
 Client::~Client() {
-	if (current_response)
+	if (current_response) {
 		delete current_response;
+		current_response = NULL;
+	}	
+	// if (current_request) {
+	// 	delete current_request;
+	// 	current_request = NULL;
+	// }
 	if (file_stream.is_open())
 		file_stream.close();
 }
