@@ -240,7 +240,7 @@ def test_server_names():
 
 def test_server_multiports():
 	test_cases_get = ["8080", "8081", "8082"]
-	test_cases_cgi_post = ["3501", "3502", "6000"]
+	test_cases_cgi_post = ["3501", "3502", "6654"]
 
 	for port in test_cases_get:
 		try:
@@ -253,7 +253,7 @@ def test_server_multiports():
 			print(f"❌ Host: '{port}' failed: {e}")
 	for port in test_cases_cgi_post:
 		try:
-			response = requests.post(f"http://localhost:{port}/cgi-bin/say_hello.py", data={"name": "coco"}, timeout=5)
+			response = requests.post(f"http://localhost:{port}/cgi-bin/say_hello.py", data={"name": "coco"}, headers={"User-Agent": "TestClient/1.0"}, timeout=5)
 			if (response.status_code == 200):
 				print(f"✅ Port: '{port}' → Status: {response.status_code}")
 			else:
@@ -373,12 +373,12 @@ def simple_test():
 	# test_error_max_body_size('http://localhost:9000/upload/', 5)
 	# test_301_redirect('http://localhost:4001', 5)
 	
-	print("\n===========")
-	print("CONCURRENT TESTING")
-	print("===========\n")
+	# print("\n===========")
+	# print("CONCURRENT TESTING")
+	# print("===========\n")
 	# concurrent_test(test_get_request, 200, 'http://localhost:8080', 7, None)
-	concurrent_test(test_cgi_request, 200, 'http://localhost:3501', 20, '/cgi-bin/meme.py', None)
-	# concurrent_test(test_cgi_request, 200, 'http://localhost:3501', 15, '/cgi-bin/say_hello.py', {'name': 'username'})
+	# concurrent_test(test_cgi_request, 200, 'http://localhost:3501', 50, '/cgi-bin/meme.py', None)
+	# concurrent_test(test_cgi_request, 200, 'http://localhost:3501', 50, '/cgi-bin/say_hello.py', {'name': 'username'})
 
 	# print("\n===========")
 	# print("SERVER_NAMES TESTING")
@@ -388,7 +388,7 @@ def simple_test():
 	# print("\n===========")
 	# print("MULTIPORT TESTING")
 	# print("===========\n")
-	# test_server_multiports()
+	test_server_multiports()
 
 	# print("\n===========")
 	# print("BROWSER TESTING")

@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 16:24:47 by cofische          #+#    #+#             */
-/*   Updated: 2025/07/08 20:56:19 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/09 17:25:19 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,7 +216,7 @@ void cleanShutdown(ServerManager &master_server) {
 			// 	}
 			// 	// Then delete request
 			// 	if (begCl->second->current_request) {
-			// 		begCl->second->current_request->getAccept().clear();
+				begCl->second->current_request->getAccept().clear();
 			// 		delete begCl->second->current_request;
 			// 		begCl->second->current_request = NULL;
 			// 	}
