@@ -57,7 +57,8 @@ void ScriptExecutor::runChild(std::string &body_filename)
 		int postPipe[2];
 		if (pipe(postPipe) == -1) {
 			std::cerr << BOLD RED "Failed to create POST pipe\n" RESET;
-			body_filename = "";
+			body_filename.clear();
+			std::string().swap(body_filename);
 			cleanShutdown(*_master_server);
 			delete(_master_server);
 			_exit(1);
@@ -65,7 +66,8 @@ void ScriptExecutor::runChild(std::string &body_filename)
 		pid_t grandchild = fork(); // for testing
 		if (grandchild < 0) {
 			std::cerr << BOLD RED "Failed to fork grandchild for CGI\n" RESET;
-			body_filename = "";
+			body_filename.clear();
+			std::string().swap(body_filename);
 			cleanShutdown(*_master_server);
 			delete(_master_server);
 			_exit(1);
@@ -93,7 +95,8 @@ void ScriptExecutor::runChild(std::string &body_filename)
 			write(postPipe[1], body.c_str(), body.size());
 			close(postPipe[1]);
 			waitpid(grandchild, NULL, 0);
-			body_filename = "";
+			body_filename.clear();
+			std::string().swap(body_filename);
 			cleanShutdown(*_master_server);
 			delete(_master_server);
 			_exit(0);  // done
