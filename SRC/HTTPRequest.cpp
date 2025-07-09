@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:15 by chuleung          #+#    #+#             */
-/*   Updated: 2025/07/08 13:28:06 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/09 17:55:45 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,36 +118,38 @@ void HTTPRequest::setHost(std::string& host) {
 	host_ = host;
 }
 
-void HTTPRequest::setUserAgent(const std::string& agents){
-	std::stringstream iss(agents);
-	std::string token;
-	std::string last_key;
+// void HTTPRequest::setUserAgent(const std::string& agents){
+// 	std::stringstream iss(agents);
+// 	std::string token;
+// 	std::string last_key;
+// 	DEBUG_PRINT("setUserAgent called()");
+// 	while(iss >> token)
+// 	{
+// 		DEBUG_PRINT("What is the token for set UserAgent: " << token);
+// 		if (token.find('/') != std::string::npos){
+// 			last_key = token;
+// 			DEBUG_PRINT("last_key based on token: " << last_key);
+// 			user_agent_[last_key] = "";
+// 		} 
+// 		else if (token[0] == '(' && !last_key.empty()) {
+// 			std::string group = token;
 
-	while(iss >> token)
-	{
-		if (token.find('/') != std::string::npos){
-			last_key = token;
-			user_agent_[last_key] = "";
-		} 
-		else if (token[0] == '(') {
-			std::string group = token;
+// 			bool group_complete = false;
+// 			// if (token.find(')') != std::string::npos) {
+// 			//     group_complete = true;
 
-			bool group_complete = false;
-			// if (token.find(')') != std::string::npos) {
-			//     group_complete = true;
+// 			// }
+// 			while (!group_complete && iss >> token){
 
-			// }
-			while (!group_complete && iss >> token){
-
-				group += " " + token;
-				if (token.find('\'') != std::string::npos) {
-					group_complete = true;
-				}
-			}
-			user_agent_[last_key] = group;
-		}
-	}
-}
+// 				group += " " + token;
+// 				if (token.find(')') != std::string::npos) {
+// 					group_complete = true;
+// 				}
+// 			}
+// 			user_agent_[last_key] = group;
+// 		}
+// 	}
+// }
 
 void HTTPRequest::setAccept(const std::string& media_types){
 	std::stringstream iss(media_types);
@@ -691,7 +693,7 @@ void HTTPRequest::parseRequestHeader(std::istringstream& stream) {
 			if ((pos_begin = line.rfind(":")) != std::string::npos) {
 				pos_begin = line.find_first_not_of(" \t", pos_begin + 1);
 				std::string agents = line.substr(pos_begin, std::string::npos);
-				setUserAgent(agents);
+				// setUserAgent(agents);
 				DEBUG_PRINT("agents: " << agents);
 			}
 		} 
