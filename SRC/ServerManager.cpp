@@ -968,7 +968,7 @@ int ServerManager::readRequestBody(size_t content_length, size_t max_body_size) 
 		client->current_request->parseContent(client->body_buffer);
 		DEBUG_PRINT(BOLD GREEN"URL MATCHING INFORMATION FOR BODY SENDING" RESET);
 		std::string server_IP = getServerIPPort(current_fd_);
-		// master_server_ = servers_list_.front();
+
 		Server *server_requested = getCurrentServer((*client->current_request), *this, server_IP);
 		Location *location_requested = getCurrentLocation((*client->current_request), *server_requested);
 		DEBUG_PRINT(BOLD GREEN"URL MATCHING INFORMATION FOR DOBY SENDING" RESET);
