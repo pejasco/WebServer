@@ -183,16 +183,16 @@ int	ServerManager::readFile(std::fstream &config_file) {
 	std::string line;
 	int server_ID = 1000; //Set an ID for new servers (MAY NOT BE USEFUL?)
 	
-	// if (config_file.is_open()){
-	// 	if (checkDuplicatePort(config_file))
-	// 	{
-	// 		std::cerr << BOLD RED "Error: " RESET "Duplicate port found\n";
-	// 		config_file.close();
-	// 		return (0);
-	// 	}
-	// }
-	// config_file.clear();
-	// config_file.seekg(0, std::ios::beg);
+	if (config_file.is_open()){
+		if (checkDuplicatePort(config_file))
+		{
+			std::cerr << BOLD RED "Error: " RESET "Duplicate port found\n";
+			config_file.close();
+			return (0);
+		}
+	}
+	config_file.clear();
+	config_file.seekg(0, std::ios::beg);
 	if (config_file.is_open()) {
 		while (std::getline(config_file, line)) {
 			if (line.find("server {") != std::string::npos || server_flag == true) {				
@@ -995,7 +995,6 @@ void ServerManager::processAndSendResponse(Server *server_requested, Location *l
 	DEBUG_PRINT("Creating HTTP response");
 	// _http_response = new HTTPResponse((*client->current_request), server_requested, location_requested, master_server, this, error_flag, client->getLastStatusCode());  // Default constructor
 	client->setResponse(new HTTPResponse((client->current_request), server_requested, location_requested, master_server, this, *client, error_flag, client->getLastStatusCode()));
-	std::cerr << "SERVERMANAGER Allocated HTTPResponse of size " << sizeof(HTTPResponse) << " at " << client->current_response << ", size of client response: " << sizeof(client->current_response) << std::endl;
 	DEBUG_PRINT("status code of response: " << client->current_response->getStatusCode());
 	client->setLastStatusCode(client->current_response->getStatusCode());
 	error_flag = false;

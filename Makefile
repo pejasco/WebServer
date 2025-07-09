@@ -123,6 +123,13 @@ tester-debug:
 	  python3 TESTER/webserv_tester.py; \
 	  kill -INT $$SERVER_PID; rm -f test.txt
 
+tester-leaks:
+	@make debug
+	@echo "[${YELLOW}webserv tester${NC}] starting python tester..."
+	@ make leaks > output 2>/dev/null & SERVER_PID=$$!; sleep 1; \
+	  python3 TESTER/webserv_tester.py; \
+	  kill -INT $$SERVER_PID; rm -f test.txt
+
 tester-dummy:
 	@cp -r TESTER/www /tmp/
 	@make debug
