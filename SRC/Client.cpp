@@ -53,6 +53,7 @@ void Client::setResponse(HTTPResponse* response) {
 	}
 	current_response = response;
 	file_sending_complete = true;
+	std::cerr << "CLIENT setReponse: Allocated HTTPResponse of size " << sizeof(HTTPResponse) << " at " << this->current_response << ", size of client response: " << sizeof(current_response) << std::endl;
 }
 
 void Client::setRequest(HTTPRequest* request) {

@@ -18,7 +18,7 @@ ScriptExecutor::ScriptExecutor(const std::string &scriptPath, const RequestData 
 
 ScriptExecutor::~ScriptExecutor() {}
 
-std::string ScriptExecutor::runScript(std::string &body_filename)
+std::string ScriptExecutor::runScript(std::string &body_filename, HTTPResponse *http)
 {
 	if (!createOutPipe())
 		return errorResponse();
@@ -26,7 +26,7 @@ std::string ScriptExecutor::runScript(std::string &body_filename)
 	if (pid < 0)
 		return errorResponse();
 	if (pid == 0)
-		runChild(body_filename);
+		runChild(body_filename, http);
 	else
 		return runParent(pid);
 	
@@ -50,15 +50,23 @@ char** ScriptExecutor::createArgv() const
 	return av;
 }
 
-void ScriptExecutor::runChild(std::string &body_filename)
+void ScriptExecutor::runChild(std::string &body_filename, HTTPResponse *http)
 {
 	if (_request.getMethod() == "POST") {
 		// Create a pipe for sending POST body to stdin
 		int postPipe[2];
 		if (pipe(postPipe) == -1) {
 			std::cerr << BOLD RED "Failed to create POST pipe\n" RESET;
+			_request.cleanBodyStr();	
 			body_filename.clear();
 			std::string().swap(body_filename);
+			if (http->getCurrentRequest()) {
+				delete http->getCurrentRequest();
+			}
+			if (http) {
+				delete http;
+				http = NULL;
+			}
 			cleanShutdown(*_master_server);
 			delete(_master_server);
 			_exit(1);
@@ -66,8 +74,16 @@ void ScriptExecutor::runChild(std::string &body_filename)
 		pid_t grandchild = fork(); // for testing
 		if (grandchild < 0) {
 			std::cerr << BOLD RED "Failed to fork grandchild for CGI\n" RESET;
+			_request.cleanBodyStr();	
 			body_filename.clear();
 			std::string().swap(body_filename);
+			if (http->getCurrentRequest()) {
+				delete http->getCurrentRequest();
+			}
+			if (http) {
+				delete http;
+				http = NULL;
+			}
 			cleanShutdown(*_master_server);
 			delete(_master_server);
 			_exit(1);
@@ -83,10 +99,19 @@ void ScriptExecutor::runChild(std::string &body_filename)
 			dup2(postPipe[0], STDIN_FILENO);    // CGI stdin
 			close(postPipe[0]);
 			
-			execveScript(body_filename);                     // run the script
+			execveScript(body_filename, http);                     // run the script
+			_request.cleanBodyStr();	
+			body_filename.clear();
+			std::string().swap(body_filename);
+			if (http->getCurrentRequest()) {
+				delete http->getCurrentRequest();
+			}
+			if (http) {
+				delete http;
+				http = NULL;
+			}
 			cleanShutdown(*_master_server);
 			delete(_master_server);
-			body_filename = "";
 			_exit(1);                           // only if execve fails
 		} else {
 			// Child: writes POST body into pipe, waits for grandchild
@@ -95,8 +120,18 @@ void ScriptExecutor::runChild(std::string &body_filename)
 			write(postPipe[1], body.c_str(), body.size());
 			close(postPipe[1]);
 			waitpid(grandchild, NULL, 0);
+			body.clear();
+			std::string().swap(body);
+			_request.cleanBodyStr();	
 			body_filename.clear();
 			std::string().swap(body_filename);
+			if (http->getCurrentRequest()) {
+				delete http->getCurrentRequest();
+			}
+			if (http) {
+				delete http;
+				http = NULL;
+			}
 			cleanShutdown(*_master_server);
 			delete(_master_server);
 			_exit(0);  // done
@@ -107,7 +142,17 @@ void ScriptExecutor::runChild(std::string &body_filename)
 		dup2(_pipe[1], STDOUT_FILENO);
 		close(_pipe[0]);
 		close(_pipe[1]);
-		execveScript(body_filename);
+		execveScript(body_filename, http);
+		_request.cleanBodyStr();	
+		body_filename.clear();
+		std::string().swap(body_filename);
+		if (http->getCurrentRequest()) {
+			delete http->getCurrentRequest();
+		}
+		if (http) {
+			delete http;
+			http = NULL;
+		}
 		cleanShutdown(*_master_server);
 		delete(_master_server);
 		_exit(1);
@@ -149,11 +194,21 @@ std::string ScriptExecutor::runParent(pid_t pid)
 	return _response;
 }
 
-void ScriptExecutor::execveScript(std::string &body_filename)
+void ScriptExecutor::execveScript(std::string &body_filename, HTTPResponse *http)
 {
 	EnvBuilder envBuilder(_request);
 	char** envp = envBuilder.buildEnvArray();
 	char** av = createArgv();
+	std::cerr << "ExecveScript run in HTTPResponse method -> Allocated HTTPResponse of size " << sizeof(HTTPResponse) << " at " << http << ", size of client response: " << sizeof(http) << std::endl;
+	if (http->getCurrentRequest()) {
+		delete http->getCurrentRequest();
+	}
+	if (http) {
+		delete http;
+		http = NULL;
+	}
+	cleanShutdown(*_master_server);
+	delete (_master_server);
 	execve(av[0], av, envp);
 	std::cerr << BOLD RED "execve failed: " << strerror(errno) << RESET << std::endl;
 	envBuilder.freeEnvArray(envp);
@@ -161,9 +216,18 @@ void ScriptExecutor::execveScript(std::string &body_filename)
 		delete[] av[i];
 	delete[] av;
 	///might need to delete?? if i dinamically allocate av
-	body_filename = "";
+	if (http->getCurrentRequest()) {
+		delete http->getCurrentRequest();
+	}
+	if (http) {
+		delete http;
+		http = NULL;
+	}
+	_request.cleanBodyStr();
+	body_filename.clear();
+	std::string().swap(body_filename);
 	cleanShutdown(*_master_server);
-	delete _master_server;
+	delete (_master_server);
 	_exit(1);
 }
 

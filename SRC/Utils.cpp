@@ -208,18 +208,18 @@ void cleanShutdown(ServerManager &master_server) {
     	    //     DEBUG_PRINT("fd " << fd << " already closed or invalid");
     	    // }
 			if ((begCl)->second) {
-				if (begCl->second->current_response) {
-					begCl->second->current_response->clearBodyFilename();
-					begCl->second->current_response->cleanCurrentRequest();
-					delete begCl->second->current_response;
-					begCl->second->current_response = NULL;
-				}
-				// Then delete request
-				if (begCl->second->current_request) {
-					begCl->second->current_request->getAccept().clear();
-					delete begCl->second->current_request;
-					begCl->second->current_request = NULL;
-				}
+			// 	if (begCl->second->current_response) {
+			// 		begCl->second->current_response->clearBodyFilename();
+			// 		begCl->second->current_response->cleanCurrentRequest();
+			// 		delete begCl->second->current_response;
+			// 		begCl->second->current_response = NULL;
+			// 	}
+			// 	// Then delete request
+			// 	if (begCl->second->current_request) {
+			// 		begCl->second->current_request->getAccept().clear();
+			// 		delete begCl->second->current_request;
+			// 		begCl->second->current_request = NULL;
+			// 	}
 				delete begCl->second;
 			}
 		}

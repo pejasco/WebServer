@@ -29,7 +29,7 @@ class RequestData
 		std::string _path;
 		std::string _queryString;
 		std::map<std::string, std::string> _headers;
-		std::string _body;
+		mutable std::string _body;
 
 	public:
 		RequestData();
@@ -55,6 +55,10 @@ class RequestData
 		const std::string& getQueryString() const;
 		const std::map<std::string, std::string>& getHeaders() const;
 		const std::string& getBody() const;
+		std::string& getBody();
+
+		//method
+		void cleanBodyStr() const;
 };
 
 #endif

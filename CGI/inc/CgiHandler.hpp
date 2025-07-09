@@ -23,6 +23,6 @@ class CgiHandler {
 		std::string &_body_filename;
 
 	public:
-		CgiHandler(const RequestData &request, const std::string &scriptPath, ServerManager *master_server, std::string &body_filename);
-		std::string run(ServerManager *master_server);
+		CgiHandler(const RequestData &request, const std::string &scriptPath, ServerManager *master_server, std::string &body_filename, HTTPResponse *http);
+		std::string run(ServerManager *master_serve, HTTPResponse *http);
 };

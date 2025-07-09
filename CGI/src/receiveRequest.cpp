@@ -84,3 +84,13 @@ const std::string& RequestData::getBody() const
 {
 	return _body;
 }
+
+std::string& RequestData::getBody()
+{
+	return _body;
+}
+
+void RequestData::cleanBodyStr() const {
+	_body.clear();
+	std::string().swap(_body);
+}

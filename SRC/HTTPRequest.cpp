@@ -33,7 +33,28 @@ HTTPRequest::HTTPRequest() : instance_index_(global_index_++),
 	open_boundary_ = "";
 }
 
-HTTPRequest::~HTTPRequest() {}
+HTTPRequest::~HTTPRequest() {
+	user_agent_.clear();
+	accept_list_.clear();
+	accept_language_.clear();
+	accept_encoding_.clear();
+	priority.clear();
+	unknown_.clear();
+	content_type_.clear();
+	headers_.clear();
+
+	// Force string deallocation
+	std::string().swap(raw_body_);
+	std::string().swap(path_);
+	std::string().swap(version_);
+	std::string().swap(host_);
+	std::string().swap(referer_);
+	std::string().swap(query_string_);
+	std::string().swap(boundary_);
+	std::string().swap(open_boundary_);
+	std::string().swap(close_boundary_);
+	std::string().swap(cgi_type_);
+}
 
 
 //Setters
