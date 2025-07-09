@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executeScript.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
+/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 16:26:00 by ssottori          #+#    #+#             */
-/*   Updated: 2025/07/08 22:43:04 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/09 20:30:27 by ssottori         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,6 +179,31 @@ void ScriptExecutor::runChild(std::string &body_filename, HTTPResponse *http)
 std::string ScriptExecutor::runParent(pid_t pid)
 {
 	close(_pipe[1]);
+
+	int status;
+	bool timeout = false;
+
+	for (int i = 0; i < 50; ++i) // 100ms x 50 = 5 seconds
+	{
+		usleep(100000);
+		if (waitpid(pid, &status, WNOHANG) != 0)
+			break;
+		if (i == 49) {
+			kill(pid, SIGKILL); // timeout
+			timeout = true;
+			waitpid(pid, &status, 0); // ensure child is reaped
+		}
+	}
+
+	if (timeout)
+	{
+		close(_pipe[0]); // always close
+		return "HTTP/1.1 504 Gateway Timeout\r\n"
+				"Content-Type: text/html\r\n\r\n"
+				"<html><head><title>504 Gateway Timeout</title></head>"
+				"<body><h1>504 Gateway Timeout</h1>"
+				"<p>The CGI script took too long to respond.</p></body></html>";
+	}
 
 	char buff[4096];
 	size_t bytesRead;
