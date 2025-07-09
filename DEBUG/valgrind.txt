@@ -1,1 +1,59 @@
-
+==2058045== Memcheck, a memory error detector
+==2058045== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==2058045== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==2058045== Command: ./webserv
+==2058045== Parent PID: 2058040
+==2058045== 
+==2058148== 
+==2058148== HEAP SUMMARY:
+==2058148==     in use at exit: 312 bytes in 1 blocks
+==2058148==   total heap usage: 332 allocs, 331 frees, 145,885 bytes allocated
+==2058148== 
+==2058148== 312 bytes in 1 blocks are still reachable in loss record 1 of 1
+==2058148==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2058148==    by 0x41AEB5: ServerManager::processAndSendResponse(Server*, Location*) (ServerManager.cpp:997)
+==2058148==    by 0x41AA9B: ServerManager::readRequestBody(unsigned long, unsigned long) (ServerManager.cpp:976)
+==2058148==    by 0x4140A1: ServerManager::existingClientConnection() (ServerManager.cpp:715)
+==2058148==    by 0x4102E4: ServerManager::serverMonitoring() (ServerManager.cpp:455)
+==2058148==    by 0x44BBE8: main (main.cpp:42)
+==2058148== 
+==2058148== LEAK SUMMARY:
+==2058148==    definitely lost: 0 bytes in 0 blocks
+==2058148==    indirectly lost: 0 bytes in 0 blocks
+==2058148==      possibly lost: 0 bytes in 0 blocks
+==2058148==    still reachable: 312 bytes in 1 blocks
+==2058148==         suppressed: 0 bytes in 0 blocks
+==2058148== 
+==2058148== For lists of detected and suppressed errors, rerun with: -s
+==2058148== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==2058150== 
+==2058150== HEAP SUMMARY:
+==2058150==     in use at exit: 312 bytes in 1 blocks
+==2058150==   total heap usage: 334 allocs, 333 frees, 150,217 bytes allocated
+==2058150== 
+==2058150== 312 bytes in 1 blocks are still reachable in loss record 1 of 1
+==2058150==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2058150==    by 0x41AEB5: ServerManager::processAndSendResponse(Server*, Location*) (ServerManager.cpp:997)
+==2058150==    by 0x41AA9B: ServerManager::readRequestBody(unsigned long, unsigned long) (ServerManager.cpp:976)
+==2058150==    by 0x4140A1: ServerManager::existingClientConnection() (ServerManager.cpp:715)
+==2058150==    by 0x4102E4: ServerManager::serverMonitoring() (ServerManager.cpp:455)
+==2058150==    by 0x44BBE8: main (main.cpp:42)
+==2058150== 
+==2058150== LEAK SUMMARY:
+==2058150==    definitely lost: 0 bytes in 0 blocks
+==2058150==    indirectly lost: 0 bytes in 0 blocks
+==2058150==      possibly lost: 0 bytes in 0 blocks
+==2058150==    still reachable: 312 bytes in 1 blocks
+==2058150==         suppressed: 0 bytes in 0 blocks
+==2058150== 
+==2058150== For lists of detected and suppressed errors, rerun with: -s
+==2058150== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==2058045== 
+==2058045== HEAP SUMMARY:
+==2058045==     in use at exit: 0 bytes in 0 blocks
+==2058045==   total heap usage: 349 allocs, 349 frees, 164,024 bytes allocated
+==2058045== 
+==2058045== All heap blocks were freed -- no leaks are possible
+==2058045== 
+==2058045== For lists of detected and suppressed errors, rerun with: -s
+==2058045== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

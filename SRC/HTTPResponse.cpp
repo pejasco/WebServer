@@ -122,7 +122,7 @@ HTTPRequest *HTTPResponse::getCurrentRequest() {
 //METHOD
 
 void HTTPResponse::clearBodyFilename() {
-    body_filename_.clear();
+	body_filename_.clear();
 }
 
 void HTTPResponse::cleanCurrentRequest() {
@@ -307,47 +307,47 @@ void HTTPResponse::setPostResponse() {
 
 void HTTPResponse::setDeleteResponse() { // NOT good as rely only on hardcoding path instead of using the parsing // config file 
 	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE CALLED" RESET);
-    std::string reqPath = current_request_->getPath(); //
+	std::string reqPath = current_request_->getPath(); //
 	std::string default_path = default_location_->getRoot(); // "documents/"
 	DEBUG_PRINT("reqPath: " << reqPath << ", default_path: " << default_path);
 	status_code_ = checkFile();
 	if (status_code_ != 200) {
 		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
-        setErrorResponse(status_code_);
+		setErrorResponse(status_code_);
 		return ;
 	}
 	// if (body_filename_.find(location_->getUploadDir()) == std::string::npos) {
 	// 	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
-    //     setErrorResponse(status_code_);
+	//     setErrorResponse(status_code_);
 	// 	return ;
 	// }
 	DEBUG_PRINT("body_filename_: " << body_filename_);
 	int authorise_code = fileDeletable(body_filename_, location_, default_location_);
 	if (authorise_code == 200) {
-       	if (!std::remove(body_filename_.c_str())) {
-       	    response_ = current_request_->getVersion() + " 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nFile deleted";
-       	    _response_ready_ = true;
+	   	if (!std::remove(body_filename_.c_str())) {
+	   		response_ = current_request_->getVersion() + " 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nFile deleted";
+	   		_response_ready_ = true;
 			status_code_ = 200;
-       	} else if (errno == EACCES || errno == EPERM){
+	   	} else if (errno == EACCES || errno == EPERM){
 			DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
 			status_code_ = 403;
-       	    setErrorResponse(status_code_);
+	   		setErrorResponse(status_code_);
 			return ;
-       	} else {
+	   	} else {
 			DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
 			status_code_ = 500;
-       	    setErrorResponse(status_code_);
+	   		setErrorResponse(status_code_);
 			return;
 		}
 	} else if (authorise_code == 403){
 		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
 		status_code_ = 403;
-       	setErrorResponse(status_code_);
+	   	setErrorResponse(status_code_);
 		return ;
 	} else if (authorise_code == 405) {
 		DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
 		status_code_ = 405;
-       	setErrorResponse(status_code_);
+	   	setErrorResponse(status_code_);
 		return ;
 	}
 	DEBUG_PRINT(BOLD UNDERLINE BG_CYAN BLACK "SET DELETE RESPONSE EXITED" RESET);
@@ -509,27 +509,27 @@ int HTTPResponse::checkFile() {
 				return 200;
 			} else {
 				body_file.close();
-    			switch(errno) {
-    			    case ENOENT:
-    			        DEBUG_PRINT("File not found: " << strerror(errno));
-    			        return 404;
-    			    case EACCES:
+				switch(errno) {
+					case ENOENT:
+						DEBUG_PRINT("File not found: " << strerror(errno));
+						return 404;
+					case EACCES:
 					case EPERM:
-    			        DEBUG_PRINT("Permission denied: " << strerror(errno));
-    			        return 403;
-    			    case EISDIR:
-    			        DEBUG_PRINT("Path is directory: " << strerror(errno));
-    			        return 409;
-    			    case ENOSPC:
-    			        DEBUG_PRINT("No space left: " << strerror(errno));
-    			        return 507;
-    			    case ENAMETOOLONG:
-    			        DEBUG_PRINT("Filename too long: " << strerror(errno));
-    			        return 414;
-    			    default:
-    			        DEBUG_PRINT("Unknown file error: " << strerror(errno) << ": " << errno);
-    			        return 500;
-    			}
+						DEBUG_PRINT("Permission denied: " << strerror(errno));
+						return 403;
+					case EISDIR:
+						DEBUG_PRINT("Path is directory: " << strerror(errno));
+						return 409;
+					case ENOSPC:
+						DEBUG_PRINT("No space left: " << strerror(errno));
+						return 507;
+					case ENAMETOOLONG:
+						DEBUG_PRINT("Filename too long: " << strerror(errno));
+						return 414;
+					default:
+						DEBUG_PRINT("Unknown file error: " << strerror(errno) << ": " << errno);
+						return 500;
+				}
 			}
 		} else {
 			DEBUG_PRINT("File doesn't exist, return 404");
@@ -622,7 +622,6 @@ void HTTPResponse::headerResponse() {
 void HTTPResponse::CGI_Body() {
 	DEBUG_PRINT(BOLD UNDERLINE BG_BLUE BLACK "CGI_BODY CALLED" RESET);
 	const std::string& scriptPath = !body_filename_.empty() ? body_filename_ : current_request_->getPath();
-	// body_filename_ = "";
 	std::string script_name = getFilenameFromPath(body_filename_);
 	status_code_ = checkExtensions(location_, script_name);
 	if (status_code_ != 200) {
@@ -684,7 +683,6 @@ void HTTPResponse::CGI_Body() {
 	size_t headerEnd = cgiOutput.find("\r\n\r\n");
 	// DEBUG_PRINT("cgioutput: " << cgiOutput);
 	if (headerEnd == std::string::npos)
-		// Try Unix line endings as fallback
 		headerEnd = cgiOutput.find("\n\n");
 	if (headerEnd != std::string::npos) {
 		std::string headers = cgiOutput.substr(0, headerEnd);
@@ -692,9 +690,7 @@ void HTTPResponse::CGI_Body() {
 		std::string body = cgiOutput.substr(headerEnd + 2);
 		if (headers.find("Content-Type:") == std::string::npos)
 			headers = "Content-Type: text/html\r\n" + headers;
-		if (headers.find("Content-Length:") == std::string::npos) {
-    	    headers += "\r\nContent-Length: " + convertToStr(body.size());
-    	}
+		headers += "\r\nContent-Length: " + convertToStr(body.size());
 		if (headers.find("Connection:") == std::string::npos)
 			headers += "\r\nConnection: close";
 		response_ = "HTTP/1.1 200 OK\r\n" + headers + "\r\n\r\n" + body;
