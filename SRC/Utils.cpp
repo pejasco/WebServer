@@ -216,7 +216,7 @@ void cleanShutdown(ServerManager &master_server) {
 			// 	}
 			// 	// Then delete request
 			// 	if (begCl->second->current_request) {
-				begCl->second->current_request->getAccept().clear();
+				// begCl->second->current_request->getAccept().clear();
 			// 		delete begCl->second->current_request;
 			// 		begCl->second->current_request = NULL;
 			// 	}
