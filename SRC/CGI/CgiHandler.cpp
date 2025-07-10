@@ -6,11 +6,11 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/17 20:48:58 by ssottori          #+#    #+#             */
-/*   Updated: 2025/07/08 22:35:21 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/10 09:44:54 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "CgiHandler.hpp"
+#include "../../INC/CGI/CgiHandler.hpp"
 #include "../../INC/utils/Debug.hpp"
 #include "../../INC/utils/ServerManager.hpp"
 #include "../../INC/utils/Colors.hpp"

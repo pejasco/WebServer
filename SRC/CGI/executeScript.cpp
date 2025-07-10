@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   executeScript.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssottori <ssottori@student.42london.com    +#+  +:+       +#+        */
+/*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 16:26:00 by ssottori          #+#    #+#             */
-/*   Updated: 2025/07/09 20:30:27 by ssottori         ###   ########.fr       */
+/*   Updated: 2025/07/10 09:44:51 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "executeScript.hpp"
+#include "../../INC/CGI/executeScript.hpp"
 #include "../../INC/utils/Debug.hpp"
 #include "../../INC/utils/Colors.hpp"
 

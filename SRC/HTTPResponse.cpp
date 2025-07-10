@@ -6,13 +6,13 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 12:19:25 by chuleung          #+#    #+#             */
-/*   Updated: 2025/07/08 22:32:44 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/10 09:48:23 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/utils/HTTPResponse.hpp"
-#include "../CGI/inc/receiveRequest.hpp"
-#include "../CGI/inc/CgiHandler.hpp"
+#include "../INC/CGI/receiveRequest.hpp"
+#include "../INC/CGI/CgiHandler.hpp"
 
 bool cgi_flag = false;
 

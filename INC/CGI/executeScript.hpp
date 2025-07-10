@@ -6,7 +6,7 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 16:27:11 by ssottori          #+#    #+#             */
-/*   Updated: 2025/07/08 22:40:21 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/10 09:46:07 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,8 @@
 #include "prepEnv.hpp"
 #include "receiveRequest.hpp"
 #include "receiveRequest.hpp"
-#include "../../INC/utils/ServerManager.hpp"
-#include "../../INC/utils/Utils.hpp"
+#include "../utils/ServerManager.hpp"
+#include "../utils/Utils.hpp"
 
 class ScriptExecutor
 {

@@ -6,11 +6,11 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/17 22:08:37 by ssottori          #+#    #+#             */
-/*   Updated: 2025/06/18 11:08:32 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/10 09:44:16 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "returnOutput.hpp"
+#include "../../INC/CGI/returnOutput.hpp"
 #include "../../INC/utils/Debug.hpp"
 #include "../../INC/utils/Colors.hpp"
 
