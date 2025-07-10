@@ -31,6 +31,21 @@
 - Memory management and resource cleanup
 - Signal handling and graceful shutdown
 
+## 📱 Screenshots
+
+![Webserver Page](screenshots/webserv.png)
+
+![Upload Webpage](screenshots/upload.png)
+
+![CGI homepage](screenshots/CGI_homepage.png)
+
+![CGI GET](screenshots/cgi_get1.png)
+![CGI GET](screenshots/cgi_get2.png)
+
+![CGI POST](screenshots/cgi_post.png)
+
+![Autoindex](screenshots/autoindex.png)
+
 ## 🚀 Quick Start
 
 ### Prerequisites

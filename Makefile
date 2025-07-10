@@ -6,7 +6,7 @@
 #    By: cofische <cofische@student.42london.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/24 01:20:10 by ssottori          #+#    #+#              #
-#    Updated: 2025/07/10 08:38:55 by cofische         ###   ########.fr        #
+#    Updated: 2025/07/10 09:54:29 by cofische         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,8 +30,8 @@ RM = rm -rf
 SRC_DIR = SRC
 OBJ_DIR = OBJ
 INC_DIR = INC/utils
-CGI_INC = CGI/inc
-CGI_SRC = CGI/src
+CGI_INC = INC/CGI
+CGI_SRC = SRC/CGI
 
 SRC = $(SRC_DIR)/Server.cpp \
 	  $(SRC_DIR)/Autoindex.cpp \
@@ -45,8 +45,7 @@ SRC = $(SRC_DIR)/Server.cpp \
 	  $(SRC_DIR)/Utils.cpp \
 	  $(SRC_DIR)/main.cpp 
 
-CGI_SRC_FILES = CGI/cgi_test.cpp \
-	  $(CGI_SRC)/CgiHandler.cpp \
+CGI_SRC_FILES = $(CGI_SRC)/CgiHandler.cpp \
 	  $(CGI_SRC)/executeScript.cpp \
 	  $(CGI_SRC)/prepEnv.cpp \
 	  $(CGI_SRC)/receiveRequest.cpp \

@@ -6,11 +6,11 @@
 /*   By: cofische <cofische@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 17:12:40 by ssottori          #+#    #+#             */
-/*   Updated: 2025/07/08 17:06:37 by cofische         ###   ########.fr       */
+/*   Updated: 2025/07/10 09:44:33 by cofische         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "receiveRequest.hpp"
+#include "../../INC/CGI/receiveRequest.hpp"
 
 RequestData::RequestData() {}
 
