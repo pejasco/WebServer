@@ -6,7 +6,7 @@
 #    By: cofische <cofische@student.42london.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/24 01:20:10 by ssottori          #+#    #+#              #
-#    Updated: 2025/07/08 19:32:45 by cofische         ###   ########.fr        #
+#    Updated: 2025/07/10 08:38:55 by cofische         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -116,19 +116,37 @@ re: fclean all
 leaks:
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=DEBUG/valgrind.txt ./$(NAME)
 
-tester-debug: 
+tester-debug:
+	@cd documents/upload/storage/; touch unauthorise.txt; chmod -r-x unauthorise.txt; cd ../../tools/; chmod -r-x-w magic_guesser.html; cd ../..
 	@make debug
 	@echo "[${YELLOW}webserv tester${NC}] starting python tester..."
 	@ ./webserv > output 2>/dev/null & SERVER_PID=$$!; sleep 1; \
 	  python3 TESTER/webserv_tester.py; \
 	  kill -INT $$SERVER_PID; rm -f test.txt
+	@echo "[${YELLOW}webserv tester${NC}] cleaning processes..."
+	@pids=$$(lsof -i -P -n | grep LISTEN | awk '{print $$2}' | sort -u); \
+	if [ -n "$$pids" ]; then \
+		echo "Killing PIDs: $$pids"; \
+		echo "$$pids" | xargs kill -9 2>/dev/null; \
+	else \
+		echo "No listening processes found"; \
+	fi
 
 tester-leaks:
+	@cd documents/upload/storage/; touch unauthorise.txt; chmod -r-x unauthorise.txt; cd ../../tools/; chmod -r-x-w magic_guesser.html; cd ../..
 	@make debug
 	@echo "[${YELLOW}webserv tester${NC}] starting python tester..."
 	@ make leaks > output 2>/dev/null & SERVER_PID=$$!; sleep 1; \
 	  python3 TESTER/webserv_tester.py; \
 	  kill -INT $$SERVER_PID; rm -f test.txt
+	@echo "[${YELLOW}webserv tester${NC}] cleaning processes..."
+	@pids=$$(lsof -i -P -n | grep LISTEN | awk '{print $$2}' | sort -u); \
+	if [ -n "$$pids" ]; then \
+		echo "Killing PIDs: $$pids"; \
+		echo "$$pids" | xargs kill -9 2>/dev/null; \
+	else \
+		echo "No listening processes found"; \
+	fi
 
 tester-dummy:
 	@cp -r TESTER/www /tmp/
@@ -136,12 +154,21 @@ tester-dummy:
 	@echo "[${YELLOW}webserv tester with dummy configuration${NC}] starting tester..."
 	@ ./webserv configuration/dummy.conf
 
-tester: 
+tester:
+	@cd documents/upload/storage/; touch unauthorise.txt; chmod -r-x unauthorise.txt; cd ../../tools/; chmod -r-x-w magic_guesser.html; cd ../..
 	@make all
 	@echo "[${YELLOW}webserv tester${NC}] starting python tester..."
 	@ ./webserv > output 2>/dev/null & SERVER_PID=$$!; sleep 1; \
 	  python3 TESTER/webserv_tester.py; \
 	  kill -INT $$SERVER_PID; rm -f test.txt
+	@echo "[${YELLOW}webserv tester${NC}] cleaning processes..."
+	@pids=$$(lsof -i -P -n | grep LISTEN | awk '{print $$2}' | sort -u); \
+	if [ -n "$$pids" ]; then \
+		echo "Killing PIDs: $$pids"; \
+		echo "$$pids" | xargs kill -9 2>/dev/null; \
+	else \
+		echo "No listening processes found"; \
+	fi
 
 banner:
 	@echo "${BLUE}"
