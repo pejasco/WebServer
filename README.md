@@ -2,25 +2,6 @@
 
 > A high-performance HTTP/1.1 webserver built from scratch in C++, implementing core web server functionality including request parsing, response generation, CGI support, file uplaod, static website display and multi-client handling.
 
-## 🚧 Project Status
-
-> **⚠️ WORK IN PROGRESS ⚠️**
-> 
-> This HTTP webserver is currently under active development as part of the 42 School curriculum. While core functionality is implemented and working, several features are still being developed and refined.
-> 
-> **Current State:**
-> - ✅ Basic GET HTTP request/response handling
-> - ✅ Static file serving
-> - ✅ Configuration file parsing
-> - ✅ CGI implementation
-> - ✅  Autoindex management
-> - ✅ Redirection
-> - ✅ Advanced error handling
-> - ✅ File upload functionality
-> - ✅ Static Webserv website to display functionality
-> - ✅ Signal handling and graceful shutdown
->
-
 ## ✨ Features
 
 - **HTTP/1.1 Protocol** - Full implementation of HTTP/1.1 specifications
@@ -85,12 +66,6 @@
    # or open in browser
    ```
 
-## 📁 Project Structure
-
-```
-In Progress...
-```
-
 ## ⚙️ Configuration
 
 ### Basic Configuration Example
@@ -102,13 +77,12 @@ server {
 	port: 8080 8081 8082
 	server_names: Example.com www.example.com
 	client_max_body_size: 10M
-	keep_alive: on
 	error_pages {
 		404 /documents/errors/404.html
 		500 /documents/errors/500.html
 	}
 
-	location / {
+	location /location_name {
 		root: folder_path
 		methods: GET POST DELETE 
 		index: filename_index
@@ -120,15 +94,15 @@ server {
 
 | Method | Status | Description |
 |--------|--------|-------------|
-| `GET` | ✅ Complete | Retrieve resources |
-| `POST` | ✅ In progress | Submit data, file uploads |
+| `GET` | ✅ Complete | Retrieve resources, CGI |
+| `POST` | ✅ In progress | Submit data, file uploads, CGI |
 | `DELETE` | ✅ In progress | Delete resources |
 
 ## 🧪 Testing
 
 ```bash
 # Run unit tests
-make test
+make debug; ./webserv > output
 
 # Test different HTTP methods
 curl -X GET http://localhost:8080/
@@ -153,6 +127,10 @@ make tester
 # tester script + debbuging output available
 # !! The debugger limits the loops to 2000 !!
 make tester-debug
+
+# tester script + valgrind
+# !! Increasing the timeout for cgi and concurrence testing functions !!
+make tester-leaks
 ```
 
 ## 🔧 Building and Compilation
@@ -192,8 +170,9 @@ make debug
 **Port already in use:**
 ```bash
 # Check what's using the port
-lsof -i :8080 #or other ports
-# Kill the process or change port in config
+lsof -i -P -n | grep LISTEN
+# If all the LISTEN belong to the same PID process (webserver ones)
+kill {webserv PID} 
 ```
 
 **Permission denied:**
@@ -259,21 +238,5 @@ This project demonstrates mastery of:
 - Concurrent connection scaling
 - RFC compliance and standards adherence
 
-**Grade:** TBD
+**Grade:** 110/120
 
-## 📈 Development Roadmap
-
-### Phase 1: Core Implementation ✅
-- [x] Basic HTTP server setup
-- [x] Request/response handling
-- [x] Static file serving
-- [x] Configuration parsing
-
-### Phase 2: Advanced Features 🔄
-- [x] CGI implementation
-- [x] File upload completion
-- [x] Enhanced error handling
-- [ ] Performance optimization
-- [ ] Testing edge cases
-
-**Last Updated:** 26/06/2025
