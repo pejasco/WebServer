@@ -253,5 +253,4 @@ This project demonstrates mastery of:
 - Concurrent connection scaling
 - RFC compliance and standards adherence
 
-**Grade:** 110/120
 
